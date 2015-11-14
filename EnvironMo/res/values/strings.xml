@@ -1,0 +1,16 @@
+<resources>
+
+    <string name="app_name">EnvironMo</string>
+    <string name="placeholder">null</string>
+    <string name="title_current">Current</string>
+    <string name="title_forecast">Forecast</string>
+    <string name="city_sunrise">Sunrise: </string>
+    <string name="city_sunset">Sunset: </string>
+    <string name="weather_pressure">Pressure: </string>
+    <string name="weather_humidity">Humidity: </string>
+    <string name="weather_wind_speed">Speed: </string>
+    <string name="weather_wind_direction">Direction: </string>
+    <string name="update_button">UPDATE</string>
+	<string name="setting_city_title">Enter City: </string>
+	<string name="setting_city_button">DONE</string>
+</resources>

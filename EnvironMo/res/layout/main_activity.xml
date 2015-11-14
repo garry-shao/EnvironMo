@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fadeScrollbars="true" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="3dp"
+            android:stretchColumns="*" >
+
+            <TableRow>
+
+                <TextView
+                    android:id="@+id/city_name"
+                    android:layout_column="0"
+                    android:layout_span="2"
+                    android:clickable="true"
+                    android:onClick="settingCity"
+                    android:text="@string/placeholder"
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/city_country"
+                    android:layout_column="2"
+                    android:text="@string/placeholder" />
+
+                <TextView
+                    android:id="@+id/city_coordinates"
+                    android:layout_column="3"
+                    android:layout_span="3"
+                    android:text="@string/placeholder" />
+            </TableRow>
+
+            <TableRow>
+
+                <TextView
+                    android:layout_column="0"
+                    android:text="@string/city_sunrise" />
+
+                <TextView
+                    android:id="@+id/city_sunrise"
+                    android:layout_column="1"
+                    android:layout_span="2"
+                    android:text="@string/placeholder" />
+
+                <TextView
+                    android:layout_column="3"
+                    android:text="@string/city_sunset" />
+
+                <TextView
+                    android:id="@+id/city_sunset"
+                    android:layout_column="4"
+                    android:layout_span="2"
+                    android:text="@string/placeholder" />
+            </TableRow>
+
+            <TableRow>
+
+                <TextView
+                    android:id="@+id/current_temperature"
+                    android:layout_column="0"
+                    android:layout_gravity="center"
+                    android:layout_span="3"
+                    android:text="@string/placeholder"
+                    android:textSize="36sp" />
+
+                <TextView
+                    android:id="@+id/current_main"
+                    android:layout_column="3"
+                    android:layout_gravity="center"
+                    android:layout_span="3"
+                    android:text="@string/placeholder"
+                    android:textSize="24sp" />
+            </TableRow>
+        </TableLayout>
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="3dp"
+            android:stretchColumns="*" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/title_current"
+                android:textSize="24sp" />
+
+            <TableRow>
+
+                <TextView
+                    android:layout_column="0"
+                    android:text="@string/weather_pressure" />
+
+                <TextView
+                    android:id="@+id/current_pressure"
+                    android:layout_column="1"
+                    android:layout_span="2"
+                    android:text="@string/placeholder" />
+
+                <TextView
+                    android:layout_column="3"
+                    android:text="@string/weather_humidity" />
+
+                <TextView
+                    android:id="@+id/current_humidity"
+                    android:layout_column="4"
+                    android:layout_span="2"
+                    android:text="@string/placeholder" />
+            </TableRow>
+
+            <TableRow>
+
+                <TextView
+                    android:layout_column="0"
+                    android:text="@string/weather_wind_speed" />
+
+                <TextView
+                    android:id="@+id/current_wind_speed"
+                    android:layout_column="1"
+                    android:layout_span="2"
+                    android:text="@string/placeholder" />
+
+                <TextView
+                    android:layout_column="3"
+                    android:text="@string/weather_wind_direction" />
+
+                <TextView
+                    android:id="@+id/current_wind_direction"
+                    android:layout_column="4"
+                    android:layout_span="2"
+                    android:text="@string/placeholder" />
+            </TableRow>
+        </TableLayout>
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="3dp"
+            android:stretchColumns="*" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/title_forecast"
+                android:textSize="24sp" />
+
+            <TableRow>
+
+                <TextView
+                    android:id="@+id/forecast_date_0"
+                    android:layout_column="0"
+                    android:layout_gravity="center"
+                    android:layout_span="2"
+                    android:text="@string/placeholder" />
+
+                <TextView
+                    android:id="@+id/forecast_date_1"
+                    android:layout_column="2"
+                    android:layout_gravity="center"
+                    android:layout_span="2"
+                    android:text="@string/placeholder" />
+
+                <TextView
+                    android:id="@+id/forecast_date_2"
+                    android:layout_column="4"
+                    android:layout_gravity="center"
+                    android:layout_span="2"
+                    android:text="@string/placeholder" />
+            </TableRow>
+
+            <TableRow>
+
+                <TextView
+                    android:id="@+id/forecast_temperature_0"
+                    android:layout_column="0"
+                    android:layout_gravity="center"
+                    android:layout_span="2"
+                    android:text="@string/placeholder" />
+
+                <TextView
+                    android:id="@+id/forecast_temperature_1"
+                    android:layout_column="2"
+                    android:layout_gravity="center"
+                    android:layout_span="2"
+                    android:text="@string/placeholder" />
+
+                <TextView
+                    android:id="@+id/forecast_temperature_2"
+                    android:layout_column="4"
+                    android:layout_gravity="center"
+                    android:layout_span="2"
+                    android:text="@string/placeholder" />
+            </TableRow>
+
+            <TableRow>
+
+                <TextView
+                    android:id="@+id/forecast_main_0"
+                    android:layout_column="0"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_span="2"
+                    android:text="@string/placeholder" />
+
+                <TextView
+                    android:id="@+id/forecast_main_1"
+                    android:layout_column="2"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_span="2"
+                    android:text="@string/placeholder" />
+
+                <TextView
+                    android:id="@+id/forecast_main_2"
+                    android:layout_column="4"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_span="2"
+                    android:text="@string/placeholder" />
+            </TableRow>
+        </TableLayout>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="updateContent"
+            android:text="@string/update_button" />
+    </LinearLayout>
+
+</ScrollView>
