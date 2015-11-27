@@ -33,7 +33,7 @@ public class MainUpdateService extends IntentService {
 	public static final String FORECAST_QUERY = "forecast_query";
 	public static final String CITY_ID = "city_id";
 	
-	private static String DAY_COUNT = "3";
+	private static String DAY_COUNT = "4";
 	
 	private static String cQuery = "http://api.openweathermap.org/data/2.5/" +
 			"weather?" + 
@@ -44,7 +44,7 @@ public class MainUpdateService extends IntentService {
 	private static String fQuery = "http://api.openweathermap.org/data/2.5/" + 
 			"forecast/daily?" + 
 			"id=" + "2037355" + 
-			"&cnt=" + "3" +
+			"&cnt=" + "4" +
 			"&units=" + "metric" + 
 			"&appid=" + API_KEY;
 

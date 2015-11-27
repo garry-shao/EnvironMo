@@ -8,17 +8,12 @@ class WeatherInfo {
 	private int temperature;
 	private int temperatureMin;
 	private int temperatureMax;
+
 	private int pressure;
 	private int humidity;
 	
 	private int windSpeed;
 	private int windDirection;
-	
-	private int visibility;
-	private int cloudiness;
-	
-	private double rainVolume;
-	private double snowVolume;
 	
 	public WeatherInfo(String weatherMain, String weatherDescription) {
 		this.weatherMain = weatherMain;
@@ -87,38 +82,6 @@ class WeatherInfo {
 
 	public void setWindDirection(int windDirection) {
 		this.windDirection = windDirection;
-	}
-
-	public int getVisibility() {
-		return visibility;
-	}
-
-	public void setVisibility(int visibility) {
-		this.visibility = visibility;
-	}
-
-	public int getCloudiness() {
-		return cloudiness;
-	}
-
-	public void setCloudiness(int cloudiness) {
-		this.cloudiness = cloudiness;
-	}
-
-	public double getRainVolume() {
-		return rainVolume;
-	}
-
-	public void setRainVolume(double rainVolume) {
-		this.rainVolume = rainVolume;
-	}
-
-	public double getSnowVolume() {
-		return snowVolume;
-	}
-
-	public void setSnowVolume(double snowVolume) {
-		this.snowVolume = snowVolume;
 	}
 	
 }

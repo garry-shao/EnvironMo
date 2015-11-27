@@ -16,7 +16,8 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name=".MainActivity"
-            android:launchMode="singleTop" >
+            android:launchMode="singleTop"
+            android:theme="@android:style/Theme.Light.NoTitleBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -24,7 +25,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SettingCityActivity"
+            android:name=".SelectActivity"
+            android:theme="@android:style/Theme.Light.NoTitleBar"
             android:launchMode="singleTop" >
         </activity>
 

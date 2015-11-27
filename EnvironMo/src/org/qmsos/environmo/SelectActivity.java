@@ -14,12 +14,12 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class SettingCityActivity extends Activity {
+public class SelectActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.setting_city_activity);
+		setContentView(R.layout.select_activity);
 	}
 	
 	public void settingCityId(View view) {
@@ -27,8 +27,6 @@ public class SettingCityActivity extends Activity {
 		
 		searchCityId(editText.getText().toString());
 		
-		Toast.makeText(getApplicationContext(), "Succeded!!", Toast.LENGTH_SHORT).show();
-		finish();
 	}
 	
 	private void searchCityId(String cityName) {
@@ -62,6 +60,7 @@ public class SettingCityActivity extends Activity {
 				super.onPostExecute(result);
 				
 				storeCityId(result);
+				finish();
 			}
 		}
 			
@@ -75,6 +74,8 @@ public class SettingCityActivity extends Activity {
 		if (cityId != -1) {
 			editor.putInt(MainUpdateService.CITY_ID, cityId);
 			editor.apply();
+		} else {
+			Toast.makeText(getApplicationContext(), "City not stored!", Toast.LENGTH_SHORT).show();;
 		}
 	}
 }
