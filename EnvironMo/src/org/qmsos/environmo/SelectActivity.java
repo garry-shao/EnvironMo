@@ -19,7 +19,7 @@ public class SelectActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.select_activity);
+		setContentView(R.layout.activity_select);
 	}
 	
 	public void settingCityId(View view) {
