@@ -9,12 +9,13 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.text.format.DateFormat;
 import android.util.LongSparseArray;
 import android.view.View;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 /**
@@ -23,39 +24,47 @@ import android.widget.TextView;
  * @author EnvironMo
  * 
  */
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements OnRefreshListener {
 	
 	private static CityInfo cityInfo = new CityInfo(0, null, null, 0, 0);
 	private static WeatherInfo currentWeather = new WeatherInfo(null, null);
 	private static LongSparseArray<WeatherInfo> forecastWeather = new LongSparseArray<WeatherInfo>();
 
+	private EnvironRefreshLayout swipeRefresh;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
-		updateUI();
+		swipeRefresh = (EnvironRefreshLayout) findViewById(R.id.swipe_refresh);
+		swipeRefresh.setOnRefreshListener(this);
+		ScrollView scrollView = (ScrollView) findViewById(R.id.scroll_view);
+		swipeRefresh.setScrollView(scrollView);
 		
-		SwipeRefreshLayout swipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
-		swipeRefresh.setOnRefreshListener(new OnRefreshListener() {
-
-			@Override
-			public void onRefresh() {
-				updateContent();
-			}
-		});
+		updateUI();
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		
-		SwipeRefreshLayout swipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
-		swipeRefresh.setRefreshing(false);
-		
 		updateUI();
 	}
 	
+	@Override
+	public void onRefresh() {
+		new Handler().postDelayed(new Runnable() {
+
+			@Override
+			public void run() {
+				swipeRefresh.setRefreshing(false);
+
+				updateContent();
+			}
+		}, 500);
+	}
+
 	public void settingCity(View view) {
 		startActivity(new Intent(getApplicationContext(), SelectActivity.class));
 	}
@@ -64,10 +73,11 @@ public class MainActivity extends Activity {
 		PendingIntent pendingResult = createPendingResult(0, new Intent(), 0);
 		Intent intent = new Intent(getApplicationContext(), MainUpdateService.class);
 		intent.putExtra(MainUpdateService.EXTRA_PENDING_RESULT, pendingResult);
+		
 		startService(intent);
 	}
 	
-	private void currentWeather() {
+	private void parseCurrentWeather() {
 		try {
 			SharedPreferences prefs = 
 					PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -113,7 +123,7 @@ public class MainActivity extends Activity {
 
 	}
 
-	private void forecastWeather() {
+	private void parseForecastWeather() {
 		try {
 			forecastWeather.clear();
 			
@@ -160,8 +170,8 @@ public class MainActivity extends Activity {
 	}
 	
 	private void updateUI() {
-		currentWeather();
-		forecastWeather();
+		parseCurrentWeather();
+		parseForecastWeather();
 		
 		updateCityUI();
 		updateCurrentUI();
@@ -216,8 +226,8 @@ public class MainActivity extends Activity {
 				textView = (TextView) findViewById(
 						getResources().getIdentifier("forecast_temperature_" + i, "id", getPackageName()));
 				textView.setText(
-						String.valueOf(forecast.getTemperatureMax()) + "/" + 
-								String.valueOf(forecast.getTemperatureMin()) + "\u00B0C");
+						String.valueOf(forecast.getTemperatureMin()) + "\u00B0" + "/" + 
+						String.valueOf(forecast.getTemperatureMax()) + "\u00B0");
 				
 				textView = (TextView) findViewById(
 						getResources().getIdentifier("forecast_main_" + i, "id", getPackageName()));
