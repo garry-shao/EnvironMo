@@ -26,10 +26,6 @@ import android.widget.TextView;
  */
 public class MainActivity extends Activity {
 
-	private static CityInfo cityInfo = new CityInfo(0, null, null, 0, 0);
-	private static WeatherInfo currentWeather = new WeatherInfo(null, null);
-	private static LongSparseArray<WeatherInfo> forecastWeather = new LongSparseArray<WeatherInfo>();
-
 	private EnvironRefreshLayout swipeRefresh;
 
 	@Override
@@ -68,22 +64,27 @@ public class MainActivity extends Activity {
 
 	public void settingCity(View view) {
 		startActivity(new Intent(getApplicationContext(), SelectActivity.class));
+		
 	}
 
 	private void updateContent() {
 		PendingIntent pendingResult = createPendingResult(0, new Intent(), 0);
+		
 		Intent intent = new Intent(getApplicationContext(), MainUpdateService.class);
 		intent.putExtra(MainUpdateService.EXTRA_PENDING_RESULT, pendingResult);
+		intent.putExtra(MainUpdateService.QUERY_WEATHER, true);
 
 		startService(intent);
 	}
 
-	private void parseCurrentWeather() {
+	private CityInfo parseCityInfo() {
+		CityInfo cityInfo = new CityInfo(0, null, null, 0, 0);
+		
 		try {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-			String currentWeatherJSON = prefs.getString(MainUpdateService.CURRENT_WEATHER, "null");
-			JSONObject reader = new JSONObject(currentWeatherJSON);
+			String currentWeatherResuls = prefs.getString(MainUpdateService.CURRENT_RESULT, "null");
+			JSONObject reader = new JSONObject(currentWeatherResuls);
 
 			int id = reader.getInt("id");
 			String name = reader.getString("name");
@@ -96,6 +97,21 @@ public class MainActivity extends Activity {
 			double latitude = coord.getDouble("lat");
 
 			cityInfo = new CityInfo(id, name, country, longitude, latitude);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+		return cityInfo;
+	}
+	
+	private WeatherInfo parseCurrentWeather() {
+		WeatherInfo currentWeather = new WeatherInfo(null, null);
+		
+		try {
+			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+			String currentWeatherResults = prefs.getString(MainUpdateService.CURRENT_RESULT, "null");
+			JSONObject reader = new JSONObject(currentWeatherResults);
 
 			JSONArray weather = reader.getJSONArray("weather");
 			String weatherMain = weather.getJSONObject(0).getString("main");
@@ -103,34 +119,34 @@ public class MainActivity extends Activity {
 
 			JSONObject main = reader.getJSONObject("main");
 			int temperature = main.getInt("temp");
-			int pressure = main.getInt("pressure");
-			int humidity = main.getInt("humidity");
+//			int pressure = main.getInt("pressure");
+//			int humidity = main.getInt("humidity");
 
-			JSONObject wind = reader.getJSONObject("wind");
-			int windSpeed = wind.getInt("speed");
-			int windDirection = wind.getInt("deg");
+//			JSONObject wind = reader.getJSONObject("wind");
+//			int windSpeed = wind.getInt("speed");
+//			int windDirection = wind.getInt("deg");
 
 			currentWeather = new WeatherInfo(weatherMain, weatherDescription);
 			currentWeather.setTemperature(temperature);
-			currentWeather.setPressure(pressure);
-			currentWeather.setHumidity(humidity);
-			currentWeather.setWindSpeed(windSpeed);
-			currentWeather.setWindDirection(windDirection);
+//			currentWeather.setPressure(pressure);
+//			currentWeather.setHumidity(humidity);
+//			currentWeather.setWindSpeed(windSpeed);
+//			currentWeather.setWindDirection(windDirection);
 
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 
+		return currentWeather;
 	}
 
-	private void parseForecastWeather() {
+	private LongSparseArray<WeatherInfo> parseForecastWeather() {
+		LongSparseArray<WeatherInfo> forecastWeather = new LongSparseArray<WeatherInfo>();
 		try {
-			forecastWeather.clear();
-
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-			String forecastWeatherJSON = prefs.getString(MainUpdateService.FORECAST_WEATHER, "null");
-			JSONObject reader = new JSONObject(forecastWeatherJSON);
+			String forecastWeatherResults = prefs.getString(MainUpdateService.FORECAST_RESULT, "null");
+			JSONObject reader = new JSONObject(forecastWeatherResults);
 
 			JSONArray list = reader.getJSONArray("list");
 			for (int i = 0; i < list.length(); i++) {
@@ -146,39 +162,37 @@ public class MainActivity extends Activity {
 				int temperatureMin = temp.getInt("min");
 				int temperatureMax = temp.getInt("max");
 
-				int pressure = forecast.getInt("pressure");
-				int humidity = forecast.getInt("humidity");
+//				int pressure = forecast.getInt("pressure");
+//				int humidity = forecast.getInt("humidity");
 
-				int windSpeed = forecast.getInt("speed");
-				int windDirection = forecast.getInt("deg");
+//				int windSpeed = forecast.getInt("speed");
+//				int windDirection = forecast.getInt("deg");
 
 				WeatherInfo weatherInfo = new WeatherInfo(weatherMain, weatherDescription);
 				weatherInfo.setTemperatureMin(temperatureMin);
 				weatherInfo.setTemperatureMax(temperatureMax);
-				weatherInfo.setPressure(pressure);
-				weatherInfo.setHumidity(humidity);
-				weatherInfo.setWindSpeed(windSpeed);
-				weatherInfo.setWindDirection(windDirection);
+//				weatherInfo.setPressure(pressure);
+//				weatherInfo.setHumidity(humidity);
+//				weatherInfo.setWindSpeed(windSpeed);
+//				weatherInfo.setWindDirection(windDirection);
 
 				forecastWeather.put(date, weatherInfo);
 			}
-
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+
+		return forecastWeather;
 	}
 
 	private void updateUI() {
-		parseCurrentWeather();
-		parseForecastWeather();
-
-		updateCityUI();
-		updateCurrentUI();
-		updateForecastUI();
+		updateCityUI(parseCityInfo());
+		updateCurrentUI(parseCurrentWeather());
+		updateForecastUI(parseForecastWeather());
 	}
 
-	private void updateCityUI() {
-		TextView textView = (TextView) findViewById(R.id.city_name);
+	private void updateCityUI(CityInfo cityInfo) {
+		TextView textView = (TextView) findViewById(R.id.dialog_city_name);
 		if (cityInfo.getName() != null) {
 			textView.setText(cityInfo.getName());
 		}
@@ -198,10 +212,10 @@ public class MainActivity extends Activity {
 
 	}
 
-	private void updateCurrentUI() {
-
+	private void updateCurrentUI(WeatherInfo currentWeather) {
 		TextView textView = (TextView) findViewById(R.id.current_temperature);
-		textView.setText(String.valueOf(currentWeather.getTemperature()) + "\u00b0" + "C");
+		String temperatureString = String.valueOf(currentWeather.getTemperature()) + "\u00b0" + "C";
+		textView.setText(temperatureString);
 
 		textView = (TextView) findViewById(R.id.current_main);
 		if (currentWeather.getWeatherMain() != null) {
@@ -210,7 +224,7 @@ public class MainActivity extends Activity {
 
 	}
 
-	private void updateForecastUI() {
+	private void updateForecastUI(LongSparseArray<WeatherInfo> forecastWeather) {
 		for (int i = 0; i < forecastWeather.size(); i++) {
 			long date = forecastWeather.keyAt(i);
 			WeatherInfo forecast = forecastWeather.get(date);
@@ -218,12 +232,14 @@ public class MainActivity extends Activity {
 			if (forecast != null) {
 				TextView textView = (TextView) findViewById(
 						getResources().getIdentifier("forecast_date_" + i, "id", getPackageName()));
-				textView.setText(DateFormat.format("MM-dd", date * 1000).toString());
+				String dateString = DateFormat.format("MM-dd", date * 1000).toString();
+				textView.setText(dateString);
 
 				textView = (TextView) findViewById(
 						getResources().getIdentifier("forecast_temperature_" + i, "id", getPackageName()));
-				textView.setText(String.valueOf(forecast.getTemperatureMin()) + "\u00B0" + "/"
-						+ String.valueOf(forecast.getTemperatureMax()) + "\u00B0");
+				String temperatureString = String.valueOf(forecast.getTemperatureMin()) + "\u00B0" + "/" + 
+						String.valueOf(forecast.getTemperatureMax()) + "\u00B0";
+				textView.setText(temperatureString);
 
 				textView = (TextView) findViewById(
 						getResources().getIdentifier("forecast_main_" + i, "id", getPackageName()));

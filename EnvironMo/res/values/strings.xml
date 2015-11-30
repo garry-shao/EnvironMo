@@ -14,5 +14,8 @@
     <string name="setting_city_title">Enter City: </string>
     <string name="setting_city_button">DONE</string>
     <string name="temperature_format">\u00b0C</string>
+    <string name="dialog_title">Enter City Name: </string>
+    <string name="dialog_positive_button">Done</string>
+    <string name="dialog_negative_button">Cancel</string>
 
 </resources>
