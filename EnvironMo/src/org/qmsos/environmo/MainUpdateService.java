@@ -38,6 +38,8 @@ public class MainUpdateService extends IntentService {
 	public static final String QUERY_CITY = "org.qmsos.environmo.QUERY_CITY";
 	public static final String QUERY_WEATHER = "org.qmsos.environmo.QUERY_WEATHER";
 
+	public static final String CITY_NAME = "org.qmsos.environmo.CITY_NAME";
+	
 	private static final String CITY_ID = "org.qmsos.environmo.CITY_ID";
 	
 	private static final int CURRENT_KEY = 6;
@@ -66,7 +68,7 @@ public class MainUpdateService extends IntentService {
 	protected void onHandleIntent(Intent intent) {
 
 		if (intent.getBooleanExtra(QUERY_CITY, false)) {
-			String cityname = intent.getStringExtra(SelectActivity.CITY_NAME);
+			String cityname = intent.getStringExtra(CITY_NAME);
 			queryCity(cityname);
 			
 			PendingIntent reply = intent.getParcelableExtra(EXTRA_PENDING_RESULT);
@@ -90,37 +92,7 @@ public class MainUpdateService extends IntentService {
 		}
 	}
 
-	/**
-	 * Query openweathermap.com getting results as JSON strings.
-	 * 
-	 * @param queryRequest
-	 *            The formed string that will submit to server.
-	 * @return the query result as JSON.
-	 * @throws IOException
-	 *             something happened with I/O during query.
-	 */
-	protected static String queryAsJSON(String queryRequest) throws IOException {
-		StringBuilder builder = new StringBuilder();
-
-		URL url = new URL(queryRequest);
-		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-		int response = connection.getResponseCode();
-		if (response == HttpURLConnection.HTTP_OK) {
-			InputStream in = connection.getInputStream();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-
-			String line;
-			while ((line = reader.readLine()) != null) {
-				builder.append(line);
-			}
-		} else {
-			throw new RuntimeException("Query failed!!!");
-		}
-
-		return builder.toString();
-	}
-
-	public void queryCity(String request) {
+	private void queryCity(String request) {
 		String result = queryForCityId(request);
 		int cityId = checkForCityId(result);
 		storeCityId(cityId);
@@ -174,7 +146,7 @@ public class MainUpdateService extends IntentService {
 		}
 	}
 
-	public void queryWeather() {
+	private void queryWeather() {
 		SparseArray<String> requests = assembleRequests();
 		SparseArray<String> results = queryForResults(requests);
 		storeResults(results);

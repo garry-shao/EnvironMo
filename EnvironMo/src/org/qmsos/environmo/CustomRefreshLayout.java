@@ -5,16 +5,16 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.AttributeSet;
 import android.widget.ScrollView;
 
-public class EnvironRefreshLayout extends SwipeRefreshLayout {
+public class CustomRefreshLayout extends SwipeRefreshLayout {
 
 	private ScrollView scrollView = null;
 	
-	public EnvironRefreshLayout(Context context, AttributeSet attrs) {
+	public CustomRefreshLayout(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
 
 
-	public EnvironRefreshLayout(Context context) {
+	public CustomRefreshLayout(Context context) {
 		super(context);
 	}
 

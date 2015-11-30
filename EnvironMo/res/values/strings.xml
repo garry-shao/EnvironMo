@@ -11,11 +11,8 @@
     <string name="weather_wind_speed">Speed: </string>
     <string name="weather_wind_direction">Direction: </string>
     <string name="update_button">UPDATE</string>
-    <string name="setting_city_title">Enter City: </string>
-    <string name="setting_city_button">DONE</string>
     <string name="temperature_format">\u00b0C</string>
     <string name="dialog_title">Enter City Name: </string>
-    <string name="dialog_positive_button">Done</string>
-    <string name="dialog_negative_button">Cancel</string>
+    <string name="dialog_hint">No WhiteSpace!!!</string>
 
 </resources>

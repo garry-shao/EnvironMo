@@ -3,6 +3,7 @@ package org.qmsos.environmo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.qmsos.environmo.CitySelectDialog.CitySelectListener;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -24,16 +25,16 @@ import android.widget.TextView;
  * @author EnvironMo
  * 
  */
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements CitySelectListener {
 
-	private EnvironRefreshLayout swipeRefresh;
+	private CustomRefreshLayout swipeRefresh;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		swipeRefresh = (EnvironRefreshLayout) findViewById(R.id.swipe_refresh);
+		swipeRefresh = (CustomRefreshLayout) findViewById(R.id.swipe_refresh);
 		ScrollView scrollView = (ScrollView) findViewById(R.id.scroll_view);
 		swipeRefresh.setScrollView(scrollView);
 		swipeRefresh.setOnRefreshListener(new OnRefreshListener() {
@@ -56,20 +57,39 @@ public class MainActivity extends Activity {
 	}
 
 	@Override
+	protected void onResume() {
+		super.onResume();
+		
+		updateContent();
+	}
+
+	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 
 		updateUI();
 	}
 
+	@Override
+	public void onFinishCitySelectDialog(String cityName) {
+		PendingIntent pendingResult = createPendingResult(0, new Intent(), 0);
+	
+		Intent intent = new Intent(getApplicationContext(), MainUpdateService.class);
+		intent.putExtra(MainUpdateService.EXTRA_PENDING_RESULT, pendingResult);
+		intent.putExtra(MainUpdateService.CITY_NAME, cityName);
+		intent.putExtra(MainUpdateService.QUERY_CITY, true);
+	
+		startService(intent);
+	}
+
 	public void settingCity(View view) {
-		startActivity(new Intent(getApplicationContext(), SelectActivity.class));
-		
+		CitySelectDialog citySelectDialog = new CitySelectDialog();
+		citySelectDialog.show(getFragmentManager(), "select");
 	}
 
 	private void updateContent() {
 		PendingIntent pendingResult = createPendingResult(0, new Intent(), 0);
-		
+
 		Intent intent = new Intent(getApplicationContext(), MainUpdateService.class);
 		intent.putExtra(MainUpdateService.EXTRA_PENDING_RESULT, pendingResult);
 		intent.putExtra(MainUpdateService.QUERY_WEATHER, true);
@@ -79,7 +99,7 @@ public class MainActivity extends Activity {
 
 	private CityInfo parseCityInfo() {
 		CityInfo cityInfo = new CityInfo(0, null, null, 0, 0);
-		
+
 		try {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
@@ -100,13 +120,13 @@ public class MainActivity extends Activity {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		
+
 		return cityInfo;
 	}
-	
+
 	private WeatherInfo parseCurrentWeather() {
 		WeatherInfo currentWeather = new WeatherInfo(null, null);
-		
+
 		try {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
@@ -119,19 +139,19 @@ public class MainActivity extends Activity {
 
 			JSONObject main = reader.getJSONObject("main");
 			int temperature = main.getInt("temp");
-//			int pressure = main.getInt("pressure");
-//			int humidity = main.getInt("humidity");
+			// int pressure = main.getInt("pressure");
+			// int humidity = main.getInt("humidity");
 
-//			JSONObject wind = reader.getJSONObject("wind");
-//			int windSpeed = wind.getInt("speed");
-//			int windDirection = wind.getInt("deg");
+			// JSONObject wind = reader.getJSONObject("wind");
+			// int windSpeed = wind.getInt("speed");
+			// int windDirection = wind.getInt("deg");
 
 			currentWeather = new WeatherInfo(weatherMain, weatherDescription);
 			currentWeather.setTemperature(temperature);
-//			currentWeather.setPressure(pressure);
-//			currentWeather.setHumidity(humidity);
-//			currentWeather.setWindSpeed(windSpeed);
-//			currentWeather.setWindDirection(windDirection);
+			// currentWeather.setPressure(pressure);
+			// currentWeather.setHumidity(humidity);
+			// currentWeather.setWindSpeed(windSpeed);
+			// currentWeather.setWindDirection(windDirection);
 
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -162,19 +182,19 @@ public class MainActivity extends Activity {
 				int temperatureMin = temp.getInt("min");
 				int temperatureMax = temp.getInt("max");
 
-//				int pressure = forecast.getInt("pressure");
-//				int humidity = forecast.getInt("humidity");
+				// int pressure = forecast.getInt("pressure");
+				// int humidity = forecast.getInt("humidity");
 
-//				int windSpeed = forecast.getInt("speed");
-//				int windDirection = forecast.getInt("deg");
+				// int windSpeed = forecast.getInt("speed");
+				// int windDirection = forecast.getInt("deg");
 
 				WeatherInfo weatherInfo = new WeatherInfo(weatherMain, weatherDescription);
 				weatherInfo.setTemperatureMin(temperatureMin);
 				weatherInfo.setTemperatureMax(temperatureMax);
-//				weatherInfo.setPressure(pressure);
-//				weatherInfo.setHumidity(humidity);
-//				weatherInfo.setWindSpeed(windSpeed);
-//				weatherInfo.setWindDirection(windDirection);
+				// weatherInfo.setPressure(pressure);
+				// weatherInfo.setHumidity(humidity);
+				// weatherInfo.setWindSpeed(windSpeed);
+				// weatherInfo.setWindDirection(windDirection);
 
 				forecastWeather.put(date, weatherInfo);
 			}
@@ -237,8 +257,8 @@ public class MainActivity extends Activity {
 
 				textView = (TextView) findViewById(
 						getResources().getIdentifier("forecast_temperature_" + i, "id", getPackageName()));
-				String temperatureString = String.valueOf(forecast.getTemperatureMin()) + "\u00B0" + "/" + 
-						String.valueOf(forecast.getTemperatureMax()) + "\u00B0";
+				String temperatureString = String.valueOf(forecast.getTemperatureMin()) + "\u00B0" + "/"
+						+ String.valueOf(forecast.getTemperatureMax()) + "\u00B0";
 				textView.setText(temperatureString);
 
 				textView = (TextView) findViewById(
