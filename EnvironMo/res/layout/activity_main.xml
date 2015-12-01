@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <org.qmsos.environmo.CustomRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/swipe_refresh"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
@@ -87,94 +88,109 @@
             </LinearLayout>
         </ScrollView>
 
-        <TableLayout
+        <android.support.v7.widget.GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:padding="3dp"
-            android:stretchColumns="*" >
+            android:background="#70000000"
+            app:columnCount="4" >
 
-            <TableRow>
+            <TextView
+                android:id="@+id/forecast_main_0"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_columnWeight="1"
+                android:gravity="center"
+                android:text="@string/placeholder" />
 
-                <TextView
-                    android:id="@+id/forecast_main_0"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_span="2"
-                    android:text="@string/placeholder" />
+            <TextView
+                android:id="@+id/forecast_main_1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_columnWeight="1"
+                android:gravity="center"
+                android:text="@string/placeholder" />
 
-                <TextView
-                    android:id="@+id/forecast_main_1"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_span="2"
-                    android:text="@string/placeholder" />
+            <TextView
+                android:id="@+id/forecast_main_2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_columnWeight="1"
+                android:gravity="center"
+                android:text="@string/placeholder" />
 
-                <TextView
-                    android:id="@+id/forecast_main_2"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_span="2"
-                    android:text="@string/placeholder" />
+            <TextView
+                android:id="@+id/forecast_main_3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_columnWeight="1"
+                android:gravity="center"
+                android:text="@string/placeholder" />
 
-                <TextView
-                    android:id="@+id/forecast_main_3"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_span="2"
-                    android:text="@string/placeholder" />
-            </TableRow>
+            <TextView
+                android:id="@+id/forecast_temperature_0"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_columnWeight="1"
+                android:gravity="center"
+                android:text="@string/placeholder" />
 
-            <TableRow>
+            <TextView
+                android:id="@+id/forecast_temperature_1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_columnWeight="1"
+                android:gravity="center"
+                android:text="@string/placeholder" />
 
-                <TextView
-                    android:id="@+id/forecast_temperature_0"
-                    android:layout_gravity="center"
-                    android:layout_span="2"
-                    android:text="@string/placeholder" />
+            <TextView
+                android:id="@+id/forecast_temperature_2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_columnWeight="1"
+                android:gravity="center"
+                android:text="@string/placeholder" />
 
-                <TextView
-                    android:id="@+id/forecast_temperature_1"
-                    android:layout_gravity="center"
-                    android:layout_span="2"
-                    android:text="@string/placeholder" />
+            <TextView
+                android:id="@+id/forecast_temperature_3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_columnWeight="1"
+                android:gravity="center"
+                android:text="@string/placeholder" />
 
-                <TextView
-                    android:id="@+id/forecast_temperature_2"
-                    android:layout_gravity="center"
-                    android:layout_span="2"
-                    android:text="@string/placeholder" />
+            <TextView
+                android:id="@+id/forecast_date_0"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_columnWeight="1"
+                android:gravity="center"
+                android:text="@string/placeholder" />
 
-                <TextView
-                    android:id="@+id/forecast_temperature_3"
-                    android:layout_gravity="center"
-                    android:layout_span="2"
-                    android:text="@string/placeholder" />
-            </TableRow>
+            <TextView
+                android:id="@+id/forecast_date_1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_columnWeight="1"
+                android:gravity="center"
+                android:text="@string/placeholder" />
 
-            <TableRow>
+            <TextView
+                android:id="@+id/forecast_date_2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_columnWeight="1"
+                android:gravity="center"
+                android:text="@string/placeholder" />
 
-                <TextView
-                    android:id="@+id/forecast_date_0"
-                    android:layout_gravity="center"
-                    android:layout_span="2"
-                    android:text="@string/placeholder" />
-
-                <TextView
-                    android:id="@+id/forecast_date_1"
-                    android:layout_gravity="center"
-                    android:layout_span="2"
-                    android:text="@string/placeholder" />
-
-                <TextView
-                    android:id="@+id/forecast_date_2"
-                    android:layout_gravity="center"
-                    android:layout_span="2"
-                    android:text="@string/placeholder" />
-
-                <TextView
-                    android:id="@+id/forecast_date_3"
-                    android:layout_gravity="center"
-                    android:layout_span="2"
-                    android:text="@string/placeholder" />
-            </TableRow>
-        </TableLayout>
+            <TextView
+                android:id="@+id/forecast_date_3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_columnWeight="1"
+                android:gravity="center"
+                android:text="@string/placeholder" />
+        </android.support.v7.widget.GridLayout>
     </FrameLayout>
 
 </org.qmsos.environmo.CustomRefreshLayout>
