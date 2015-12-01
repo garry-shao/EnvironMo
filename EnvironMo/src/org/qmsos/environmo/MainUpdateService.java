@@ -18,6 +18,12 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.SparseArray;
 
+/**
+ * Update weather info and city info in background.
+ * 
+ * @author environmo(at)sina.com
+ *
+ */
 public class MainUpdateService extends IntentService {
 
 	/**
@@ -31,7 +37,7 @@ public class MainUpdateService extends IntentService {
 	// private static final String API_KEY = "b2794078a6804a588f58950bffd10151";
 
 	public static final String EXTRA_PENDING_RESULT = "pending_result";
-	
+
 	public static final String CURRENT_RESULT = "org.qmsos.environmo.CURRENT_RESULT";
 	public static final String FORECAST_RESULT = "org.qmsos.environmo.FORECAST_RESULT";
 
@@ -39,12 +45,24 @@ public class MainUpdateService extends IntentService {
 	public static final String QUERY_WEATHER = "org.qmsos.environmo.QUERY_WEATHER";
 
 	public static final String CITY_NAME = "org.qmsos.environmo.CITY_NAME";
-	
+
+	/**
+	 * Key to stored city ID in preferences.
+	 */
 	private static final String CITY_ID = "org.qmsos.environmo.CITY_ID";
-	
+
+	/**
+	 * Key to current related weather query.
+	 */
 	private static final int CURRENT_KEY = 6;
+	/**
+	 * Key to forecast related weather query.
+	 */
 	private static final int FORECAST_KEY = 7;
 
+	/**
+	 * Days to forecast.
+	 */
 	private static String DAY_COUNT = "4";
 
 	/**
@@ -70,7 +88,7 @@ public class MainUpdateService extends IntentService {
 		if (intent.getBooleanExtra(QUERY_CITY, false)) {
 			String cityname = intent.getStringExtra(CITY_NAME);
 			queryCity(cityname);
-			
+
 			PendingIntent reply = intent.getParcelableExtra(EXTRA_PENDING_RESULT);
 			try {
 				reply.send();
@@ -81,7 +99,7 @@ public class MainUpdateService extends IntentService {
 
 		if (intent.getBooleanExtra(QUERY_WEATHER, false)) {
 
-			queryWeather();
+			queryWeathers();
 
 			PendingIntent reply = intent.getParcelableExtra(EXTRA_PENDING_RESULT);
 			try {
@@ -92,12 +110,25 @@ public class MainUpdateService extends IntentService {
 		}
 	}
 
+	/**
+	 * Query for city ID with the city name.
+	 * 
+	 * @param request
+	 *            The city name to query.
+	 */
 	private void queryCity(String request) {
 		String result = queryForCityId(request);
 		int cityId = checkForCityId(result);
 		storeCityId(cityId);
 	}
 
+	/**
+	 * Query remote server for result with the city name.
+	 * 
+	 * @param cityName
+	 *            The city name to query.
+	 * @return The result of city name query.
+	 */
 	private String queryForCityId(String cityName) {
 		String request = "http://api.openweathermap.org/data/2.5/" + "weather?" + "q=" + cityName + "&units=" + "metric"
 				+ "&appid=" + MainUpdateService.API_KEY;
@@ -112,6 +143,13 @@ public class MainUpdateService extends IntentService {
 		return result;
 	}
 
+	/**
+	 * Check to see if the result contains a valid city ID.
+	 * 
+	 * @param result
+	 *            The result string of this city ID query.
+	 * @return the city ID contained in the result or ERROR(-1);
+	 */
 	private int checkForCityId(String result) {
 		final int ERROR = -1;
 
@@ -136,6 +174,12 @@ public class MainUpdateService extends IntentService {
 		}
 	}
 
+	/**
+	 * Store city ID in the preferences.
+	 * 
+	 * @param cityId
+	 *            The city ID to store.
+	 */
 	private void storeCityId(int cityId) {
 		if (cityId > 0) {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -146,56 +190,55 @@ public class MainUpdateService extends IntentService {
 		}
 	}
 
-	private void queryWeather() {
+	/**
+	 * Query for current & forecast weathers.
+	 */
+	private void queryWeathers() {
 		SparseArray<String> requests = assembleRequests();
-		SparseArray<String> results = queryForResults(requests);
-		storeResults(results);
+		SparseArray<String> results = queryForWeathers(requests);
+		storeWeathers(results);
 	}
 
-	private SparseArray<String> assembleRequests() {
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+	/**
+	 * Query weather with requests for results.
+	 * 
+	 * @param weatherRequests
+	 *            The weather requests.
+	 * @return The weather results.
+	 */
+	private SparseArray<String> queryForWeathers(SparseArray<String> weatherRequests) {
+		SparseArray<String> weatherResults = new SparseArray<String>();
 
-		int cityId = prefs.getInt(CITY_ID, 2037355);
+		String currentWeatherRequest = weatherRequests.get(CURRENT_KEY);
+		String forecastWeatherRequest = weatherRequests.get(FORECAST_KEY);
 
-		String currentRequest = "http://api.openweathermap.org/data/2.5/" + "weather?" + "id=" + String.valueOf(cityId)
-				+ "&units=" + "metric" + "&appid=" + API_KEY;
-
-		String forecastRequest = "http://api.openweathermap.org/data/2.5/" + "forecast/daily?" + "id="
-				+ String.valueOf(cityId) + "&cnt=" + DAY_COUNT + "&units=" + "metric" + "&appid=" + API_KEY;
-
-		SparseArray<String> requests = new SparseArray<String>();
-		requests.put(CURRENT_KEY, currentRequest);
-		requests.put(FORECAST_KEY, forecastRequest);
-
-		return requests;
-	}
-
-	private SparseArray<String> queryForResults(SparseArray<String> requests) {
-		SparseArray<String> results = new SparseArray<String>();
-
-		String currentRequest = requests.get(CURRENT_KEY);
-		String forecastRequest = requests.get(FORECAST_KEY);
-
-		String currentResult = null;
-		String forecastResult = null;
+		String currentWeatherResult = null;
+		String forecastWeatherResult = null;
 		try {
-			currentResult = query(currentRequest);
-			forecastResult = query(forecastRequest);
+			currentWeatherResult = query(currentWeatherRequest);
+			forecastWeatherResult = query(forecastWeatherRequest);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		results.put(CURRENT_KEY, currentResult);
-		results.put(FORECAST_KEY, forecastResult);
+		weatherResults.put(CURRENT_KEY, currentWeatherResult);
+		weatherResults.put(FORECAST_KEY, forecastWeatherResult);
 
-		return results;
+		return weatherResults;
 	}
 
-	private boolean checkResults(SparseArray<String> results) {
-		String currentResult = results.get(CURRENT_KEY);
-		if (currentResult != null) {
+	/**
+	 * Check to see if the weather results are valid.
+	 * 
+	 * @param weatherResults
+	 *            The weather results to verify.
+	 * @return True if all the weather results are valid.
+	 */
+	private boolean checkWeathers(SparseArray<String> weatherResults) {
+		String currentWeatherResult = weatherResults.get(CURRENT_KEY);
+		if (currentWeatherResult != null) {
 			try {
-				JSONObject reader = new JSONObject(currentResult);
+				JSONObject reader = new JSONObject(currentWeatherResult);
 				if (reader.getInt("id") > 0) {
 					return true;
 				} else {
@@ -211,20 +254,58 @@ public class MainUpdateService extends IntentService {
 		}
 	}
 
-	private void storeResults(SparseArray<String> results) {
-		if (checkResults(results)) {
+	/**
+	 * Store weather results in the preferences.
+	 * 
+	 * @param weatherResults
+	 *            The queried weather results to store.
+	 */
+	private void storeWeathers(SparseArray<String> weatherResults) {
+		if (checkWeathers(weatherResults)) {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 			SharedPreferences.Editor editor = prefs.edit();
 
-			String currentResult = results.get(CURRENT_KEY);
-			String forecastResult = results.get(FORECAST_KEY);
+			String currentWeatherResult = weatherResults.get(CURRENT_KEY);
+			String forecastWeatherResult = weatherResults.get(FORECAST_KEY);
 
-			editor.putString(CURRENT_RESULT, currentResult);
-			editor.putString(FORECAST_RESULT, forecastResult);
+			editor.putString(CURRENT_RESULT, currentWeatherResult);
+			editor.putString(FORECAST_RESULT, forecastWeatherResult);
 			editor.apply();
 		}
 	}
 
+	/**
+	 * Assemble weather request URLs as strings from preferences.
+	 * 
+	 * @return The assembled weather request URLs.
+	 */
+	private SparseArray<String> assembleRequests() {
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+		int cityId = prefs.getInt(CITY_ID, 2037355);
+
+		String currentWeatherRequest = "http://api.openweathermap.org/data/2.5/" + "weather?" + "id=" + String.valueOf(cityId)
+				+ "&units=" + "metric" + "&appid=" + API_KEY;
+
+		String forecastWeatherRequest = "http://api.openweathermap.org/data/2.5/" + "forecast/daily?" + "id="
+				+ String.valueOf(cityId) + "&cnt=" + DAY_COUNT + "&units=" + "metric" + "&appid=" + API_KEY;
+
+		SparseArray<String> weatherRequests = new SparseArray<String>();
+		weatherRequests.put(CURRENT_KEY, currentWeatherRequest);
+		weatherRequests.put(FORECAST_KEY, forecastWeatherRequest);
+
+		return weatherRequests;
+	}
+
+	/**
+	 * Query remote server for specific request.
+	 * 
+	 * @param request
+	 *            The request URL as string.
+	 * @return Result of this query.
+	 * @throws IOException
+	 *             Something wrong happened during query action.
+	 */
 	private String query(String request) throws IOException {
 		StringBuilder builder = new StringBuilder();
 
