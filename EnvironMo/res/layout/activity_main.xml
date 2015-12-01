@@ -75,10 +75,10 @@
                         android:layout_gravity="center_vertical"
                         android:gravity="center"
                         android:text="@string/placeholder"
-                        android:textSize="96sp" />
+                        android:textSize="128sp" />
 
                     <TextView
-                        android:id="@+id/current_main"
+                        android:id="@+id/current_description"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
@@ -92,7 +92,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:background="#70000000"
+            android:background="#30000000"
             app:columnCount="4" >
 
             <TextView

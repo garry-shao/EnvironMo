@@ -57,13 +57,6 @@ public class MainActivity extends Activity implements CitySelectListener {
 	}
 
 	@Override
-	protected void onResume() {
-		super.onResume();
-		
-		updateContent();
-	}
-
-	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 
@@ -124,7 +117,7 @@ public class MainActivity extends Activity implements CitySelectListener {
 		return cityInfo;
 	}
 
-	private WeatherInfo parseCurrentWeather() {
+	private WeatherInfo parseCurrentSimple() {
 		WeatherInfo currentWeather = new WeatherInfo(null, null);
 
 		try {
@@ -139,28 +132,65 @@ public class MainActivity extends Activity implements CitySelectListener {
 
 			JSONObject main = reader.getJSONObject("main");
 			int temperature = main.getInt("temp");
-			// int pressure = main.getInt("pressure");
-			// int humidity = main.getInt("humidity");
-
-			// JSONObject wind = reader.getJSONObject("wind");
-			// int windSpeed = wind.getInt("speed");
-			// int windDirection = wind.getInt("deg");
 
 			currentWeather = new WeatherInfo(weatherMain, weatherDescription);
 			currentWeather.setTemperature(temperature);
-			// currentWeather.setPressure(pressure);
-			// currentWeather.setHumidity(humidity);
-			// currentWeather.setWindSpeed(windSpeed);
-			// currentWeather.setWindDirection(windDirection);
-
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 
 		return currentWeather;
 	}
+	
+	private WeatherInfo parseCurrentComplex() {
+		WeatherInfo currentWeather = new WeatherInfo(null, null);
+		
+		try {
+			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+			
+			String currentWeatherResults = prefs.getString(MainUpdateService.CURRENT_RESULT, "null");
+			JSONObject reader = new JSONObject(currentWeatherResults);
+			
+			JSONArray weather = reader.getJSONArray("weather");
+			String weatherMain = weather.getJSONObject(0).getString("main");
+			String weatherDescription = weather.getJSONObject(0).getString("description");
+			
+			JSONObject main = reader.getJSONObject("main");
+			int temperature = main.getInt("temp");
+			int pressure = main.getInt("pressure");
+			int humidity = main.getInt("humidity");
+			
+			int visibility = reader.getInt("visibility");
+			
+			JSONObject wind = reader.getJSONObject("wind");
+			int windSpeed = wind.getInt("speed");
+			int windDirection = wind.getInt("deg");
+			
+			JSONObject clouds = reader.getJSONObject("clouds");
+			int cloudiness = clouds.getInt("all");
+			
+			JSONObject sys = reader.getJSONObject("sys");
+			long sunrise = sys.getLong("sunrise");
+			long sunset =sys.getLong("sunset");
+			
+			currentWeather = new WeatherInfo(weatherMain, weatherDescription);
+			currentWeather.setTemperature(temperature);
+			currentWeather.setPressure(pressure);
+			currentWeather.setHumidity(humidity);
+			currentWeather.setVisibility(visibility);
+			currentWeather.setWindSpeed(windSpeed);
+			currentWeather.setWindDirection(windDirection);
+			currentWeather.setCloudiness(cloudiness);
+			currentWeather.setSunrise(sunrise);
+			currentWeather.setSunset(sunset);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+		return currentWeather;
+	}
 
-	private LongSparseArray<WeatherInfo> parseForecastWeather() {
+	private LongSparseArray<WeatherInfo> parseForecastSimple() {
 		LongSparseArray<WeatherInfo> forecastWeather = new LongSparseArray<WeatherInfo>();
 		try {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -182,19 +212,9 @@ public class MainActivity extends Activity implements CitySelectListener {
 				int temperatureMin = temp.getInt("min");
 				int temperatureMax = temp.getInt("max");
 
-				// int pressure = forecast.getInt("pressure");
-				// int humidity = forecast.getInt("humidity");
-
-				// int windSpeed = forecast.getInt("speed");
-				// int windDirection = forecast.getInt("deg");
-
 				WeatherInfo weatherInfo = new WeatherInfo(weatherMain, weatherDescription);
 				weatherInfo.setTemperatureMin(temperatureMin);
 				weatherInfo.setTemperatureMax(temperatureMax);
-				// weatherInfo.setPressure(pressure);
-				// weatherInfo.setHumidity(humidity);
-				// weatherInfo.setWindSpeed(windSpeed);
-				// weatherInfo.setWindDirection(windDirection);
 
 				forecastWeather.put(date, weatherInfo);
 			}
@@ -204,11 +224,59 @@ public class MainActivity extends Activity implements CitySelectListener {
 
 		return forecastWeather;
 	}
+	
+	private LongSparseArray<WeatherInfo> parseForecastComplex() {
+		LongSparseArray<WeatherInfo> forecastWeather = new LongSparseArray<WeatherInfo>();
+		try {
+			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+			
+			String forecastWeatherResults = prefs.getString(MainUpdateService.FORECAST_RESULT, "null");
+			JSONObject reader = new JSONObject(forecastWeatherResults);
+			
+			JSONArray list = reader.getJSONArray("list");
+			for (int i = 0; i < list.length(); i++) {
+				JSONObject forecast = list.getJSONObject(i);
+				
+				long date = forecast.getLong("dt");
+				
+				JSONArray weather = forecast.getJSONArray("weather");
+				String weatherMain = weather.getJSONObject(0).getString("main");
+				String weatherDescription = weather.getJSONObject(0).getString("description");
+				
+				JSONObject temp = forecast.getJSONObject("temp");
+				int temperatureMin = temp.getInt("min");
+				int temperatureMax = temp.getInt("max");
+				
+				int pressure = forecast.getInt("pressure");
+				int humidity = forecast.getInt("humidity");
+				
+				int windSpeed = forecast.getInt("speed");
+				int windDirection = forecast.getInt("deg");
+				
+				int cloudiness = forecast.getInt("clouds");
+				
+				WeatherInfo weatherInfo = new WeatherInfo(weatherMain, weatherDescription);
+				weatherInfo.setTemperatureMin(temperatureMin);
+				weatherInfo.setTemperatureMax(temperatureMax);
+				weatherInfo.setPressure(pressure);
+				weatherInfo.setHumidity(humidity);
+				weatherInfo.setWindSpeed(windSpeed);
+				weatherInfo.setWindDirection(windDirection);
+				weatherInfo.setCloudiness(cloudiness);
+				
+				forecastWeather.put(date, weatherInfo);
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+		return forecastWeather;
+	}
 
 	private void updateUI() {
 		updateCityUI(parseCityInfo());
-		updateCurrentUI(parseCurrentWeather());
-		updateForecastUI(parseForecastWeather());
+		updateCurrentUI(parseCurrentSimple());
+		updateForecastUI(parseForecastSimple());
 	}
 
 	private void updateCityUI(CityInfo cityInfo) {
@@ -234,16 +302,50 @@ public class MainActivity extends Activity implements CitySelectListener {
 
 	private void updateCurrentUI(WeatherInfo currentWeather) {
 		TextView textView = (TextView) findViewById(R.id.current_temperature);
-		String temperatureString = String.valueOf(currentWeather.getTemperature()) + "\u00b0" + "C";
+		String temperatureString = String.valueOf(currentWeather.getTemperature()) + "\u00b0";
 		textView.setText(temperatureString);
 
-		textView = (TextView) findViewById(R.id.current_main);
-		if (currentWeather.getWeatherMain() != null) {
-			textView.setText(currentWeather.getWeatherMain());
+		textView = (TextView) findViewById(R.id.current_description);
+		String weatherDescription = currentWeather.getWeatherDescription();
+		if (weatherDescription != null) {
+			textView.setText(weatherDescription);
 		}
 
 	}
 
+	private void updateCurrentUIComplex(WeatherInfo currentWeather) {
+		updateCurrentUI(currentWeather);
+		
+		TextView textView = (TextView) findViewById(R.id.current_wind_speed);
+		textView.setText(String.valueOf(currentWeather.getWindSpeed()) + "m/s");
+		
+		textView = (TextView) findViewById(R.id.current_wind_direction);
+		textView.setText(String.valueOf(currentWeather.getWindDirection()) + "\u00b0");
+		
+		textView = (TextView) findViewById(R.id.current_pressure);
+		textView.setText(String.valueOf(currentWeather.getPressure()) + "hPa");
+
+		textView = (TextView) findViewById(R.id.current_humidity);
+		textView.setText(String.valueOf(currentWeather.getHumidity()) + "%");
+
+		textView = (TextView) findViewById(R.id.current_humidity);
+		textView.setText(String.valueOf(currentWeather.getHumidity()) + "%");
+
+		textView = (TextView) findViewById(R.id.current_visibility);
+		textView.setText(String.valueOf(currentWeather.getVisibility() / 1000) + "km");
+		
+		textView = (TextView) findViewById(R.id.current_cloudiness);
+		textView.setText(String.valueOf(currentWeather.getCloudiness()) + "%");
+
+		textView = (TextView) findViewById(R.id.current_sunrise);
+		String timeString = DateFormat.format("HH:mm", currentWeather.getSunrise() * 1000).toString();
+		textView.setText(timeString);
+
+		textView = (TextView) findViewById(R.id.current_sunset);
+		timeString = DateFormat.format("HH:mm", currentWeather.getSunset() * 1000).toString();
+		textView.setText(timeString);
+	}
+	
 	private void updateForecastUI(LongSparseArray<WeatherInfo> forecastWeather) {
 		for (int i = 0; i < forecastWeather.size(); i++) {
 			long date = forecastWeather.keyAt(i);

@@ -12,8 +12,15 @@ class WeatherInfo {
 	private int pressure;
 	private int humidity;
 	
+	private int visibility;
+	
 	private int windSpeed;
 	private int windDirection;
+	
+	private int cloudiness;
+	
+	private long sunrise;
+	private long sunset;
 	
 	public WeatherInfo(String weatherMain, String weatherDescription) {
 		this.weatherMain = weatherMain;
@@ -68,6 +75,14 @@ class WeatherInfo {
 		this.humidity = humidity;
 	}
 
+	public int getVisibility() {
+		return visibility;
+	}
+
+	public void setVisibility(int visibility) {
+		this.visibility = visibility;
+	}
+
 	public int getWindSpeed() {
 		return windSpeed;
 	}
@@ -82,6 +97,30 @@ class WeatherInfo {
 
 	public void setWindDirection(int windDirection) {
 		this.windDirection = windDirection;
+	}
+
+	public int getCloudiness() {
+		return cloudiness;
+	}
+
+	public void setCloudiness(int cloudiness) {
+		this.cloudiness = cloudiness;
+	}
+
+	public long getSunrise() {
+		return sunrise;
+	}
+
+	public void setSunrise(long sunrise) {
+		this.sunrise = sunrise;
+	}
+
+	public long getSunset() {
+		return sunset;
+	}
+
+	public void setSunset(long sunset) {
+		this.sunset = sunset;
 	}
 	
 }
