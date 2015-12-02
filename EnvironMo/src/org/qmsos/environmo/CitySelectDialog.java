@@ -46,7 +46,7 @@ public class CitySelectDialog extends DialogFragment implements OnEditorActionLi
 		cityNameEditText.setFilters(new InputFilter[] { noWhitespaceFilter });
 		cityNameEditText.requestFocus();
 		
-		getDialog().setTitle(R.string.dialog_title);
+		getDialog().setTitle(R.string.dialog_city_select_title);
 		getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
 
         return view;

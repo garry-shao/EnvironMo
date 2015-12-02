@@ -2,17 +2,17 @@
 
     <string name="app_name">EnvironMo</string>
     <string name="placeholder">null</string>
-    <string name="title_current">Current</string>
-    <string name="title_forecast">Forecast</string>
-    <string name="city_sunrise">Sunrise: </string>
-    <string name="city_sunset">Sunset: </string>
     <string name="weather_pressure">Pressure: </string>
     <string name="weather_humidity">Humidity: </string>
+    <string name="weather_visibility">Visibility: </string>
+    <string name="weather_cloudiness">Cloudiness: </string>
     <string name="weather_wind_speed">Speed: </string>
     <string name="weather_wind_direction">Direction: </string>
-    <string name="update_button">UPDATE</string>
+    <string name="weather_sunrise">Sunrise: </string>
+    <string name="weather_sunset">Sunset: </string>
+    <string name="dialog_city_select_title">Enter City Name: </string>
+    <string name="dialog_city_select_hint">No WhiteSpace!!!</string>
+    <string name="dialog_weather_plus_title">Weather Plus Info</string>
     <string name="temperature_format">\u00b0C</string>
-    <string name="dialog_title">Enter City Name: </string>
-    <string name="dialog_hint">No WhiteSpace!!!</string>
 
 </resources>

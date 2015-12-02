@@ -77,7 +77,13 @@ public class MainActivity extends Activity implements CitySelectListener {
 
 	public void settingCity(View view) {
 		CitySelectDialog citySelectDialog = new CitySelectDialog();
-		citySelectDialog.show(getFragmentManager(), "select");
+		citySelectDialog.show(getFragmentManager(), "selectCity");
+	}
+	
+	public void showWeatherPlus(View view) {
+		WeatherPlusDialog weatherPlusDialog = new WeatherPlusDialog();
+		
+		weatherPlusDialog.show(getFragmentManager(), "weatherPlus");
 	}
 
 	private void updateContent() {
@@ -142,54 +148,6 @@ public class MainActivity extends Activity implements CitySelectListener {
 		return currentWeather;
 	}
 	
-	private WeatherInfo parseCurrentComplex() {
-		WeatherInfo currentWeather = new WeatherInfo(null, null);
-		
-		try {
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-			
-			String currentWeatherResults = prefs.getString(MainUpdateService.CURRENT_RESULT, "null");
-			JSONObject reader = new JSONObject(currentWeatherResults);
-			
-			JSONArray weather = reader.getJSONArray("weather");
-			String weatherMain = weather.getJSONObject(0).getString("main");
-			String weatherDescription = weather.getJSONObject(0).getString("description");
-			
-			JSONObject main = reader.getJSONObject("main");
-			int temperature = main.getInt("temp");
-			int pressure = main.getInt("pressure");
-			int humidity = main.getInt("humidity");
-			
-			int visibility = reader.getInt("visibility");
-			
-			JSONObject wind = reader.getJSONObject("wind");
-			int windSpeed = wind.getInt("speed");
-			int windDirection = wind.getInt("deg");
-			
-			JSONObject clouds = reader.getJSONObject("clouds");
-			int cloudiness = clouds.getInt("all");
-			
-			JSONObject sys = reader.getJSONObject("sys");
-			long sunrise = sys.getLong("sunrise");
-			long sunset =sys.getLong("sunset");
-			
-			currentWeather = new WeatherInfo(weatherMain, weatherDescription);
-			currentWeather.setTemperature(temperature);
-			currentWeather.setPressure(pressure);
-			currentWeather.setHumidity(humidity);
-			currentWeather.setVisibility(visibility);
-			currentWeather.setWindSpeed(windSpeed);
-			currentWeather.setWindDirection(windDirection);
-			currentWeather.setCloudiness(cloudiness);
-			currentWeather.setSunrise(sunrise);
-			currentWeather.setSunset(sunset);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		
-		return currentWeather;
-	}
-
 	private LongSparseArray<WeatherInfo> parseForecastSimple() {
 		LongSparseArray<WeatherInfo> forecastWeather = new LongSparseArray<WeatherInfo>();
 		try {
@@ -313,39 +271,6 @@ public class MainActivity extends Activity implements CitySelectListener {
 
 	}
 
-	private void updateCurrentUIComplex(WeatherInfo currentWeather) {
-		updateCurrentUI(currentWeather);
-		
-		TextView textView = (TextView) findViewById(R.id.current_wind_speed);
-		textView.setText(String.valueOf(currentWeather.getWindSpeed()) + "m/s");
-		
-		textView = (TextView) findViewById(R.id.current_wind_direction);
-		textView.setText(String.valueOf(currentWeather.getWindDirection()) + "\u00b0");
-		
-		textView = (TextView) findViewById(R.id.current_pressure);
-		textView.setText(String.valueOf(currentWeather.getPressure()) + "hPa");
-
-		textView = (TextView) findViewById(R.id.current_humidity);
-		textView.setText(String.valueOf(currentWeather.getHumidity()) + "%");
-
-		textView = (TextView) findViewById(R.id.current_humidity);
-		textView.setText(String.valueOf(currentWeather.getHumidity()) + "%");
-
-		textView = (TextView) findViewById(R.id.current_visibility);
-		textView.setText(String.valueOf(currentWeather.getVisibility() / 1000) + "km");
-		
-		textView = (TextView) findViewById(R.id.current_cloudiness);
-		textView.setText(String.valueOf(currentWeather.getCloudiness()) + "%");
-
-		textView = (TextView) findViewById(R.id.current_sunrise);
-		String timeString = DateFormat.format("HH:mm", currentWeather.getSunrise() * 1000).toString();
-		textView.setText(timeString);
-
-		textView = (TextView) findViewById(R.id.current_sunset);
-		timeString = DateFormat.format("HH:mm", currentWeather.getSunset() * 1000).toString();
-		textView.setText(timeString);
-	}
-	
 	private void updateForecastUI(LongSparseArray<WeatherInfo> forecastWeather) {
 		for (int i = 0; i < forecastWeather.size(); i++) {
 			long date = forecastWeather.keyAt(i);
