@@ -1,6 +1,6 @@
 package org.qmsos.environmo;
 
-class WeatherInfo {
+class Weather {
 	
 	private final String weatherMain;
 	private final String weatherDescription;
@@ -22,7 +22,7 @@ class WeatherInfo {
 	private long sunrise;
 	private long sunset;
 	
-	public WeatherInfo(String weatherMain, String weatherDescription) {
+	public Weather(String weatherMain, String weatherDescription) {
 		this.weatherMain = weatherMain;
 		this.weatherDescription = weatherDescription;
 	}

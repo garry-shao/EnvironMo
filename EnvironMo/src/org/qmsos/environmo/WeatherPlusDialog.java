@@ -31,8 +31,8 @@ public class WeatherPlusDialog extends DialogFragment {
 		return view;
 	}
 
-	private WeatherInfo parseWeatherPlus() {
-		WeatherInfo currentWeather = new WeatherInfo(null, null);
+	private Weather parseWeatherPlus() {
+		Weather currentWeather = new Weather(null, null);
 		
 		try {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
@@ -62,7 +62,7 @@ public class WeatherPlusDialog extends DialogFragment {
 			long sunrise = sys.getLong("sunrise");
 			long sunset =sys.getLong("sunset");
 			
-			currentWeather = new WeatherInfo(weatherMain, weatherDescription);
+			currentWeather = new Weather(weatherMain, weatherDescription);
 			currentWeather.setTemperature(temperature);
 			currentWeather.setPressure(pressure);
 			currentWeather.setHumidity(humidity);
@@ -79,7 +79,7 @@ public class WeatherPlusDialog extends DialogFragment {
 		return currentWeather;
 	}
 	
-	private void updateWeatherPlus(View view, WeatherInfo currentWeather) {
+	private void updateWeatherPlus(View view, Weather currentWeather) {
 		TextView textView = (TextView) view.findViewById(R.id.current_wind_speed);
 		textView.setText(String.valueOf(currentWeather.getWindSpeed()) + "m/s");
 		

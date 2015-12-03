@@ -1,6 +1,6 @@
 package org.qmsos.environmo;
 
-class CityInfo {
+class City {
 
 	private final int id;
 	private final String name;
@@ -8,7 +8,7 @@ class CityInfo {
 	private final double longitude;
 	private final double latitude;
 
-	public CityInfo(int id, String name, String country, double longitude, double latitude) {
+	public City(int id, String name, String country, double longitude, double latitude) {
 		this.id = id;
 		this.name = name;
 		this.country = country;

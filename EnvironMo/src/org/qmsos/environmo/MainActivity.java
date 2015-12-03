@@ -96,8 +96,8 @@ public class MainActivity extends Activity implements CitySelectListener {
 		startService(intent);
 	}
 
-	private CityInfo parseCityInfo() {
-		CityInfo cityInfo = new CityInfo(0, null, null, 0, 0);
+	private City parseCity() {
+		City city = new City(0, null, null, 0, 0);
 
 		try {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -115,16 +115,16 @@ public class MainActivity extends Activity implements CitySelectListener {
 			double longitude = coord.getDouble("lon");
 			double latitude = coord.getDouble("lat");
 
-			cityInfo = new CityInfo(id, name, country, longitude, latitude);
+			city = new City(id, name, country, longitude, latitude);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 
-		return cityInfo;
+		return city;
 	}
 
-	private WeatherInfo parseCurrentSimple() {
-		WeatherInfo currentWeather = new WeatherInfo(null, null);
+	private Weather parseCurrentSimple() {
+		Weather currentWeather = new Weather(null, null);
 
 		try {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -139,7 +139,7 @@ public class MainActivity extends Activity implements CitySelectListener {
 			JSONObject main = reader.getJSONObject("main");
 			int temperature = main.getInt("temp");
 
-			currentWeather = new WeatherInfo(weatherMain, weatherDescription);
+			currentWeather = new Weather(weatherMain, weatherDescription);
 			currentWeather.setTemperature(temperature);
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -148,8 +148,8 @@ public class MainActivity extends Activity implements CitySelectListener {
 		return currentWeather;
 	}
 	
-	private LongSparseArray<WeatherInfo> parseForecastSimple() {
-		LongSparseArray<WeatherInfo> forecastWeather = new LongSparseArray<WeatherInfo>();
+	private LongSparseArray<Weather> parseForecastSimple() {
+		LongSparseArray<Weather> forecastWeather = new LongSparseArray<Weather>();
 		try {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
@@ -170,7 +170,7 @@ public class MainActivity extends Activity implements CitySelectListener {
 				int temperatureMin = temp.getInt("min");
 				int temperatureMax = temp.getInt("max");
 
-				WeatherInfo weatherInfo = new WeatherInfo(weatherMain, weatherDescription);
+				Weather weatherInfo = new Weather(weatherMain, weatherDescription);
 				weatherInfo.setTemperatureMin(temperatureMin);
 				weatherInfo.setTemperatureMax(temperatureMax);
 
@@ -183,82 +183,33 @@ public class MainActivity extends Activity implements CitySelectListener {
 		return forecastWeather;
 	}
 	
-	private LongSparseArray<WeatherInfo> parseForecastComplex() {
-		LongSparseArray<WeatherInfo> forecastWeather = new LongSparseArray<WeatherInfo>();
-		try {
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-			
-			String forecastWeatherResults = prefs.getString(MainUpdateService.FORECAST_RESULT, "null");
-			JSONObject reader = new JSONObject(forecastWeatherResults);
-			
-			JSONArray list = reader.getJSONArray("list");
-			for (int i = 0; i < list.length(); i++) {
-				JSONObject forecast = list.getJSONObject(i);
-				
-				long date = forecast.getLong("dt");
-				
-				JSONArray weather = forecast.getJSONArray("weather");
-				String weatherMain = weather.getJSONObject(0).getString("main");
-				String weatherDescription = weather.getJSONObject(0).getString("description");
-				
-				JSONObject temp = forecast.getJSONObject("temp");
-				int temperatureMin = temp.getInt("min");
-				int temperatureMax = temp.getInt("max");
-				
-				int pressure = forecast.getInt("pressure");
-				int humidity = forecast.getInt("humidity");
-				
-				int windSpeed = forecast.getInt("speed");
-				int windDirection = forecast.getInt("deg");
-				
-				int cloudiness = forecast.getInt("clouds");
-				
-				WeatherInfo weatherInfo = new WeatherInfo(weatherMain, weatherDescription);
-				weatherInfo.setTemperatureMin(temperatureMin);
-				weatherInfo.setTemperatureMax(temperatureMax);
-				weatherInfo.setPressure(pressure);
-				weatherInfo.setHumidity(humidity);
-				weatherInfo.setWindSpeed(windSpeed);
-				weatherInfo.setWindDirection(windDirection);
-				weatherInfo.setCloudiness(cloudiness);
-				
-				forecastWeather.put(date, weatherInfo);
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		
-		return forecastWeather;
-	}
-
 	private void updateUI() {
-		updateCityUI(parseCityInfo());
+		updateCityUI(parseCity());
 		updateCurrentUI(parseCurrentSimple());
 		updateForecastUI(parseForecastSimple());
 	}
 
-	private void updateCityUI(CityInfo cityInfo) {
+	private void updateCityUI(City city) {
 		TextView textView = (TextView) findViewById(R.id.dialog_city_name);
-		if (cityInfo.getName() != null) {
-			textView.setText(cityInfo.getName());
+		if (city.getName() != null) {
+			textView.setText(city.getName());
 		}
 
 		textView = (TextView) findViewById(R.id.city_country);
-		if (cityInfo.getCountry() != null) {
-			textView.setText(cityInfo.getCountry());
+		if (city.getCountry() != null) {
+			textView.setText(city.getCountry());
 		}
 
 		textView = (TextView) findViewById(R.id.city_coordinates);
-		double latitude = cityInfo.getLatitude();
+		double latitude = city.getLatitude();
 		String latString = latitude > 0 ? String.valueOf(latitude) + "\u00B0N" : String.valueOf(latitude) + "\u00B0S";
-		double longitude = cityInfo.getLongitude();
+		double longitude = city.getLongitude();
 		String lonString = longitude > 0 ? String.valueOf(longitude) + "\u00B0E"
 				: String.valueOf(longitude) + "\u00B0W";
 		textView.setText(latString + "/" + lonString);
-
 	}
 
-	private void updateCurrentUI(WeatherInfo currentWeather) {
+	private void updateCurrentUI(Weather currentWeather) {
 		TextView textView = (TextView) findViewById(R.id.current_temperature);
 		String temperatureString = String.valueOf(currentWeather.getTemperature()) + "\u00b0";
 		textView.setText(temperatureString);
@@ -271,10 +222,10 @@ public class MainActivity extends Activity implements CitySelectListener {
 
 	}
 
-	private void updateForecastUI(LongSparseArray<WeatherInfo> forecastWeather) {
+	private void updateForecastUI(LongSparseArray<Weather> forecastWeather) {
 		for (int i = 0; i < forecastWeather.size(); i++) {
 			long date = forecastWeather.keyAt(i);
-			WeatherInfo forecast = forecastWeather.get(date);
+			Weather forecast = forecastWeather.get(date);
 
 			if (forecast != null) {
 				TextView textView = (TextView) findViewById(
