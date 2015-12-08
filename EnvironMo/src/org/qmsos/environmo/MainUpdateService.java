@@ -16,6 +16,7 @@ import android.app.PendingIntent.CanceledException;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.util.SparseArray;
 
 /**
@@ -26,6 +27,8 @@ import android.util.SparseArray;
  */
 public class MainUpdateService extends IntentService {
 
+	private static final String TAG = MainUpdateService.class.getSimpleName();
+	
 	/**
 	 * api_key from openweathermap.org
 	 */
@@ -321,7 +324,7 @@ public class MainUpdateService extends IntentService {
 				builder.append(line);
 			}
 		} else {
-			throw new RuntimeException("Query failed!!!");
+			Log.d(TAG, "Http connnection error! " + "responseCode = " + response);
 		}
 
 		return builder.toString();
