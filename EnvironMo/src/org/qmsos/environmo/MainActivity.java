@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import org.qmsos.environmo.CitySelectDialog.CitySelectListener;
 import org.qmsos.environmo.data.City;
 import org.qmsos.environmo.data.Weather;
+import org.qmsos.environmo.util.UtilRefreshLayout;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -19,7 +20,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
-import android.text.format.DateFormat;
 import android.util.LongSparseArray;
 import android.view.View;
 import android.widget.ScrollView;
@@ -33,14 +33,14 @@ import android.widget.TextView;
  */
 public class MainActivity extends Activity implements CitySelectListener {
 
-	private CustomRefreshLayout swipeRefresh;
+	private UtilRefreshLayout swipeRefresh;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		swipeRefresh = (CustomRefreshLayout) findViewById(R.id.swipe_refresh);
+		swipeRefresh = (UtilRefreshLayout) findViewById(R.id.swipe_refresh);
 		ScrollView scrollView = (ScrollView) findViewById(R.id.scroll_view);
 		swipeRefresh.setScrollView(scrollView);
 		swipeRefresh.setOnRefreshListener(new OnRefreshListener() {
@@ -220,32 +220,12 @@ public class MainActivity extends Activity implements CitySelectListener {
 			
 			SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd", Locale.US);
 			String date = dateFormat.format(c.getTime());
-			int i = c.get(Calendar.DAY_OF_WEEK);
-			switch (i) {
-			case 1:
-				date = date + " Sun";
-				break;
-			case 2:
-				date = date + " Mon";
-				break;
-			case 3:
-				date = date + " Tues";
-				break;
-			case 4:
-				date = date + " Wed";
-				break;
-			case 5:
-				date = date + " Thur";
-				break;
-			case 6:
-				date = date + " Fri";
-				break;
-			case 7:
-				date = date + " Sat";
-				break;
+			
+			String day = getDayOfWeek(time);
+			if (day != null) {
+				textView = (TextView) findViewById(R.id.current_date);
+				textView.setText(date + " " + day);
 			}
-			textView = (TextView) findViewById(R.id.current_date);
-			textView.setText(date);
 		}
 	}
 
@@ -257,8 +237,10 @@ public class MainActivity extends Activity implements CitySelectListener {
 			if (forecast != null) {
 				TextView textView = (TextView) findViewById(
 						getResources().getIdentifier("forecast_date_" + i, "id", getPackageName()));
-				String dateString = DateFormat.format("MM-dd", date * 1000).toString();
-				textView.setText(dateString);
+				String dateString = getDayOfWeek(date);
+				if (dateString != null) {
+					textView.setText(dateString);
+				}
 
 				textView = (TextView) findViewById(
 						getResources().getIdentifier("forecast_temperature_" + i, "id", getPackageName()));
@@ -274,6 +256,34 @@ public class MainActivity extends Activity implements CitySelectListener {
 						getResources().getIdentifier("forecast_main_" + i, "id", getPackageName()));
 				textView.setText(forecast.getWeatherMain());
 			}
+		}
+	}
+
+	private String getDayOfWeek(long time) {
+		if (time == 0) {
+			return null;
+		}
+		Calendar c = Calendar.getInstance();
+		c.setTimeInMillis(time * 1000);
+		
+		int i = c.get(Calendar.DAY_OF_WEEK);
+		switch (i) {
+		case 1:
+			return "Sun";
+		case 2:
+			return "Mon";
+		case 3:
+			return "Tues";
+		case 4:
+			return "Wed";
+		case 5:
+			return "Thur";
+		case 6:
+			return "Fri";
+		case 7:
+			return "Sat";
+		default:
+			return null;
 		}
 	}
 

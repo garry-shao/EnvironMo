@@ -1,20 +1,20 @@
-package org.qmsos.environmo;
+package org.qmsos.environmo.util;
 
 import android.content.Context;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.AttributeSet;
 import android.widget.ScrollView;
 
-public class CustomRefreshLayout extends SwipeRefreshLayout {
+public class UtilRefreshLayout extends SwipeRefreshLayout {
 
 	private ScrollView scrollView = null;
 	
-	public CustomRefreshLayout(Context context, AttributeSet attrs) {
+	public UtilRefreshLayout(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
 
 
-	public CustomRefreshLayout(Context context) {
+	public UtilRefreshLayout(Context context) {
 		super(context);
 	}
 
