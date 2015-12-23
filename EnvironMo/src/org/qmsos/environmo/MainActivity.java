@@ -196,12 +196,16 @@ public class MainActivity extends Activity implements CitySelectListener {
 
 	private void updateCityUI(City city) {
 		TextView textView = (TextView) findViewById(R.id.city_name);
-		if (city.getName() != null) {
+		if (city != null && city.getName() != null) {
 			textView.setText(city.getName());
 		}
 	}
 
 	private void updateCurrentUI(Weather currentWeather) {
+		if (currentWeather == null) {
+			return;
+		}
+		
 		TextView textView = (TextView) findViewById(R.id.current_temperature);
 		String temperatureString = String.valueOf(currentWeather.getTemperature());
 		textView.setText(temperatureString);
@@ -230,6 +234,10 @@ public class MainActivity extends Activity implements CitySelectListener {
 	}
 
 	private void updateForecastUI(LongSparseArray<Weather> forecastWeather) {
+		if (forecastWeather == null) {
+			return;
+		}
+		
 		for (int i = 0; i < forecastWeather.size(); i++) {
 			long date = forecastWeather.keyAt(i);
 			Weather forecast = forecastWeather.get(date);
