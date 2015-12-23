@@ -3,6 +3,7 @@ package org.qmsos.environmo;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.qmsos.environmo.data.Weather;
 
 import android.app.DialogFragment;
 import android.content.SharedPreferences;

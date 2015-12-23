@@ -1,6 +1,6 @@
-package org.qmsos.environmo;
+package org.qmsos.environmo.data;
 
-class Weather {
+public class Weather {
 	
 	private final String weatherMain;
 	private final String weatherDescription;
