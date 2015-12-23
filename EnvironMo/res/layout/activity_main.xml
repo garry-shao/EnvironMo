@@ -64,11 +64,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:background="#30000000"
+            android:background="@android:color/darker_gray"
             app:columnCount="4" >
 
             <TextView
-                android:id="@+id/forecast_main_0"
+                android:id="@+id/forecast_0"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_columnWeight="1"
@@ -76,7 +76,7 @@
                 android:text="@string/placeholder" />
 
             <TextView
-                android:id="@+id/forecast_main_1"
+                android:id="@+id/forecast_1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_columnWeight="1"
@@ -84,7 +84,7 @@
                 android:text="@string/placeholder" />
 
             <TextView
-                android:id="@+id/forecast_main_2"
+                android:id="@+id/forecast_2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_columnWeight="1"
@@ -92,69 +92,7 @@
                 android:text="@string/placeholder" />
 
             <TextView
-                android:id="@+id/forecast_main_3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_columnWeight="1"
-                android:gravity="center"
-                android:text="@string/placeholder" />
-            <TextView
-                android:id="@+id/forecast_date_0"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_columnWeight="1"
-                android:gravity="center"
-                android:text="@string/placeholder" />
-
-            <TextView
-                android:id="@+id/forecast_date_1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_columnWeight="1"
-                android:gravity="center"
-                android:text="@string/placeholder" />
-
-            <TextView
-                android:id="@+id/forecast_date_2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_columnWeight="1"
-                android:gravity="center"
-                android:text="@string/placeholder" />
-
-            <TextView
-                android:id="@+id/forecast_date_3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_columnWeight="1"
-                android:gravity="center"
-                android:text="@string/placeholder" />
-            <TextView
-                android:id="@+id/forecast_temperature_0"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_columnWeight="1"
-                android:gravity="center"
-                android:text="@string/placeholder" />
-
-            <TextView
-                android:id="@+id/forecast_temperature_1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_columnWeight="1"
-                android:gravity="center"
-                android:text="@string/placeholder" />
-
-            <TextView
-                android:id="@+id/forecast_temperature_2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_columnWeight="1"
-                android:gravity="center"
-                android:text="@string/placeholder" />
-
-            <TextView
-                android:id="@+id/forecast_temperature_3"
+                android:id="@+id/forecast_3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_columnWeight="1"

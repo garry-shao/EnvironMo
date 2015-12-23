@@ -236,25 +236,20 @@ public class MainActivity extends Activity implements CitySelectListener {
 
 			if (forecast != null) {
 				TextView textView = (TextView) findViewById(
-						getResources().getIdentifier("forecast_date_" + i, "id", getPackageName()));
-				String dateString = getDayOfWeek(date);
-				if (dateString != null) {
-					textView.setText(dateString);
-				}
+						getResources().getIdentifier("forecast_" + i, "id", getPackageName()));
 
-				textView = (TextView) findViewById(
-						getResources().getIdentifier("forecast_temperature_" + i, "id", getPackageName()));
+				String mainString = forecast.getWeatherMain();
 				String temperatureString = String.valueOf(forecast.getTemperatureMin()) + "~"
 						+ String.valueOf(forecast.getTemperatureMax()) + "\u00B0" + "C";
-				textView.setText(temperatureString);
+				String dateString = getDayOfWeek(date);
+				if (dateString != null) {
+					textView.setText(mainString + "\n" + dateString + "\n" + temperatureString);
+				}
+				
 				if (i == 0) {
 					textView = (TextView) findViewById(R.id.current_day_temperature);
 					textView.setText(temperatureString);
 				}
-
-				textView = (TextView) findViewById(
-						getResources().getIdentifier("forecast_main_" + i, "id", getPackageName()));
-				textView.setText(forecast.getWeatherMain());
 			}
 		}
 	}
