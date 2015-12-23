@@ -41,7 +41,7 @@ public class CitySelectDialog extends DialogFragment implements OnEditorActionLi
 		};
 		
 		View view = inflater.inflate(R.layout.dialog_city_select, container);	
-		cityNameEditText = (EditText) view.findViewById(R.id.dialog_city_name);
+		cityNameEditText = (EditText) view.findViewById(R.id.city_name);
 		cityNameEditText.setOnEditorActionListener(this);
 		cityNameEditText.setFilters(new InputFilter[] { noWhitespaceFilter });
 		cityNameEditText.requestFocus();

@@ -13,6 +13,6 @@
     <string name="dialog_city_select_title">Enter City Name: </string>
     <string name="dialog_city_select_hint">No WhiteSpace!!!</string>
     <string name="dialog_weather_plus_title">Weather Plus Info</string>
-    <string name="temperature_format">\u00b0C</string>
+    <string name="temperature_format">\u00b0</string>
 
 </resources>
