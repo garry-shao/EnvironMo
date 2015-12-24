@@ -1,51 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_gravity="start"
-    android:layout_marginStart="16dp"
-    android:onClick="showWeatherPlus"
-    app:columnCount="2"
-    app:rowCount="3" >
+    android:orientation="vertical" >
+
+    <android.support.v7.widget.GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:layout_marginStart="16dp"
+        app:columnCount="2"
+        app:rowCount="3" >
+
+        <TextView
+            android:id="@+id/current_temperature"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_column="0"
+            app:layout_row="0"
+            android:text="@string/placeholder"
+            android:textSize="120sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_column="1"
+            app:layout_columnWeight="1"
+            app:layout_row="0"
+            android:text="@string/temperature_format"
+            android:textSize="120sp" />
+
+        <TextView
+            android:id="@+id/current_main"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_column="1"
+            app:layout_columnWeight="1"
+            app:layout_row="1"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/placeholder"
+            android:textSize="24sp" />
+
+        <TextView
+            android:id="@+id/current_day_temperature"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_column="0"
+            app:layout_row="2"
+            android:text="@string/placeholder"
+            android:textSize="24sp" />
+    </android.support.v7.widget.GridLayout>
+
+    <View
+        android:layout_width="150dp"
+        android:layout_height="2dp"
+        android:layout_marginStart="16dp"
+        android:background="@android:color/darker_gray" />
 
     <TextView
-        android:id="@+id/current_temperature"
+        android:id="@+id/current_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_column="0"
-        app:layout_row="0"
-        android:text="@string/placeholder"
-        android:textSize="120sp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_column="1"
-        app:layout_columnWeight="1"
-        app:layout_row="0"
-        android:text="@string/temperature_format"
-        android:textSize="120sp" />
-
-    <TextView
-        android:id="@+id/current_main"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_column="1"
-        app:layout_columnWeight="1"
-        app:layout_row="1"
-        android:ellipsize="end"
-        android:singleLine="true"
+        android:layout_marginStart="16dp"
         android:text="@string/placeholder"
         android:textSize="24sp" />
-
-    <TextView
-        android:id="@+id/current_day_temperature"
+	<TextView
+        android:id="@+id/city_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_column="0"
-        app:layout_row="2"
+        android:layout_marginStart="16dp"
         android:text="@string/placeholder"
         android:textSize="24sp" />
-
-</android.support.v7.widget.GridLayout>
+        
+</LinearLayout>

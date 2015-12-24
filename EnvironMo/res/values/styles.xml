@@ -17,7 +17,7 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
 
-    <style name="AppCompatTheme" parent="Theme.AppCompat.NoActionBar">
+    <style name="AppCompatTheme" parent="Theme.AppCompat.Light.NoActionBar">
     </style>
 
 </resources>

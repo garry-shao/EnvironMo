@@ -14,5 +14,7 @@
     <string name="dialog_city_select_hint">No WhiteSpace!!!</string>
     <string name="dialog_weather_plus_title">Weather Plus Info</string>
     <string name="temperature_format">\u00b0</string>
+    <string name="activity_city_name">Cityname</string>
+    <string name="button_import">Import Database</string>
 
 </resources>

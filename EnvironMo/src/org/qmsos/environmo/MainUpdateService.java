@@ -5,19 +5,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.qmsos.environmo.data.City;
+import org.qmsos.environmo.util.UtilResultReceiver;
 
 import android.app.IntentService;
-import android.app.PendingIntent;
-import android.app.PendingIntent.CanceledException;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import android.database.Cursor;
+import android.os.Bundle;
+import android.os.ResultReceiver;
 import android.util.Log;
-import android.util.SparseArray;
 
 /**
  * Update weather info and city info in background.
@@ -32,47 +35,38 @@ public class MainUpdateService extends IntentService {
 	/**
 	 * api_key from openweathermap.org
 	 */
-	protected static final String API_KEY = "2de143494c0b295cca9337e1e96b00e0";
+	private static final String API_KEY = "2de143494c0b295cca9337e1e96b00e0";
 
 	// api_key from openweathermap.com
 	// private static final String API_KEY = "054dcbb7bea48220bc5d30d5fc53932e";
 	// api_key from forecast.io
 	// private static final String API_KEY = "b2794078a6804a588f58950bffd10151";
 
-	public static final String EXTRA_PENDING_RESULT = "pending_result";
-
-	public static final String CURRENT_RESULT = "org.qmsos.environmo.CURRENT_RESULT";
-	public static final String FORECAST_RESULT = "org.qmsos.environmo.FORECAST_RESULT";
-
-	public static final String QUERY_CITY = "org.qmsos.environmo.QUERY_CITY";
-	public static final String QUERY_WEATHER = "org.qmsos.environmo.QUERY_WEATHER";
-
-	public static final String CITY_NAME = "org.qmsos.environmo.CITY_NAME";
-
-	/**
-	 * Key to stored city ID in preferences.
-	 */
-	private static final String CITY_ID = "org.qmsos.environmo.CITY_ID";
-
-	/**
-	 * Key to current related weather query.
-	 */
-	private static final int CURRENT_KEY = 6;
-	/**
-	 * Key to forecast related weather query.
-	 */
-	private static final int FORECAST_KEY = 7;
-
 	/**
 	 * Days to forecast.
 	 */
-	private static String DAY_COUNT = "4";
+	private static final String DAY_COUNT = "4";
 
+	private static final int FLAG_CURRENT = 1;
+	private static final int FLAG_FORECAST = 2;
+
+	public static final String ACTION_REFRESH = "org.qmsos.environmo.ACTION_REFRESH";
+	public static final String ACTION_QUERY_CITY = "org.qmsos.environmo.ACTION_QUERY_CITY";
+	public static final String ACTION_IMPORT_CITY = "org.qmsos.environmo.ACTION_IMPORT_CITY";
+	public static final String ACTION_CITY_ADDED = "org.qmsos.environmo.ACTION_CITY_ADDED";
+	
+	public static final String BUNDLE_KEY_CURRENT = "BUNDLE_KEY_CURRENT";
+	public static final String BUNDLE_KEY_FORECAST = "BUNDLE_KEY_FORECAST";
+	
+	public static final String EXTRA_KEY_CITY_NAME = "EXTRA_KEY_CITY_NAME";
+
+	public static final int RESULT_CODE_REFRESHED = 1;
+	
 	/**
 	 * Default empty constructor.
 	 */
 	public MainUpdateService() {
-		super(MainUpdateService.class.getSimpleName());
+		super(TAG);
 	}
 
 	/**
@@ -87,217 +81,144 @@ public class MainUpdateService extends IntentService {
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-
-		if (intent.getBooleanExtra(QUERY_CITY, false)) {
-			String cityname = intent.getStringExtra(CITY_NAME);
-			queryCity(cityname);
-
-			PendingIntent reply = intent.getParcelableExtra(EXTRA_PENDING_RESULT);
-			try {
-				reply.send();
-			} catch (CanceledException e) {
-				e.printStackTrace();
-			}
-		}
-
-		if (intent.getBooleanExtra(QUERY_WEATHER, false)) {
-
-			queryWeathers();
-
-			PendingIntent reply = intent.getParcelableExtra(EXTRA_PENDING_RESULT);
-			try {
-				reply.send();
-			} catch (CanceledException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	/**
-	 * Query for city ID with the city name.
-	 * 
-	 * @param request
-	 *            The city name to query.
-	 */
-	private void queryCity(String request) {
-		String result = queryForCityId(request);
-		int cityId = checkForCityId(result);
-		storeCityId(cityId);
-	}
-
-	/**
-	 * Query remote server for result with the city name.
-	 * 
-	 * @param cityName
-	 *            The city name to query.
-	 * @return The result of city name query.
-	 */
-	private String queryForCityId(String cityName) {
-		String request = "http://api.openweathermap.org/data/2.5/" + "weather?" + "q=" + cityName + "&units=" + "metric"
-				+ "&appid=" + MainUpdateService.API_KEY;
-
-		String result = null;
-		try {
-			result = query(request);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return result;
-	}
-
-	/**
-	 * Check to see if the result contains a valid city ID.
-	 * 
-	 * @param result
-	 *            The result string of this city ID query.
-	 * @return the city ID contained in the result or ERROR(-1);
-	 */
-	private int checkForCityId(String result) {
-		final int ERROR = -1;
-
-		int cityId = ERROR;
-		if (result != null) {
-			JSONObject reader;
-			try {
-				reader = new JSONObject(result);
-				cityId = reader.getInt("id");
-				if (cityId > 0) {
-					return cityId;
-				} else {
-					return ERROR;
+		String action = intent.getAction();
+		if (action != null) {
+			if (action.equals(ACTION_REFRESH)) {
+				ResultReceiver receiver = intent.getParcelableExtra(UtilResultReceiver.RECEIVER);
+				if (receiver != null) {
+					queryWeathers(FLAG_CURRENT);
+					queryWeathers(FLAG_FORECAST);
+					
+					Bundle b = new Bundle();
+					receiver.send(RESULT_CODE_REFRESHED, b);
 				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-
-				return ERROR;
-			}
-		} else {
-			return ERROR;
-		}
-	}
-
-	/**
-	 * Store city ID in the preferences.
-	 * 
-	 * @param cityId
-	 *            The city ID to store.
-	 */
-	private void storeCityId(int cityId) {
-		if (cityId > 0) {
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-			SharedPreferences.Editor editor = prefs.edit();
-
-			editor.putInt(CITY_ID, cityId);
-			editor.apply();
-		}
-	}
-
-	/**
-	 * Query for current & forecast weathers.
-	 */
-	private void queryWeathers() {
-		SparseArray<String> requests = assembleRequests();
-		SparseArray<String> results = queryForWeathers(requests);
-		storeWeathers(results);
-	}
-
-	/**
-	 * Query weather with requests for results.
-	 * 
-	 * @param weatherRequests
-	 *            The weather requests.
-	 * @return The weather results.
-	 */
-	private SparseArray<String> queryForWeathers(SparseArray<String> weatherRequests) {
-		SparseArray<String> weatherResults = new SparseArray<String>();
-
-		String currentWeatherRequest = weatherRequests.get(CURRENT_KEY);
-		String forecastWeatherRequest = weatherRequests.get(FORECAST_KEY);
-
-		String currentWeatherResult = null;
-		String forecastWeatherResult = null;
-		try {
-			currentWeatherResult = query(currentWeatherRequest);
-			forecastWeatherResult = query(forecastWeatherRequest);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		weatherResults.put(CURRENT_KEY, currentWeatherResult);
-		weatherResults.put(FORECAST_KEY, forecastWeatherResult);
-
-		return weatherResults;
-	}
-
-	/**
-	 * Check to see if the weather results are valid.
-	 * 
-	 * @param weatherResults
-	 *            The weather results to verify.
-	 * @return True if all the weather results are valid.
-	 */
-	private boolean checkWeathers(SparseArray<String> weatherResults) {
-		String currentWeatherResult = weatherResults.get(CURRENT_KEY);
-		if (currentWeatherResult != null) {
-			try {
-				JSONObject reader = new JSONObject(currentWeatherResult);
-				if (reader.getInt("id") > 0) {
-					return true;
-				} else {
-					return false;
+			} else if (action.equals(ACTION_QUERY_CITY)) {
+				String cityname = intent.getStringExtra(EXTRA_KEY_CITY_NAME);
+				boolean result = queryCity(cityname);
+				if (result) {
+					Intent i = new Intent(ACTION_CITY_ADDED);
+					i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					startActivity(i);
 				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-
-				return false;
+			} else if (action.equals(ACTION_IMPORT_CITY)) {
+				readAssets();
 			}
-		} else {
-			return false;
 		}
 	}
 
-	/**
-	 * Store weather results in the preferences.
-	 * 
-	 * @param weatherResults
-	 *            The queried weather results to store.
-	 */
-	private void storeWeathers(SparseArray<String> weatherResults) {
-		if (checkWeathers(weatherResults)) {
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-			SharedPreferences.Editor editor = prefs.edit();
+	private boolean queryCity(String cityName) {
+		if (cityName != null) {
+			String request = "http://api.openweathermap.org/data/2.5/"
+					+ "weather?" + "q=" + cityName
+					+ "&units=" + "metric"
+					+ "&appid=" + MainUpdateService.API_KEY;
+			
+			String result = download(request);
+			if (result != null) {
+				City city = readCityFromQuery(result);
+				if (city != null) {
+					boolean flag =  addCityToProvider(city);
+					if (flag) {
+						queryWeathers(FLAG_CURRENT);
+						queryWeathers(FLAG_FORECAST);
+					}
+					
+					return flag;
+				}
+			}
+		}
 
-			String currentWeatherResult = weatherResults.get(CURRENT_KEY);
-			String forecastWeatherResult = weatherResults.get(FORECAST_KEY);
+		return false;
+	}
+	
+	private void queryWeathers(int flag) {
+		String[] projection = { CityProvider.KEY_ID, CityProvider.KEY_CITYID, CityProvider.KEY_NAME };
+		
+		ContentResolver resolver = getContentResolver();
+		String where = CityProvider.KEY_CITYID;
 
-			editor.putString(CURRENT_RESULT, currentWeatherResult);
-			editor.putString(FORECAST_RESULT, forecastWeatherResult);
-			editor.apply();
+		Cursor query = resolver.query(CityProvider.CONTENT_URI, projection, where, null, null);
+		if (query != null && query.getCount() != 0) {
+			while (query.moveToNext()) {
+				Long cityId = query.getLong(query.getColumnIndex(CityProvider.KEY_CITYID));
+				String result = queryWeather(cityId, flag);
+				updateWeatherToProvider(result, cityId, flag);
+			}
 		}
 	}
 
-	/**
-	 * Assemble weather request URLs as strings from preferences.
-	 * 
-	 * @return The assembled weather request URLs.
-	 */
-	private SparseArray<String> assembleRequests() {
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+	private void updateWeatherToProvider(String result, long cityId, int flag) {
+		ContentResolver resolver = getContentResolver();
+		String where = CityProvider.KEY_CITYID + " = " + cityId;
+		ContentValues values = new ContentValues();
+		
+		switch (flag) {
+		case FLAG_CURRENT:
+			values.put(CityProvider.KEY_CURRENT, result);
+			break;
+		case FLAG_FORECAST:
+			values.put(CityProvider.KEY_FORECAST, result);
+			break;
+		}
+		resolver.update(CityProvider.CONTENT_URI, values, where, null);
+	}
 
-		int cityId = prefs.getInt(CITY_ID, 2037355);
+	private String queryWeather(long cityId, int flag) {
+		String query = assembleQuery(cityId, flag);
+		if (query != null) {
+			return download(query);
+		}
+		
+		return null;
+	}
+	
+	private String assembleQuery(int flag) {
+		StringBuilder b = new StringBuilder("id=");
+		
+		ContentResolver resolver = getContentResolver();
+		
+		String[] projection = { CityProvider.KEY_CITYID };
+		String where = CityProvider.KEY_CITYID;
 
-		String currentWeatherRequest = "http://api.openweathermap.org/data/2.5/" + "weather?" + "id=" + String.valueOf(cityId)
-				+ "&units=" + "metric" + "&appid=" + API_KEY;
-
-		String forecastWeatherRequest = "http://api.openweathermap.org/data/2.5/" + "forecast/daily?" + "id="
-				+ String.valueOf(cityId) + "&cnt=" + DAY_COUNT + "&units=" + "metric" + "&appid=" + API_KEY;
-
-		SparseArray<String> weatherRequests = new SparseArray<String>();
-		weatherRequests.put(CURRENT_KEY, currentWeatherRequest);
-		weatherRequests.put(FORECAST_KEY, forecastWeatherRequest);
-
-		return weatherRequests;
+		Cursor query = resolver.query(CityProvider.CONTENT_URI, projection, where, null, null);
+		if (query != null && query.getCount() != 0) {
+			while (query.moveToNext()) {
+				Long cityId = query.getLong(query.getColumnIndex(CityProvider.KEY_CITYID));
+				b.append(cityId);
+			}
+		}
+		
+		switch (flag) {
+		case FLAG_CURRENT:
+			return "http://api.openweathermap.org/data/2.5/" 
+			+ "group?" + b.toString()
+			+ "&units=" + "metric"
+			+ "&appid=" + API_KEY;
+		default:
+			return null;
+		}
+	}
+	
+	private String assembleQuery(long cityId, int flag) {
+		if (cityId == 0) {
+			return null;
+		}
+		
+		switch (flag) {
+		case FLAG_CURRENT:
+			return "http://api.openweathermap.org/data/2.5/" 
+					+ "weather?" + "id=" + String.valueOf(cityId)
+					+ "&units=" + "metric"
+					+ "&appid=" + API_KEY;
+		case FLAG_FORECAST:
+			return "http://api.openweathermap.org/data/2.5/" 
+					+ "forecast/daily?" + "id="	+ String.valueOf(cityId) 
+					+ "&cnt=" + DAY_COUNT
+					+ "&units=" + "metric"
+					+ "&appid=" + API_KEY;
+		default:
+			return null;
+		}
 	}
 
 	/**
@@ -306,28 +227,128 @@ public class MainUpdateService extends IntentService {
 	 * @param request
 	 *            The request URL as string.
 	 * @return Result of this query.
-	 * @throws IOException
-	 *             Something wrong happened during query action.
 	 */
-	private String query(String request) throws IOException {
+	private String download(String request) {
 		StringBuilder builder = new StringBuilder();
 
-		URL url = new URL(request);
-		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-		int response = connection.getResponseCode();
-		if (response == HttpURLConnection.HTTP_OK) {
-			InputStream in = connection.getInputStream();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-
-			String line;
-			while ((line = reader.readLine()) != null) {
-				builder.append(line);
+		try {
+			URL url = new URL(request);
+			HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
+			try {
+				int responseCode = httpConnection.getResponseCode();
+				if (responseCode == HttpURLConnection.HTTP_OK) {
+					InputStream inStream = httpConnection.getInputStream();
+					BufferedReader reader = new BufferedReader(new InputStreamReader(inStream));
+					
+					String line;
+					while ((line = reader.readLine()) != null) {
+						builder.append(line);
+					}
+				}
+			} catch (IOException e) {
+				Log.e(TAG, "Error reading from the http connection");
+			} finally {
+				httpConnection.disconnect();
 			}
-		} else {
-			Log.d(TAG, "Http connnection error! " + "responseCode = " + response);
+		} catch (MalformedURLException e) {
+			Log.e(TAG, "Malformed URL");
+		} catch (IOException e) {
+			Log.e(TAG, "Error opening the http connection");
 		}
 
 		return builder.toString();
+	}
+
+	private void readAssets() {
+		try {
+			InputStream in = getAssets().open("city.list.json");
+			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+			while (reader.readLine() != null) {
+				City city = readCityFromAssets(reader.readLine());
+				if (city != null) {
+					boolean flag =  addCityToProvider(city);
+					if (flag) {
+						queryWeathers(FLAG_CURRENT);
+						queryWeathers(FLAG_FORECAST);
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private City readCityFromQuery(String query) {
+		if (query == null) {
+			return null;
+		}
+		
+		JSONObject reader;
+		try {
+			reader = new JSONObject(query);
+			long id = reader.getLong("id");
+			String name = reader.getString("name");
+			
+			JSONObject sys = reader.getJSONObject("sys");
+			String country = sys.getString("country");
+			
+			JSONObject coord = reader.getJSONObject("coord");
+			double longitude = coord.getDouble("lon");
+			double latitude = coord.getDouble("lat");
+			
+			return new City(id, name, country, longitude, latitude);
+		} catch (JSONException e) {
+			return null;
+		}
+	}
+	
+	private City readCityFromAssets(String line) {
+		if (line == null) {
+			return null;
+		}
+		
+		JSONObject reader;
+		try {
+			reader = new JSONObject(line);
+			long id = Long.parseLong(reader.getString("_id"));
+			String name = reader.getString("name");
+			String country = reader.getString("country");
+			
+			JSONObject coord = reader.getJSONObject("coord");
+			double longitude = coord.getDouble("lon");
+			double latitude = coord.getDouble("lat");
+			
+			return new City(id, name, country, longitude, latitude);
+		} catch (JSONException e) {
+			return null;
+		}
+	}
+
+	private boolean addCityToProvider(City city) {
+		boolean result = false;
+
+		if (city != null) {
+			ContentResolver resolver = getContentResolver();
+			String where = CityProvider.KEY_CITYID + " = " + city.getCityId();
+			Cursor query = resolver.query(CityProvider.CONTENT_URI, null, where, null, null);
+			if (query != null) {
+				if (query.getCount() == 0) {
+					ContentValues values = new ContentValues();
+					values.put(CityProvider.KEY_CITYID, city.getCityId());
+					values.put(CityProvider.KEY_NAME, city.getName());
+					values.put(CityProvider.KEY_COUNTRY, city.getCountry());
+					values.put(CityProvider.KEY_LONGITUDE, city.getLongitude());
+					values.put(CityProvider.KEY_LATITUDE, city.getLatitude());
+					resolver.insert(CityProvider.CONTENT_URI, values);
+					
+					result = true;
+				}
+			
+				query.close();
+			}
+		}
+		
+		return result;
 	}
 
 }

@@ -1,26 +1,28 @@
 package org.qmsos.environmo;
 
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Locale;
+import java.util.List;
+import java.util.TimeZone;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.qmsos.environmo.CitySelectDialog.CitySelectListener;
-import org.qmsos.environmo.data.City;
-import org.qmsos.environmo.data.Weather;
+import org.qmsos.environmo.util.UtilPagerAdapter;
 import org.qmsos.environmo.util.UtilRefreshLayout;
+import org.qmsos.environmo.util.UtilResultReceiver;
+import org.qmsos.environmo.util.UtilResultReceiver.Receiver;
 
-import android.app.Activity;
-import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
-import android.util.LongSparseArray;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -31,234 +33,192 @@ import android.widget.TextView;
  * @author EnvironMo
  * 
  */
-public class MainActivity extends Activity implements CitySelectListener {
+public class MainActivity extends AppCompatActivity 
+implements OnPageChangeListener, OnRefreshListener, Receiver {
 
-	private UtilRefreshLayout swipeRefresh;
+	private static final String KEY_RECEIVER = "KEY_RECEIVER";
+	
+	private static final String TAG = MainActivity.class.getSimpleName();
+	
+	private UtilResultReceiver receiver;
+	private UtilRefreshLayout refreshLayout;
+	
+	private List<Fragment> fragmentList;
+	private List<Long> cityList;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		swipeRefresh = (UtilRefreshLayout) findViewById(R.id.swipe_refresh);
+		if (savedInstanceState != null) {
+			receiver = savedInstanceState.getParcelable(KEY_RECEIVER);
+		} else {
+			receiver = new UtilResultReceiver(new Handler());
+		}
+
 		ScrollView scrollView = (ScrollView) findViewById(R.id.scroll_view);
-		swipeRefresh.setScrollView(scrollView);
-		swipeRefresh.setOnRefreshListener(new OnRefreshListener() {
+		refreshLayout = (UtilRefreshLayout) findViewById(R.id.swipe_refresh);
+		refreshLayout.setScrollView(scrollView);
+		refreshLayout.setOnRefreshListener(this);
+
+		fragmentList = new ArrayList<Fragment>();
+		cityList = new ArrayList<Long>();
+		
+		String[] projection = { CityProvider.KEY_ID, CityProvider.KEY_CITYID, CityProvider.KEY_NAME };
+		String where = CityProvider.KEY_CITYID;
+		Cursor query = getContentResolver().query(CityProvider.CONTENT_URI, projection, where, null, null);
+		if (query != null && query.getCount() != 0) {
+			while (query.moveToNext()) {
+				Long cityId = query.getLong(query.getColumnIndex(CityProvider.KEY_CITYID));
+				WeatherFragment fragment = WeatherFragment.newInstance(this, cityId);
+				fragmentList.add(fragment);
+				cityList.add(cityId);
+			}
+			
+			ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+			UtilPagerAdapter adapter = new UtilPagerAdapter(getSupportFragmentManager(), fragmentList);
+			viewPager.setAdapter(adapter);
+			viewPager.addOnPageChangeListener(this);
+
+			long cityId = cityList.get(viewPager.getCurrentItem());
+			updateCityName(cityId);
+			updateForecast(cityId);
+		} else {
+			Intent i = new Intent(this, CityActivity.class);
+			
+			startActivity(i);
+		}
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		
+		receiver.setReceiver(this);
+	}
+
+	@Override
+	protected void onPause() {
+		receiver.setReceiver(null);
+
+		super.onPause();
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		outState.putParcelable(KEY_RECEIVER, receiver);
+		
+		super.onSaveInstanceState(outState);
+	}
+
+	@Override
+	public void onRefresh() {
+		new Handler().postDelayed(new Runnable() {
 
 			@Override
-			public void onRefresh() {
-				new Handler().postDelayed(new Runnable() {
+			public void run() {
+				refreshLayout.setRefreshing(false);
 
-					@Override
-					public void run() {
-						swipeRefresh.setRefreshing(false);
-
-						updateContent();
-					}
-				}, 500);
+				Intent intent = new Intent(getBaseContext(), MainUpdateService.class);
+				intent.setAction(MainUpdateService.ACTION_REFRESH);
+				intent.putExtra(UtilResultReceiver.RECEIVER, receiver);
+				
+				startService(intent);
 			}
-		});
-
-		updateUI();
+		}, 500);		
 	}
 
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-
-		updateUI();
+	public void onReceiveResult(int resultCode, Bundle resultData) {
+		switch (resultCode) {
+		case MainUpdateService.RESULT_CODE_REFRESHED:
+//			TODO: update GUI
+		}
 	}
 
 	@Override
-	public void onFinishCitySelectDialog(String cityName) {
-		PendingIntent pendingResult = createPendingResult(0, new Intent(), 0);
-	
-		Intent intent = new Intent(getApplicationContext(), MainUpdateService.class);
-		intent.putExtra(MainUpdateService.EXTRA_PENDING_RESULT, pendingResult);
-		intent.putExtra(MainUpdateService.CITY_NAME, cityName);
-		intent.putExtra(MainUpdateService.QUERY_CITY, true);
-	
-		startService(intent);
+	public void onPageScrollStateChanged(int arg0) {
+	}
+
+	@Override
+	public void onPageScrolled(int arg0, float arg1, int arg2) {
+	}
+
+	@Override
+	public void onPageSelected(int arg0) {
+		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+		long cityId = cityList.get(viewPager.getCurrentItem());
+		updateCityName(cityId);
+		updateForecast(cityId);
 	}
 
 	public void settingCity(View view) {
-		CitySelectDialog citySelectDialog = new CitySelectDialog();
-		citySelectDialog.show(getFragmentManager(), "selectCity");
-	}
-	
-	public void showWeatherPlus(View view) {
-		WeatherPlusDialog weatherPlusDialog = new WeatherPlusDialog();
+		Intent i = new Intent(this, CityActivity.class);
 		
-		weatherPlusDialog.show(getFragmentManager(), "weatherPlus");
+		startActivity(i);
 	}
 
-	private void updateContent() {
-		PendingIntent pendingResult = createPendingResult(0, new Intent(), 0);
-
-		Intent intent = new Intent(getApplicationContext(), MainUpdateService.class);
-		intent.putExtra(MainUpdateService.EXTRA_PENDING_RESULT, pendingResult);
-		intent.putExtra(MainUpdateService.QUERY_WEATHER, true);
-
-		startService(intent);
-	}
-
-	private City parseCity() {
-		try {
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
-			String currentWeatherResuls = prefs.getString(MainUpdateService.CURRENT_RESULT, "null");
-			JSONObject reader = new JSONObject(currentWeatherResuls);
-
-			int id = reader.getInt("id");
-			String name = reader.getString("name");
-
-			JSONObject sys = reader.getJSONObject("sys");
-			String country = sys.getString("country");
-
-			JSONObject coord = reader.getJSONObject("coord");
-			double longitude = coord.getDouble("lon");
-			double latitude = coord.getDouble("lat");
-
-			return new City(id, name, country, longitude, latitude);
-		} catch (JSONException e) {
-			return null;
-		}
-	}
-
-	private Weather parseCurrentSimple() {
-		try {
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
-			String currentWeatherResults = prefs.getString(MainUpdateService.CURRENT_RESULT, "null");
-			JSONObject reader = new JSONObject(currentWeatherResults);
-			
-			long time = reader.getLong("dt");
-			SharedPreferences.Editor editor = prefs.edit();
-			editor.putLong("time", time);
-			editor.apply();
-
-			JSONArray weather = reader.getJSONArray("weather");
-			String weatherMain = weather.getJSONObject(0).getString("main");
-			String weatherDescription = weather.getJSONObject(0).getString("description");
-
-			JSONObject main = reader.getJSONObject("main");
-			int temperature = main.getInt("temp");
-
-			Weather currentWeather = new Weather(weatherMain, weatherDescription);
-			currentWeather.setTemperature(temperature);
-			
-			return currentWeather;
-		} catch (JSONException e) {
-			return null;
+	private void updateCityName(long cityId) {
+		if (cityId > 0) {
+			String[] projection = { CityProvider.KEY_CITYID, CityProvider.KEY_NAME };
+			String where = CityProvider.KEY_CITYID + " = " + cityId;
+			Cursor cursor = getContentResolver()
+					.query(CityProvider.CONTENT_URI, projection, where, null, null);
+			if (cursor != null && cursor.moveToFirst()) {
+				String name = cursor.getString(cursor.getColumnIndex(CityProvider.KEY_NAME));
+				TextView textView = (TextView) findViewById(R.id.city_name);
+				textView.setText(name);
+			}
+			cursor.close();
 		}
 	}
 	
-	private LongSparseArray<Weather> parseForecastSimple() {
-		LongSparseArray<Weather> forecastWeather = new LongSparseArray<Weather>();
+	private void updateForecast(long cityId) {
+		if (cityId > 0) {
+			String[] projection = { CityProvider.KEY_CITYID, CityProvider.KEY_FORECAST };
+			String where = CityProvider.KEY_CITYID + " = " + cityId;
+			Cursor cursor = getContentResolver()
+					.query(CityProvider.CONTENT_URI, projection, where, null, null);
+			if (cursor != null && cursor.moveToFirst()) {
+				String forecast = cursor.getString(cursor.getColumnIndex(CityProvider.KEY_FORECAST));
+				updateForecast(forecast);
+			}
+			cursor.close();
+		}
+	}
+	
+	private void updateForecast(String json) {
 		try {
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
-			String forecastWeatherResults = prefs.getString(MainUpdateService.FORECAST_RESULT, "null");
-			JSONObject reader = new JSONObject(forecastWeatherResults);
-
+			JSONObject reader = new JSONObject(json);
+	
 			JSONArray list = reader.getJSONArray("list");
 			for (int i = 0; i < list.length(); i++) {
 				JSONObject forecast = list.getJSONObject(i);
-
+				
 				long date = forecast.getLong("dt");
-
+				
 				JSONArray weather = forecast.getJSONArray("weather");
-				String weatherMain = weather.getJSONObject(0).getString("main");
-				String weatherDescription = weather.getJSONObject(0).getString("description");
-
+				String mainString = weather.getJSONObject(0).getString("main");
+				
 				JSONObject temp = forecast.getJSONObject("temp");
 				int temperatureMin = temp.getInt("min");
 				int temperatureMax = temp.getInt("max");
-
-				Weather weatherInfo = new Weather(weatherMain, weatherDescription);
-				weatherInfo.setTemperatureMin(temperatureMin);
-				weatherInfo.setTemperatureMax(temperatureMax);
-
-				forecastWeather.put(date, weatherInfo);
-			}
-		} catch (JSONException e) {
-			return null;
-		}
-
-		return forecastWeather;
-	}
 	
-	private void updateUI() {
-		updateCityUI(parseCity());
-		updateCurrentUI(parseCurrentSimple());
-		updateForecastUI(parseForecastSimple());
-	}
-
-	private void updateCityUI(City city) {
-		TextView textView = (TextView) findViewById(R.id.city_name);
-		if (city != null && city.getName() != null) {
-			textView.setText(city.getName());
-		}
-	}
-
-	private void updateCurrentUI(Weather currentWeather) {
-		if (currentWeather == null) {
-			return;
-		}
-		
-		TextView textView = (TextView) findViewById(R.id.current_temperature);
-		String temperatureString = String.valueOf(currentWeather.getTemperature());
-		textView.setText(temperatureString);
-
-		textView = (TextView) findViewById(R.id.current_main);
-		String weatherMain = currentWeather.getWeatherMain();
-		if (weatherMain != null) {
-			textView.setText(weatherMain);
-		}
-		
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-		long time = prefs.getLong("time", 0);
-		if (time != 0) {
-			Calendar c = Calendar.getInstance();
-			c.setTimeInMillis(time * 1000);
-			
-			SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd", Locale.US);
-			String date = dateFormat.format(c.getTime());
-			
-			String day = getDayOfWeek(time);
-			if (day != null) {
-				textView = (TextView) findViewById(R.id.current_date);
-				textView.setText(date + " " + day);
-			}
-		}
-	}
-
-	private void updateForecastUI(LongSparseArray<Weather> forecastWeather) {
-		if (forecastWeather == null) {
-			return;
-		}
-		
-		for (int i = 0; i < forecastWeather.size(); i++) {
-			long date = forecastWeather.keyAt(i);
-			Weather forecast = forecastWeather.get(date);
-
-			if (forecast != null) {
-				TextView textView = (TextView) findViewById(
-						getResources().getIdentifier("forecast_" + i, "id", getPackageName()));
-
-				String mainString = forecast.getWeatherMain();
-				String temperatureString = String.valueOf(forecast.getTemperatureMin()) + "~"
-						+ String.valueOf(forecast.getTemperatureMax()) + "\u00B0" + "C";
+				
+				String temperatureString = String.valueOf(temperatureMin) + "~"
+						+ String.valueOf(temperatureMax) + "\u00B0" + "C";
 				String dateString = getDayOfWeek(date);
 				if (dateString != null) {
+					TextView textView = (TextView) findViewById(
+							getResources().getIdentifier("forecast_" + i, "id", getPackageName()));
 					textView.setText(mainString + "\n" + dateString + "\n" + temperatureString);
 				}
-				
-				if (i == 0) {
-					textView = (TextView) findViewById(R.id.current_day_temperature);
-					textView.setText(temperatureString);
-				}
 			}
+		} catch (JSONException e) {
+			Log.e(TAG, "JSON parsing error!");
+			
+			return;
 		}
 	}
 
@@ -267,6 +227,7 @@ public class MainActivity extends Activity implements CitySelectListener {
 			return null;
 		}
 		Calendar c = Calendar.getInstance();
+		c.setTimeZone(TimeZone.getTimeZone("UTC"));
 		c.setTimeInMillis(time * 1000);
 		
 		int i = c.get(Calendar.DAY_OF_WEEK);
