@@ -71,7 +71,6 @@ public class WeatherFragment extends Fragment {
 	public void showForecast(int day) {
 		float forecastSize = 72f;
 		
-		
 		long cityId = getArguments().getLong(KEY_CITYID);
 		String where = CityProvider.KEY_CITYID + " = " + cityId;
 

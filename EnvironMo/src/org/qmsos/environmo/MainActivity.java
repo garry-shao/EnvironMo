@@ -76,7 +76,6 @@ implements OnPageChangeListener, OnRefreshListener, Receiver {
 				}
 			});
 		}
-		
 
 		fragmentList = new ArrayList<Fragment>();
 		cityList = new ArrayList<Long>();
@@ -98,6 +97,7 @@ implements OnPageChangeListener, OnRefreshListener, Receiver {
 			viewPager.addOnPageChangeListener(this);
 
 			long cityId = cityList.get(viewPager.getCurrentItem());
+			updateBackground(cityId);
 			updateCityName(cityId);
 			updateForecast(cityId);
 		} else {
@@ -165,6 +165,8 @@ implements OnPageChangeListener, OnRefreshListener, Receiver {
 	public void onPageSelected(int arg0) {
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
 		long cityId = cityList.get(viewPager.getCurrentItem());
+		
+		updateBackground(cityId);
 		updateCityName(cityId);
 		updateForecast(cityId);
 	}
@@ -189,6 +191,57 @@ implements OnPageChangeListener, OnRefreshListener, Receiver {
 		if (tag != null && manager.findFragmentByTag(tag) != null) {
 			WeatherFragment fragment = (WeatherFragment) manager.findFragmentByTag(tag);
 			fragment.showForecast(day);
+		}
+
+		long cityId = cityList.get(viewPager.getCurrentItem());
+		if (day == 0) {
+			updateBackground(cityId);
+		} else {
+			String[] projection = { CityProvider.KEY_FORECAST };
+			String where = CityProvider.KEY_CITYID + " = " + cityId;
+			Cursor cursor = getContentResolver()
+					.query(CityProvider.CONTENT_URI, projection, where, null, null);
+			if (cursor != null && cursor.moveToFirst()) {
+				String forecast = cursor.getString(cursor.getColumnIndex(CityProvider.KEY_FORECAST));
+				
+				JSONObject reader;
+				try {
+					reader = new JSONObject(forecast);
+					JSONArray list = reader.getJSONArray("list");
+					JSONObject dayForecast = list.getJSONObject(day);
+					JSONArray weather = dayForecast.getJSONArray("weather");
+					int weatherId = weather.getJSONObject(0).getInt("id");
+					
+					View v = findViewById(R.id.swipe_refresh);
+					setBackgroundImage(v, weatherId);
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+			cursor.close();
+		}
+	}
+
+	private void updateBackground(long cityId) {
+		if (cityId > 0) {
+			String[] projection = { CityProvider.KEY_CITYID, CityProvider.KEY_CURRENT };
+			String where = CityProvider.KEY_CITYID + " = " + cityId;
+			Cursor cursor = getContentResolver()
+					.query(CityProvider.CONTENT_URI, projection, where, null, null);
+			if (cursor != null && cursor.moveToFirst()) {
+				String current = cursor.getString(cursor.getColumnIndex(CityProvider.KEY_CURRENT));
+				try {
+					JSONObject reader = new JSONObject(current);
+					JSONArray weather = reader.getJSONArray("weather");
+					int id = weather.getJSONObject(0).getInt("id");
+					
+					View v = findViewById(R.id.swipe_refresh);
+					setBackgroundImage(v, id);
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+			cursor.close();
 		}
 	}
 	
@@ -256,6 +309,32 @@ implements OnPageChangeListener, OnRefreshListener, Receiver {
 		}
 	}
 
+	private void setBackgroundImage(View v, int id) {
+		if (200 <= id && id <= 299) {
+			v.setBackgroundResource(R.drawable.bg_11);
+		} else if (300 <= id && id <= 399) {
+			v.setBackgroundResource(R.drawable.bg_09);
+		} else if (500 <= id && id <= 504) {
+			v.setBackgroundResource(R.drawable.bg_10);
+		} else if (511 == id) {
+			v.setBackgroundResource(R.drawable.bg_13);
+		} else if (520 <= id && id <= 599) {
+			v.setBackgroundResource(R.drawable.bg_09);
+		} else if (600 <= id && id <= 699) {
+			v.setBackgroundResource(R.drawable.bg_13);
+		} else if (700 <= id && id <= 799) {
+			v.setBackgroundResource(R.drawable.bg_50);
+		} else if (800 == id) {
+			v.setBackgroundResource(R.drawable.bg_01);
+		} else if (801 == id) {
+			v.setBackgroundResource(R.drawable.bg_02);
+		} else if (802 == id || 803 == id) {
+			v.setBackgroundResource(R.drawable.bg_03);
+		} else if (804 == id) {
+			v.setBackgroundResource(R.drawable.bg_04);
+		}
+	}
+	
 	private void setForecastIcon(TextView v, int id) {
 		if (200 <= id && id <= 299) {
 			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_11d, 0, 0);
