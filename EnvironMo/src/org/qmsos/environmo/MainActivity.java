@@ -18,12 +18,14 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -61,6 +63,20 @@ implements OnPageChangeListener, OnRefreshListener, Receiver {
 		refreshLayout = (UtilRefreshLayout) findViewById(R.id.swipe_refresh);
 		refreshLayout.setScrollView(scrollView);
 		refreshLayout.setOnRefreshListener(this);
+		
+		for (int i = 0; i <= 3; i++) {
+			final int j = i;
+			TextView textView = (TextView) findViewById(
+					getResources().getIdentifier("forecast_" + j, "id", getPackageName()));
+			textView.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					click(j);
+				}
+			});
+		}
+		
 
 		fragmentList = new ArrayList<Fragment>();
 		cityList = new ArrayList<Long>();
@@ -159,6 +175,23 @@ implements OnPageChangeListener, OnRefreshListener, Receiver {
 		startActivity(i);
 	}
 
+	private void click(int day) {
+		if (day < 0 || day > 3) {
+			return;
+		}
+		
+		FragmentManager manager = getSupportFragmentManager();
+
+		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+		UtilPagerAdapter adapter = (UtilPagerAdapter) viewPager.getAdapter();
+
+		String tag = adapter.getTag(viewPager.getCurrentItem());
+		if (tag != null && manager.findFragmentByTag(tag) != null) {
+			WeatherFragment fragment = (WeatherFragment) manager.findFragmentByTag(tag);
+			fragment.showForecast(day);
+		}
+	}
+	
 	private void updateCityName(long cityId) {
 		if (cityId > 0) {
 			String[] projection = { CityProvider.KEY_CITYID, CityProvider.KEY_NAME };
