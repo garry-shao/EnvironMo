@@ -232,12 +232,11 @@ implements OnPageChangeListener, OnRefreshListener, Receiver {
 				long date = forecast.getLong("dt");
 				
 				JSONArray weather = forecast.getJSONArray("weather");
-				String mainString = weather.getJSONObject(0).getString("main");
+				int weatherId = weather.getJSONObject(0).getInt("id");
 				
 				JSONObject temp = forecast.getJSONObject("temp");
 				int temperatureMin = temp.getInt("min");
 				int temperatureMax = temp.getInt("max");
-	
 				
 				String temperatureString = String.valueOf(temperatureMin) + "~"
 						+ String.valueOf(temperatureMax) + "\u00B0" + "C";
@@ -245,7 +244,9 @@ implements OnPageChangeListener, OnRefreshListener, Receiver {
 				if (dateString != null) {
 					TextView textView = (TextView) findViewById(
 							getResources().getIdentifier("forecast_" + i, "id", getPackageName()));
-					textView.setText(mainString + "\n" + dateString + "\n" + temperatureString);
+					textView.setText(dateString + "\n" + temperatureString);
+					
+					setForecastIcon(textView, weatherId);
 				}
 			}
 		} catch (JSONException e) {
@@ -255,6 +256,32 @@ implements OnPageChangeListener, OnRefreshListener, Receiver {
 		}
 	}
 
+	private void setForecastIcon(TextView v, int id) {
+		if (200 <= id && id <= 299) {
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_11d, 0, 0);
+		} else if (300 <= id && id <= 399) {
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_09d, 0, 0);
+		} else if (500 <= id && id <= 504) {
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_10d, 0, 0);
+		} else if (511 == id) {
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_13d, 0, 0);
+		} else if (520 <= id && id <= 599) {
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_09d, 0, 0);
+		} else if (600 <= id && id <= 699) {
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_13d, 0, 0);
+		} else if (700 <= id && id <= 799) {
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_50d, 0, 0);
+		} else if (800 == id) {
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_01d, 0, 0);
+		} else if (801 == id) {
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_02d, 0, 0);
+		} else if (802 == id || 803 == id) {
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_03d, 0, 0);
+		} else if (804 == id) {
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_04d, 0, 0);
+		}
+	}
+	
 	private String getDayOfWeek(long time) {
 		if (time == 0) {
 			return null;
