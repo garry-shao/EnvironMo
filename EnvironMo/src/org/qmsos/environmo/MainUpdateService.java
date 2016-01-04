@@ -172,7 +172,7 @@ public class MainUpdateService extends IntentService {
 		return null;
 	}
 	
-	private String assembleQuery(int flag) {
+/*	private String assembleQuery(int flag) {
 		StringBuilder b = new StringBuilder("id=");
 		
 		ContentResolver resolver = getContentResolver();
@@ -198,7 +198,7 @@ public class MainUpdateService extends IntentService {
 			return null;
 		}
 	}
-	
+*/	
 	private String assembleQuery(long cityId, int flag) {
 		if (cityId == 0) {
 			return null;
