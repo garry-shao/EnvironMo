@@ -337,27 +337,27 @@ implements OnPageChangeListener, OnRefreshListener, Receiver {
 	
 	private void setForecastIcon(TextView v, int id) {
 		if (200 <= id && id <= 299) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_11d, 0, 0);
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_11, 0, 0);
 		} else if (300 <= id && id <= 399) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_09d, 0, 0);
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_09, 0, 0);
 		} else if (500 <= id && id <= 504) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_10d, 0, 0);
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_10, 0, 0);
 		} else if (511 == id) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_13d, 0, 0);
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_13, 0, 0);
 		} else if (520 <= id && id <= 599) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_09d, 0, 0);
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_09, 0, 0);
 		} else if (600 <= id && id <= 699) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_13d, 0, 0);
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_13, 0, 0);
 		} else if (700 <= id && id <= 799) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_50d, 0, 0);
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_50, 0, 0);
 		} else if (800 == id) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_01d, 0, 0);
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_01, 0, 0);
 		} else if (801 == id) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_02d, 0, 0);
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_02, 0, 0);
 		} else if (802 == id || 803 == id) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_03d, 0, 0);
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_03, 0, 0);
 		} else if (804 == id) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_04d, 0, 0);
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_04, 0, 0);
 		}
 	}
 	
