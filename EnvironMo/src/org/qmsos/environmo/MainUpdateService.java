@@ -16,8 +16,11 @@ import org.qmsos.environmo.util.UtilResultReceiver;
 import android.app.IntentService;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 import android.util.Log;
@@ -85,7 +88,7 @@ public class MainUpdateService extends IntentService {
 		if (action != null) {
 			if (action.equals(ACTION_REFRESH)) {
 				ResultReceiver receiver = intent.getParcelableExtra(UtilResultReceiver.RECEIVER);
-				if (receiver != null) {
+				if (receiver != null && checkConnection()) {
 					queryWeathers(FLAG_CURRENT);
 					queryWeathers(FLAG_FORECAST);
 					
@@ -103,6 +106,17 @@ public class MainUpdateService extends IntentService {
 			} else if (action.equals(ACTION_IMPORT_CITY)) {
 				readAssets();
 			}
+		}
+	}
+
+	private boolean checkConnection() {
+		ConnectivityManager manager = 
+				(ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo info = manager.getActiveNetworkInfo();
+		if (info != null && info.isConnected()) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 
