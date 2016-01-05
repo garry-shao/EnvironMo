@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="UtilPagerIndicator">
+        <attr name="selectedColor" format="color" />
+        <attr name="unselectedColor" format="color" />
+        <attr name="radius" format="dimension" />
+        <attr name="padding" format="dimension" />
+    </declare-styleable>
+
+    <color name="default_selected_color">#FFFFFFFF</color>
+    <color name="default_unselected_color">#FF888888</color>
+
+    <dimen name="default_radius">4dp</dimen>
+    <dimen name="default_padding">7dp</dimen>
+
+</resources>

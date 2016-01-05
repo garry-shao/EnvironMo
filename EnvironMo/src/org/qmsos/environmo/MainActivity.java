@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.qmsos.environmo.util.UtilPagerAdapter;
+import org.qmsos.environmo.util.UtilPagerIndicator;
 import org.qmsos.environmo.util.UtilRefreshLayout;
 import org.qmsos.environmo.util.UtilResultReceiver;
 import org.qmsos.environmo.util.UtilResultReceiver.Receiver;
@@ -90,17 +91,21 @@ implements OnPageChangeListener, OnRefreshListener, Receiver {
 				fragmentList.add(fragment);
 				cityList.add(cityId);
 			}
+			query.close();
 			
 			ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
 			UtilPagerAdapter adapter = new UtilPagerAdapter(getSupportFragmentManager(), fragmentList);
 			viewPager.setAdapter(adapter);
-			viewPager.addOnPageChangeListener(this);
+			UtilPagerIndicator pagerIndicator = (UtilPagerIndicator) findViewById(R.id.pager_indicator);
+			pagerIndicator.setViewPager(viewPager);
+			pagerIndicator.setOnPageChangeListener(this);
 
 			long cityId = cityList.get(viewPager.getCurrentItem());
 			updateBackground(cityId);
 			updateCityName(cityId);
 			updateForecast(cityId);
 		} else {
+			query.close();
 			Intent i = new Intent(this, CityActivity.class);
 			
 			startActivity(i);

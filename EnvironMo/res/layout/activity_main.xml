@@ -21,25 +21,36 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical" >
 
+                <org.qmsos.environmo.util.UtilPagerIndicator
+                    android:id="@+id/pager_indicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="24dp"
+                    app:padding="7dp"
+                    app:radius="4dp"
+                    app:selectedColor="@android:color/white"
+                    app:unselectedColor="@android:color/darker_gray" />
+
                 <TextView
                     android:id="@+id/city_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="start"
                     android:layout_marginStart="16dp"
-                    android:layout_marginTop="32dp"
+                    android:layout_marginTop="8dp"
                     android:clickable="true"
                     android:gravity="center"
                     android:onClick="settingCity"
                     android:text="@string/placeholder"
                     android:textSize="32sp" />
-                <android.support.v4.view.ViewPager
-            		android:id="@+id/view_pager"
-            		android:layout_width="match_parent"
-            		android:layout_height="0dp"
-            		android:layout_weight="1" >
-        		</android.support.v4.view.ViewPager>
 
+                <android.support.v4.view.ViewPager
+                    android:id="@+id/view_pager"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" >
+                </android.support.v4.view.ViewPager>
             </LinearLayout>
         </ScrollView>
 
