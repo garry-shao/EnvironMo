@@ -48,7 +48,7 @@ public class CityActivity extends AppCompatActivity implements LoaderCallbacks<C
 
 	@Override
 	protected void onDestroy() {
-		getLoaderManager().destroyLoader(0);
+		getSupportLoaderManager().destroyLoader(0);
 
 		super.onDestroy();
 	}
