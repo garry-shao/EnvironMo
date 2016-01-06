@@ -7,5 +7,6 @@
     <string name="activity_city_add">Add City</string>
     <string name="button_import">Import Database</string>
     <string name="button_add">Add City</string>
+    <string name="button_delete">Delete</string>
 
 </resources>

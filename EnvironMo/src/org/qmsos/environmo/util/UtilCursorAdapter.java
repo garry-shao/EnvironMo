@@ -7,7 +7,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 /**
@@ -17,18 +19,30 @@ import android.widget.TextView;
  *
  */
 public class UtilCursorAdapter extends UtilBaseAdapter<ViewHolder> {
+	
+	private Context context;
 
 	public UtilCursorAdapter(Context context, Cursor cursor) {
 		super(context, cursor);
+		
+		this.context = context;
 	}
 
 	@Override
 	public void onBindViewHolder(ViewHolder holder, Cursor cursor) {
-		long id = cursor.getLong(cursor.getColumnIndex(CityProvider.KEY_CITYID));
+		final long id = cursor.getLong(cursor.getColumnIndex(CityProvider.KEY_CITYID));
 		String name = cursor.getString(cursor.getColumnIndex(CityProvider.KEY_NAME));
 
 		((UtilViewHolder) holder).cityIdView.setText(String.valueOf(id));
 		((UtilViewHolder) holder).cityNameView.setText(name);
+		((UtilViewHolder) holder).deleteButton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				String where = CityProvider.KEY_CITYID + " = " + id;
+				context.getContentResolver().delete(CityProvider.CONTENT_URI, where, null);
+			}
+		});
 	}
 
 	@Override
@@ -41,12 +55,14 @@ public class UtilCursorAdapter extends UtilBaseAdapter<ViewHolder> {
 	public static class UtilViewHolder extends ViewHolder {
 		TextView cityIdView;
 		TextView cityNameView;
+		Button deleteButton;
 
 		public UtilViewHolder(View itemView) {
 			super(itemView);
 
 			cityIdView = (TextView) itemView.findViewById(R.id.cityId);
 			cityNameView = (TextView) itemView.findViewById(R.id.cityName);
+			deleteButton = (Button) itemView.findViewById(R.id.cityDelete);
 		}
 	}
 
