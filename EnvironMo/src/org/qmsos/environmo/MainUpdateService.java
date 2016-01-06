@@ -97,12 +97,8 @@ public class MainUpdateService extends IntentService {
 				}
 			} else if (action.equals(ACTION_QUERY_CITY)) {
 				String cityname = intent.getStringExtra(EXTRA_KEY_CITY_NAME);
-				boolean result = queryCity(cityname);
-				if (result) {
-					Intent i = new Intent(ACTION_CITY_ADDED);
-					i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					startActivity(i);
-				}
+				
+				queryCity(cityname);
 			} else if (action.equals(ACTION_IMPORT_CITY)) {
 				readAssets();
 			}

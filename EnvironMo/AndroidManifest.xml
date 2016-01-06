@@ -28,11 +28,6 @@
         <activity
             android:name=".CityActivity"
             android:label="@string/activity_city_name" >
-            <intent-filter>
-                <action android:name="org.qmsos.environmo.ACTION_CITY_ADDED" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".AddActivity"

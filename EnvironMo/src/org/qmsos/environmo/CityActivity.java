@@ -1,17 +1,24 @@
 package org.qmsos.environmo;
 
-import android.content.ContentResolver;
+import org.qmsos.environmo.util.UtilCursorAdapter;
+
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.TextView;
 
-public class CityActivity extends AppCompatActivity {
+public class CityActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+	
+	private UtilCursorAdapter adapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -20,31 +27,14 @@ public class CityActivity extends AppCompatActivity {
 		
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
-		
-		
-		TextView v = (TextView) findViewById(R.id.city_candidate);
-		
-		StringBuilder b = new StringBuilder();
-		
-		String[] projection = { CityProvider.KEY_ID, CityProvider.KEY_CITYID, CityProvider.KEY_NAME };
-		
-		ContentResolver resolver = getContentResolver();
-		String where = CityProvider.KEY_CITYID;
 
-		Cursor query = resolver.query(CityProvider.CONTENT_URI, projection, where, null, null);
-		if (query != null && query.getCount() != 0) {
-			while (query.moveToNext()) {
-				Long cityId = query.getLong(query.getColumnIndex(CityProvider.KEY_CITYID));
-				String name = query.getString(query.getColumnIndex(CityProvider.KEY_NAME));
-				b.append(cityId);
-				b.append(name);
-				b.append("\n");
-			}
-		}
-		query.close();
+		adapter = new UtilCursorAdapter(this, null);
+		RecyclerView cityNames = (RecyclerView) findViewById(R.id.city_candidate);
+		cityNames.setLayoutManager(new LinearLayoutManager(this));
+		cityNames.setAdapter(adapter);
 		
-		v.setText(b.toString());
-		
+		getSupportLoaderManager().initLoader(0, null, this);
+
 		Button addButton = (Button) findViewById(R.id.button_add);
 		addButton.setOnClickListener(new OnClickListener() {
 
@@ -57,13 +47,28 @@ public class CityActivity extends AppCompatActivity {
 	}
 
 	@Override
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
+	protected void onDestroy() {
+		getLoaderManager().destroyLoader(0);
+
+		super.onDestroy();
+	}
+
+	@Override
+	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+		String where = CityProvider.KEY_CITYID;
+		String[] projection = { CityProvider.KEY_ID, CityProvider.KEY_CITYID, CityProvider.KEY_NAME };
 		
-		String action = intent.getAction();
-		if (action != null && action.equals(MainUpdateService.ACTION_CITY_ADDED)) {
-//			TODO: update GUI
-		}
+		return new CursorLoader(this, CityProvider.CONTENT_URI, projection, where, null, null);
+	}
+
+	@Override
+	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+		adapter.swapCursor(data);
+	}
+
+	@Override
+	public void onLoaderReset(Loader<Cursor> loader) {
+		adapter.swapCursor(null);
 	}
 
 }
