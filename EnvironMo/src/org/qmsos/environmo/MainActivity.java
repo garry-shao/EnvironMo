@@ -11,8 +11,6 @@ import org.json.JSONObject;
 import org.qmsos.environmo.util.UtilPagerAdapter;
 import org.qmsos.environmo.util.UtilPagerIndicator;
 import org.qmsos.environmo.util.UtilRefreshLayout;
-import org.qmsos.environmo.util.UtilResultReceiver;
-import org.qmsos.environmo.util.UtilResultReceiver.Receiver;
 
 import android.content.Intent;
 import android.database.Cursor;
@@ -20,6 +18,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
@@ -37,16 +38,8 @@ import android.widget.TextView;
  * 
  */
 public class MainActivity extends AppCompatActivity 
-implements OnPageChangeListener, OnRefreshListener, Receiver {
-
-	private static final String KEY_RECEIVER = "KEY_RECEIVER";
+implements LoaderCallbacks<Cursor>, OnPageChangeListener {
 	
-	private static final String TAG = MainActivity.class.getSimpleName();
-	
-	private UtilResultReceiver receiver;
-	private UtilRefreshLayout refreshLayout;
-	
-	private List<Fragment> fragmentList;
 	private List<Long> cityList;
 
 	@Override
@@ -54,16 +47,36 @@ implements OnPageChangeListener, OnRefreshListener, Receiver {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		if (savedInstanceState != null) {
-			receiver = savedInstanceState.getParcelable(KEY_RECEIVER);
-		} else {
-			receiver = new UtilResultReceiver(new Handler());
-		}
-
 		ScrollView scrollView = (ScrollView) findViewById(R.id.scroll_view);
-		refreshLayout = (UtilRefreshLayout) findViewById(R.id.swipe_refresh);
+		final UtilRefreshLayout refreshLayout = (UtilRefreshLayout) findViewById(R.id.swipe_refresh);
 		refreshLayout.setScrollView(scrollView);
-		refreshLayout.setOnRefreshListener(this);
+		refreshLayout.setOnRefreshListener(new OnRefreshListener() {
+
+			@Override
+			public void onRefresh() {
+				new Handler().postDelayed(new Runnable() {
+
+					@Override
+					public void run() {
+						refreshLayout.setRefreshing(false);
+
+						Intent intent = new Intent(getBaseContext(), MainUpdateService.class);
+						intent.setAction(MainUpdateService.ACTION_REFRESH);
+						startService(intent);
+					}
+				}, 500);					
+			}
+		});
+
+		TextView cityName = (TextView) findViewById(R.id.city_name);
+		cityName.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Intent i = new Intent(getBaseContext(), CityActivity.class);
+				startActivity(i);
+			}
+		});
 		
 		for (int i = 0; i <= 3; i++) {
 			final int j = i;
@@ -78,13 +91,13 @@ implements OnPageChangeListener, OnRefreshListener, Receiver {
 			});
 		}
 
-		fragmentList = new ArrayList<Fragment>();
 		cityList = new ArrayList<Long>();
 		
 		String[] projection = { CityProvider.KEY_ID, CityProvider.KEY_CITYID, CityProvider.KEY_NAME };
 		String where = CityProvider.KEY_CITYID;
 		Cursor query = getContentResolver().query(CityProvider.CONTENT_URI, projection, where, null, null);
 		if (query != null && query.getCount() != 0) {
+			List<Fragment> fragmentList = new ArrayList<Fragment>();
 			while (query.moveToNext()) {
 				Long cityId = query.getLong(query.getColumnIndex(CityProvider.KEY_CITYID));
 				WeatherFragment fragment = WeatherFragment.newInstance(this, cityId);
@@ -110,52 +123,35 @@ implements OnPageChangeListener, OnRefreshListener, Receiver {
 			
 			startActivity(i);
 		}
+	
+		getSupportLoaderManager().initLoader(0, null, this);
 	}
 
 	@Override
-	protected void onResume() {
-		super.onResume();
-		
-		receiver.setReceiver(this);
+	protected void onDestroy() {
+		getSupportLoaderManager().destroyLoader(0);
+
+		super.onDestroy();
 	}
 
 	@Override
-	protected void onPause() {
-		receiver.setReceiver(null);
+	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+		String[] projection = { CityProvider.KEY_ID, CityProvider.KEY_CITYID, CityProvider.KEY_NAME };
+		String where = CityProvider.KEY_CITYID;
 
-		super.onPause();
+		return new CursorLoader(this, CityProvider.CONTENT_URI, projection, where, null, null);
 	}
 
 	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		outState.putParcelable(KEY_RECEIVER, receiver);
-		
-		super.onSaveInstanceState(outState);
+	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+		// TODO Auto-generated method stub
+		Log.e("onLoadFinished", "finished?");
 	}
 
 	@Override
-	public void onRefresh() {
-		new Handler().postDelayed(new Runnable() {
-
-			@Override
-			public void run() {
-				refreshLayout.setRefreshing(false);
-
-				Intent intent = new Intent(getBaseContext(), MainUpdateService.class);
-				intent.setAction(MainUpdateService.ACTION_REFRESH);
-				intent.putExtra(UtilResultReceiver.RECEIVER, receiver);
-				
-				startService(intent);
-			}
-		}, 500);		
-	}
-
-	@Override
-	public void onReceiveResult(int resultCode, Bundle resultData) {
-		switch (resultCode) {
-		case MainUpdateService.RESULT_CODE_REFRESHED:
-//			TODO: update GUI
-		}
+	public void onLoaderReset(Loader<Cursor> loader) {
+		// TODO Auto-generated method stub
+		Log.e("onLoadReset", "Reset?");
 	}
 
 	@Override
@@ -174,12 +170,6 @@ implements OnPageChangeListener, OnRefreshListener, Receiver {
 		updateBackground(cityId);
 		updateCityName(cityId);
 		updateForecast(cityId);
-	}
-
-	public void settingCity(View view) {
-		Intent i = new Intent(this, CityActivity.class);
-		
-		startActivity(i);
 	}
 
 	private void click(int day) {
@@ -308,7 +298,7 @@ implements OnPageChangeListener, OnRefreshListener, Receiver {
 				}
 			}
 		} catch (JSONException e) {
-			Log.e(TAG, "JSON parsing error!");
+			Log.e(MainActivity.class.getSimpleName(), "JSON parsing error!");
 			
 			return;
 		}

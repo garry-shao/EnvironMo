@@ -11,7 +11,6 @@ import java.net.URL;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.qmsos.environmo.data.City;
-import org.qmsos.environmo.util.UtilResultReceiver;
 
 import android.app.IntentService;
 import android.content.ContentResolver;
@@ -21,8 +20,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Bundle;
-import android.os.ResultReceiver;
 import android.util.Log;
 
 /**
@@ -87,13 +84,9 @@ public class MainUpdateService extends IntentService {
 		String action = intent.getAction();
 		if (action != null) {
 			if (action.equals(ACTION_REFRESH)) {
-				ResultReceiver receiver = intent.getParcelableExtra(UtilResultReceiver.RECEIVER);
-				if (receiver != null && checkConnection()) {
+				if (checkConnection()) {
 					queryWeathers(FLAG_CURRENT);
 					queryWeathers(FLAG_FORECAST);
-					
-					Bundle b = new Bundle();
-					receiver.send(RESULT_CODE_REFRESHED, b);
 				}
 			} else if (action.equals(ACTION_QUERY_CITY)) {
 				String cityname = intent.getStringExtra(EXTRA_KEY_CITY_NAME);

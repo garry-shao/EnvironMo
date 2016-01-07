@@ -41,7 +41,6 @@
                     android:layout_marginTop="8dp"
                     android:clickable="true"
                     android:gravity="center"
-                    android:onClick="settingCity"
                     android:text="@string/placeholder"
                     android:textSize="32sp" />
 
