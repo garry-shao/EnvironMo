@@ -1,4 +1,4 @@
-package org.qmsos.environmo;
+package org.qmsos.environmo.fragment;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -8,6 +8,8 @@ import java.util.TimeZone;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.qmsos.environmo.CityProvider;
+import org.qmsos.environmo.R;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -19,17 +21,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-public class WeatherFragment extends Fragment {
+public class CurrentFragment extends Fragment {
 	
 	private static final String KEY_CITYID = "KEY_CITYID";
 	
 	private float CURRENT_SIZE;
 	
-	public static WeatherFragment newInstance(Context context, long cityId) {
+	public static CurrentFragment newInstance(Context context, long cityId) {
 		Bundle b = new Bundle();
 		b.putLong(KEY_CITYID, cityId);
 
-		WeatherFragment fragment = new WeatherFragment();
+		CurrentFragment fragment = new CurrentFragment();
 		fragment.setArguments(b);
 		
 		return fragment;

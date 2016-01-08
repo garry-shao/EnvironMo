@@ -51,14 +51,16 @@ public class MainUpdateService extends IntentService {
 	private static final int FLAG_FORECAST = 2;
 
 	public static final String ACTION_REFRESH = "org.qmsos.environmo.ACTION_REFRESH";
+	public static final String ACTION_DELETE_CITY = "org.qmsos.environmo.ACTION_DELETE_CITY";
 	public static final String ACTION_QUERY_CITY = "org.qmsos.environmo.ACTION_QUERY_CITY";
 	public static final String ACTION_IMPORT_CITY = "org.qmsos.environmo.ACTION_IMPORT_CITY";
-	public static final String ACTION_CITY_ADDED = "org.qmsos.environmo.ACTION_CITY_ADDED";
+	public static final String ACTION_CITY_CHANGED = "org.qmsos.environmo.ACTION_CITY_CHANGED";
 	
 	public static final String BUNDLE_KEY_CURRENT = "BUNDLE_KEY_CURRENT";
 	public static final String BUNDLE_KEY_FORECAST = "BUNDLE_KEY_FORECAST";
 	
 	public static final String EXTRA_KEY_CITY_NAME = "EXTRA_KEY_CITY_NAME";
+	public static final String EXTRA_KEY_CITY_ID = "EXTRA_KEY_CITY_ID";
 
 	public static final int RESULT_CODE_REFRESHED = 1;
 	
@@ -90,8 +92,13 @@ public class MainUpdateService extends IntentService {
 				}
 			} else if (action.equals(ACTION_QUERY_CITY)) {
 				String cityname = intent.getStringExtra(EXTRA_KEY_CITY_NAME);
-				
+
 				queryCity(cityname);
+			} else if (action.equals(ACTION_DELETE_CITY)) {
+				long cityId = intent.getLongExtra(EXTRA_KEY_CITY_ID, -1);
+				if (cityId != -1) {
+					deleteCityFromProvider(cityId);
+				}
 			} else if (action.equals(ACTION_IMPORT_CITY)) {
 				readAssets();
 			}
@@ -352,6 +359,13 @@ public class MainUpdateService extends IntentService {
 		}
 		
 		return result;
+	}
+
+	private boolean deleteCityFromProvider(long cityId) {
+		String where = CityProvider.KEY_CITYID + " = " + cityId;
+		int rows = getContentResolver().delete(CityProvider.CONTENT_URI, where, null);
+		
+		return rows > 0 ? true : false;
 	}
 
 }

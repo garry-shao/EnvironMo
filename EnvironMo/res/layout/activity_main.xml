@@ -53,44 +53,12 @@
             </LinearLayout>
         </ScrollView>
 
-        <android.support.v7.widget.GridLayout
+        <fragment
+            android:id="@+id/forecast_fragment"
+            android:name="org.qmsos.environmo.fragment.ForecastFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            app:columnCount="4" >
-
-            <TextView
-                android:id="@+id/forecast_0"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_columnWeight="1"
-                android:gravity="center"
-                android:text="@string/placeholder" />
-
-            <TextView
-                android:id="@+id/forecast_1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_columnWeight="1"
-                android:gravity="center"
-                android:text="@string/placeholder" />
-
-            <TextView
-                android:id="@+id/forecast_2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_columnWeight="1"
-                android:gravity="center"
-                android:text="@string/placeholder" />
-
-            <TextView
-                android:id="@+id/forecast_3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_columnWeight="1"
-                android:gravity="center"
-                android:text="@string/placeholder" />
-        </android.support.v7.widget.GridLayout>
+            android:layout_gravity="bottom" />
     </FrameLayout>
 
 </org.qmsos.environmo.util.UtilRefreshLayout>

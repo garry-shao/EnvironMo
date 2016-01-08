@@ -1,9 +1,11 @@
 package org.qmsos.environmo.util;
 
 import org.qmsos.environmo.CityProvider;
+import org.qmsos.environmo.MainUpdateService;
 import org.qmsos.environmo.R;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
@@ -39,8 +41,10 @@ public class UtilCursorAdapter extends UtilBaseAdapter<ViewHolder> {
 
 			@Override
 			public void onClick(View v) {
-				String where = CityProvider.KEY_CITYID + " = " + id;
-				context.getContentResolver().delete(CityProvider.CONTENT_URI, where, null);
+				Intent i = new Intent(context, MainUpdateService.class);
+				i.setAction(MainUpdateService.ACTION_DELETE_CITY);
+				i.putExtra(MainUpdateService.EXTRA_KEY_CITY_ID, id);
+				context.startService(i);
 			}
 		});
 	}
