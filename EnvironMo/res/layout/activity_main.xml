@@ -5,53 +5,40 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
 
-        <ScrollView
-            android:id="@+id/scroll_view"
+        <org.qmsos.environmo.util.UtilPagerIndicator
+            android:id="@+id/pager_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            app:padding="7dp"
+            app:radius="4dp"
+            app:selectedColor="@android:color/white"
+            app:unselectedColor="@android:color/darker_gray" />
+
+        <TextView
+            android:id="@+id/city_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:clickable="true"
+            android:gravity="center"
+            android:text="@string/placeholder"
+            android:textSize="32sp" />
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/view_pager"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fadeScrollbars="true"
-            android:fillViewport="true" >
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" >
-
-                <org.qmsos.environmo.util.UtilPagerIndicator
-                    android:id="@+id/pager_indicator"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="24dp"
-                    app:padding="7dp"
-                    app:radius="4dp"
-                    app:selectedColor="@android:color/white"
-                    app:unselectedColor="@android:color/darker_gray" />
-
-                <TextView
-                    android:id="@+id/city_name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="start"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="8dp"
-                    android:clickable="true"
-                    android:gravity="center"
-                    android:text="@string/placeholder"
-                    android:textSize="32sp" />
-
-                <android.support.v4.view.ViewPager
-                    android:id="@+id/view_pager"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" >
-                </android.support.v4.view.ViewPager>
-            </LinearLayout>
-        </ScrollView>
+            android:layout_height="0dp"
+            android:layout_weight="1" >
+        </android.support.v4.view.ViewPager>
 
         <fragment
             android:id="@+id/forecast_fragment"
@@ -59,6 +46,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom" />
-    </FrameLayout>
+    </LinearLayout>
 
 </org.qmsos.environmo.util.UtilRefreshLayout>

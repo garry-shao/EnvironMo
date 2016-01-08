@@ -8,7 +8,6 @@ import org.qmsos.environmo.fragment.ForecastFragment;
 import org.qmsos.environmo.fragment.ForecastFragment.OnWeatherClickListener;
 import org.qmsos.environmo.util.UtilPagerAdapter;
 import org.qmsos.environmo.util.UtilPagerIndicator;
-import org.qmsos.environmo.util.UtilRefreshLayout;
 
 import android.content.Intent;
 import android.database.Cursor;
@@ -19,11 +18,11 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 /**
@@ -42,9 +41,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnWeatherClickListener
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		ScrollView scrollView = (ScrollView) findViewById(R.id.scroll_view);
-		final UtilRefreshLayout refreshLayout = (UtilRefreshLayout) findViewById(R.id.swipe_refresh);
-		refreshLayout.setScrollView(scrollView);
+		final SwipeRefreshLayout refreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
 		refreshLayout.setOnRefreshListener(new OnRefreshListener() {
 
 			@Override
