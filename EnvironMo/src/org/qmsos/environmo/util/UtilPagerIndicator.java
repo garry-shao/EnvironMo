@@ -127,11 +127,18 @@ public class UtilPagerIndicator extends View implements OnPageChangeListener {
 		}
 		this.viewPager = viewPager;
 		this.viewPager.addOnPageChangeListener(this);
-		invalidate();
+		dataChanged();
 	}
 
 	public void setOnPageChangeListener(OnPageChangeListener listener) {
 		this.listener = listener;
+	}
+
+	public void dataChanged() {
+		if (!isInLayout()) {
+			requestLayout();
+		}
+		invalidate();
 	}
 	
 	private int getWidth(int measureSpec) {

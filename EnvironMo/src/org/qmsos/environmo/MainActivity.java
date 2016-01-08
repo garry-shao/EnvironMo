@@ -159,7 +159,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnWeatherClickListener
 		}
 		UtilPagerIndicator indicator = (UtilPagerIndicator) findViewById(R.id.pager_indicator);
 		if (indicator != null) {
-			indicator.invalidate();
+			indicator.dataChanged();
 		}
 	}
 
