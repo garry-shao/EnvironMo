@@ -41,7 +41,11 @@ public class ForecastFragment extends Fragment {
 				
 				@Override
 				public void onClick(View v) {
-					((MainActivity) getActivity()).onWeatherClick(j);
+					try {
+						((OnWeatherClickListener) getContext()).onWeatherClick(j);
+					} catch (ClassCastException e) {
+						throw new ClassCastException("context must implement OnWeatherClickListener");
+					}
 				}
 			});
 		}
