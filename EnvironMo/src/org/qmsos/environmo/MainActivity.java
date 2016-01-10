@@ -89,10 +89,10 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnWeatherClickListener
 
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String[] projection = { CityProvider.KEY_ID, CityProvider.KEY_CITYID, CityProvider.KEY_NAME };
-		String where = CityProvider.KEY_CITYID;
+		String[] projection = { MainProvider.KEY_CITY_ID };
+		String where = MainProvider.KEY_CITY_ID;
 
-		return new CursorLoader(this, CityProvider.CONTENT_URI, projection, where, null, null);
+		return new CursorLoader(this, MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 	}
 
 	@Override
@@ -164,12 +164,12 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnWeatherClickListener
 		if (day == 0) {
 			updateBackground(cityId);
 		} else {
-			String[] projection = { CityProvider.KEY_FORECAST };
-			String where = CityProvider.KEY_CITYID + " = " + cityId;
+			String[] projection = { MainProvider.KEY_FORECAST };
+			String where = MainProvider.KEY_CITY_ID + " = " + cityId;
 			Cursor cursor = getContentResolver()
-					.query(CityProvider.CONTENT_URI, projection, where, null, null);
+					.query(MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				String forecast = cursor.getString(cursor.getColumnIndex(CityProvider.KEY_FORECAST));
+				String forecast = cursor.getString(cursor.getColumnIndex(MainProvider.KEY_FORECAST));
 				
 				JSONObject reader;
 				try {
@@ -191,12 +191,16 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnWeatherClickListener
 	
 	private void updateBackground(long cityId) {
 		if (cityId > 0) {
-			String[] projection = { CityProvider.KEY_CITYID, CityProvider.KEY_CURRENT };
-			String where = CityProvider.KEY_CITYID + " = " + cityId;
+			String[] projection = { MainProvider.KEY_CITY_ID, MainProvider.KEY_CURRENT };
+			String where = MainProvider.KEY_CITY_ID + " = " + cityId;
 			Cursor cursor = getContentResolver()
-					.query(CityProvider.CONTENT_URI, projection, where, null, null);
+					.query(MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				String current = cursor.getString(cursor.getColumnIndex(CityProvider.KEY_CURRENT));
+				String current = cursor.getString(cursor.getColumnIndex(MainProvider.KEY_CURRENT));
+				if (current == null) {
+					return;
+				}
+				
 				try {
 					JSONObject reader = new JSONObject(current);
 					JSONArray weather = reader.getJSONArray("weather");
@@ -214,12 +218,12 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnWeatherClickListener
 	
 	private void updateCityName(long cityId) {
 		if (cityId > 0) {
-			String[] projection = { CityProvider.KEY_CITYID, CityProvider.KEY_NAME };
-			String where = CityProvider.KEY_CITYID + " = " + cityId;
+			String[] projection = { MainProvider.KEY_CITY_ID, MainProvider.KEY_NAME };
+			String where = MainProvider.KEY_CITY_ID + " = " + cityId;
 			Cursor cursor = getContentResolver()
-					.query(CityProvider.CONTENT_URI, projection, where, null, null);
+					.query(MainProvider.CONTENT_URI_CITIES, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				String name = cursor.getString(cursor.getColumnIndex(CityProvider.KEY_NAME));
+				String name = cursor.getString(cursor.getColumnIndex(MainProvider.KEY_NAME));
 				TextView textView = (TextView) findViewById(R.id.city_name);
 				textView.setText(name);
 			}

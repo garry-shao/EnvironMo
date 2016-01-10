@@ -41,8 +41,8 @@
         </service>
 
         <provider
-            android:name=".CityProvider"
-            android:authorities="org.qmsos.environmo.cityprovider"
+            android:name=".MainProvider"
+            android:authorities="org.qmsos.environmo.mainprovider"
             android:exported="false" >
         </provider>
     </application>

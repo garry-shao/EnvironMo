@@ -1,6 +1,6 @@
 package org.qmsos.environmo.util;
 
-import org.qmsos.environmo.CityProvider;
+import org.qmsos.environmo.MainProvider;
 import org.qmsos.environmo.fragment.CurrentFragment;
 
 import android.content.Context;
@@ -45,7 +45,7 @@ public class UtilPagerAdapter extends FragmentStatePagerAdapter {
 
 	public Fragment getItem(Context context, Cursor cursor, int position) {
 		if (cursor.moveToPosition(position)) {
-			long cityId = cursor.getLong(cursor.getColumnIndexOrThrow(CityProvider.KEY_CITYID));
+			long cityId = cursor.getLong(cursor.getColumnIndexOrThrow(MainProvider.KEY_CITY_ID));
 			CurrentFragment fragment = CurrentFragment.newInstance(context, cityId);
 			
 			return fragment;
@@ -79,7 +79,7 @@ public class UtilPagerAdapter extends FragmentStatePagerAdapter {
 	@Override
 	public Object instantiateItem(ViewGroup container, int position) {
 		if (mCursor.moveToPosition(position)) {
-			long cityId = mCursor.getLong(mCursor.getColumnIndexOrThrow(CityProvider.KEY_CITYID));
+			long cityId = mCursor.getLong(mCursor.getColumnIndexOrThrow(MainProvider.KEY_CITY_ID));
 			ids.append(position, cityId);
 		}
 		

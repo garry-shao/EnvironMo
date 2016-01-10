@@ -6,7 +6,7 @@ import java.util.TimeZone;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.qmsos.environmo.CityProvider;
+import org.qmsos.environmo.MainProvider;
 import org.qmsos.environmo.MainActivity;
 import org.qmsos.environmo.R;
 
@@ -22,6 +22,8 @@ import android.widget.TextView;
 
 public class ForecastFragment extends Fragment {
 
+	private static final String TAG = ForecastFragment.class.getSimpleName();
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.view_forecast, container, false);
@@ -52,18 +54,30 @@ public class ForecastFragment extends Fragment {
 	}
 
 	public void refresh(long cityId) {
-		String[] projection = { CityProvider.KEY_CITYID, CityProvider.KEY_FORECAST };
-		String where = CityProvider.KEY_CITYID + " = " + cityId;
-		Cursor cursor = getContext().getContentResolver()
-				.query(CityProvider.CONTENT_URI, projection, where, null, null);
-		if (cursor != null && cursor.moveToFirst()) {
-			String forecast = cursor.getString(cursor.getColumnIndex(CityProvider.KEY_FORECAST));
-			updateForecast(getView(), forecast);
+		Cursor cursor = null;
+		try {
+			String[] projection = { MainProvider.KEY_CITY_ID, MainProvider.KEY_FORECAST };
+			String where = MainProvider.KEY_CITY_ID + " = " + cityId;
+			cursor = getContext().getContentResolver()
+					.query(MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+			if (cursor != null && cursor.moveToFirst()) {
+				String forecast = cursor.getString(cursor.getColumnIndexOrThrow(MainProvider.KEY_FORECAST));
+				updateForecast(getView(), forecast);
+			}
+		} catch (IllegalArgumentException e) {
+			Log.e(TAG, "The column does not exist");
+		} finally {
+			if (cursor != null && !cursor.isClosed()) {
+				cursor.close();
+			}
 		}
-		cursor.close();
 	}
 	
 	private void updateForecast(View view, String json) {
+		if (json == null) {
+			return;
+		}
+		
 		try {
 			JSONObject reader = new JSONObject(json);
 	

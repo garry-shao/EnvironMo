@@ -87,8 +87,8 @@ public class MainUpdateService extends IntentService {
 		if (action != null) {
 			if (action.equals(ACTION_REFRESH)) {
 				if (checkConnection()) {
-					queryWeathers(FLAG_CURRENT);
-					queryWeathers(FLAG_FORECAST);
+					queryWeather(FLAG_CURRENT);
+					queryWeather(FLAG_FORECAST);
 				}
 			} else if (action.equals(ACTION_QUERY_CITY)) {
 				String cityname = intent.getStringExtra(EXTRA_KEY_CITY_NAME);
@@ -105,81 +105,68 @@ public class MainUpdateService extends IntentService {
 		}
 	}
 
-	private boolean checkConnection() {
-		ConnectivityManager manager = 
-				(ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo info = manager.getActiveNetworkInfo();
-		if (info != null && info.isConnected()) {
-			return true;
-		} else {
+	private boolean queryCity(String cityName) {
+		if (cityName == null) {
 			return false;
 		}
-	}
-
-	private boolean queryCity(String cityName) {
-		if (cityName != null) {
-			String request = "http://api.openweathermap.org/data/2.5/"
-					+ "weather?" + "q=" + cityName
-					+ "&units=" + "metric"
-					+ "&appid=" + MainUpdateService.API_KEY;
-			
-			String result = download(request);
-			if (result != null) {
-				City city = readCityFromQuery(result);
-				if (city != null) {
-					boolean flag =  addCityToProvider(city);
-					if (flag) {
-						queryWeathers(FLAG_CURRENT);
-						queryWeathers(FLAG_FORECAST);
-					}
-					
-					return flag;
-				}
-			}
+		
+		String request = "http://api.openweathermap.org/data/2.5/"
+				+ "weather?" + "q=" + cityName
+				+ "&units=" + "metric"
+				+ "&appid=" + MainUpdateService.API_KEY;
+		String result = download(request);
+		if (result == null) {
+			return false;
 		}
-
-		return false;
+			
+		boolean flag = false;
+		try {
+			JSONObject reader = new JSONObject(result);
+			long id = reader.getLong("id");
+			String name = reader.getString("name");
+			
+			JSONObject sys = reader.getJSONObject("sys");
+			String country = sys.getString("country");
+			
+			JSONObject coord = reader.getJSONObject("coord");
+			double longitude = coord.getDouble("lon");
+			double latitude = coord.getDouble("lat");
+			
+			City city =  new City(id, name, country, longitude, latitude);
+			
+			flag = addCityToProvider(city);
+		} catch (JSONException e) {
+			Log.e(TAG, "Error parsing json when querying for city id");
+		}
+		
+		return flag;
 	}
 	
-	private void queryWeathers(int flag) {
-		String[] projection = { CityProvider.KEY_ID, CityProvider.KEY_CITYID, CityProvider.KEY_NAME };
-		
-		ContentResolver resolver = getContentResolver();
-		String where = CityProvider.KEY_CITYID;
-
-		Cursor query = resolver.query(CityProvider.CONTENT_URI, projection, where, null, null);
-		if (query != null && query.getCount() != 0) {
-			while (query.moveToNext()) {
-				Long cityId = query.getLong(query.getColumnIndex(CityProvider.KEY_CITYID));
-				String result = queryWeather(cityId, flag);
-				updateWeatherToProvider(result, cityId, flag);
+	private void queryWeather(int flag) {
+		Cursor cursor = null;
+		try {
+			String[] projection = { MainProvider.KEY_CITY_ID };
+			String where = MainProvider.KEY_CITY_ID;
+			cursor = getContentResolver().query(
+					MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+			if (cursor != null) {
+				while (cursor.moveToNext()) {
+					long cityId = cursor.getLong(cursor.getColumnIndex(MainProvider.KEY_CITY_ID));
+					String query = assembleQuery(cityId, flag);
+					if (query != null) {
+						String result =  download(query);
+						
+						updateWeatherToProvider(result, cityId, flag);
+					}
+				}
+			}
+		} catch (Exception e) {
+			Log.e(TAG, "Error found when query weather");
+		} finally {
+			if (cursor != null && !cursor.isClosed()) {
+				cursor.close();
 			}
 		}
-	}
-
-	private void updateWeatherToProvider(String result, long cityId, int flag) {
-		ContentResolver resolver = getContentResolver();
-		String where = CityProvider.KEY_CITYID + " = " + cityId;
-		ContentValues values = new ContentValues();
-		
-		switch (flag) {
-		case FLAG_CURRENT:
-			values.put(CityProvider.KEY_CURRENT, result);
-			break;
-		case FLAG_FORECAST:
-			values.put(CityProvider.KEY_FORECAST, result);
-			break;
-		}
-		resolver.update(CityProvider.CONTENT_URI, values, where, null);
-	}
-
-	private String queryWeather(long cityId, int flag) {
-		String query = assembleQuery(cityId, flag);
-		if (query != null) {
-			return download(query);
-		}
-		
-		return null;
 	}
 	
 /*	private String assembleQuery(int flag) {
@@ -231,6 +218,81 @@ public class MainUpdateService extends IntentService {
 		}
 	}
 
+	private void updateWeatherToProvider(String result, long cityId, int flag) {
+		if (result == null || cityId == 0 || !(flag == FLAG_CURRENT || flag == FLAG_FORECAST)) {
+			return;
+		}
+		
+		String where = MainProvider.KEY_CITY_ID + " = " + cityId;
+		ContentValues values = new ContentValues();
+		
+		switch (flag) {
+		case FLAG_CURRENT:
+			values.put(MainProvider.KEY_CURRENT, result);
+			break;
+		case FLAG_FORECAST:
+			values.put(MainProvider.KEY_FORECAST, result);
+			break;
+		}
+		getContentResolver().update(MainProvider.CONTENT_URI_WEATHER, values, where, null);
+	}
+
+	private boolean addCityToProvider(City city) {
+		if (city == null) {
+			return false;
+		}
+		
+		boolean flag = false;
+
+		Cursor cursor = null;
+		try {
+			ContentResolver resolver = getContentResolver();
+			String where = MainProvider.KEY_CITY_ID + " = " + city.getCityId();
+			cursor = resolver.query(MainProvider.CONTENT_URI_CITIES, null, where, null, null);
+			if (cursor != null && !cursor.moveToNext()) {
+				ContentValues values = new ContentValues();
+				values.put(MainProvider.KEY_CITY_ID, city.getCityId());
+				
+				resolver.insert(MainProvider.CONTENT_URI_WEATHER, values);
+				
+				values.put(MainProvider.KEY_NAME, city.getName());
+				values.put(MainProvider.KEY_COUNTRY, city.getCountry());
+				values.put(MainProvider.KEY_LONGITUDE, city.getLongitude());
+				values.put(MainProvider.KEY_LATITUDE, city.getLatitude());
+				resolver.insert(MainProvider.CONTENT_URI_CITIES, values);
+				
+				flag = true;
+			}
+		} catch(Exception e) {
+			Log.e(TAG, "Error found when adding city to provider");
+		} finally {
+			if (cursor != null && !cursor.isClosed()) {
+				cursor.close();
+			}
+		}
+		
+		return flag;
+	}
+
+	private boolean deleteCityFromProvider(long cityId) {
+		String where = MainProvider.KEY_CITY_ID + " = " + cityId;
+		int rows1 = getContentResolver().delete(MainProvider.CONTENT_URI_CITIES, where, null);
+		int rows2 = getContentResolver().delete(MainProvider.CONTENT_URI_WEATHER, where, null);
+		
+		return (rows1 > 0 && rows2 > 0) ? true : false;
+	}
+
+	private boolean checkConnection() {
+		ConnectivityManager manager = 
+				(ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo info = manager.getActiveNetworkInfo();
+		if (info != null && info.isConnected()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	/**
 	 * Query remote server for specific request.
 	 * 
@@ -240,7 +302,7 @@ public class MainUpdateService extends IntentService {
 	 */
 	private String download(String request) {
 		StringBuilder builder = new StringBuilder();
-
+	
 		try {
 			URL url = new URL(request);
 			HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
@@ -265,7 +327,7 @@ public class MainUpdateService extends IntentService {
 		} catch (IOException e) {
 			Log.e(TAG, "Error opening the http connection");
 		}
-
+	
 		return builder.toString();
 	}
 
@@ -278,8 +340,8 @@ public class MainUpdateService extends IntentService {
 				if (city != null) {
 					boolean flag =  addCityToProvider(city);
 					if (flag) {
-						queryWeathers(FLAG_CURRENT);
-						queryWeathers(FLAG_FORECAST);
+						queryWeather(FLAG_CURRENT);
+						queryWeather(FLAG_FORECAST);
 					}
 				}
 			}
@@ -287,31 +349,7 @@ public class MainUpdateService extends IntentService {
 			e.printStackTrace();
 		}
 	}
-	
-	private City readCityFromQuery(String query) {
-		if (query == null) {
-			return null;
-		}
-		
-		JSONObject reader;
-		try {
-			reader = new JSONObject(query);
-			long id = reader.getLong("id");
-			String name = reader.getString("name");
-			
-			JSONObject sys = reader.getJSONObject("sys");
-			String country = sys.getString("country");
-			
-			JSONObject coord = reader.getJSONObject("coord");
-			double longitude = coord.getDouble("lon");
-			double latitude = coord.getDouble("lat");
-			
-			return new City(id, name, country, longitude, latitude);
-		} catch (JSONException e) {
-			return null;
-		}
-	}
-	
+
 	private City readCityFromAssets(String line) {
 		if (line == null) {
 			return null;
@@ -332,40 +370,6 @@ public class MainUpdateService extends IntentService {
 		} catch (JSONException e) {
 			return null;
 		}
-	}
-
-	private boolean addCityToProvider(City city) {
-		boolean result = false;
-
-		if (city != null) {
-			ContentResolver resolver = getContentResolver();
-			String where = CityProvider.KEY_CITYID + " = " + city.getCityId();
-			Cursor query = resolver.query(CityProvider.CONTENT_URI, null, where, null, null);
-			if (query != null) {
-				if (query.getCount() == 0) {
-					ContentValues values = new ContentValues();
-					values.put(CityProvider.KEY_CITYID, city.getCityId());
-					values.put(CityProvider.KEY_NAME, city.getName());
-					values.put(CityProvider.KEY_COUNTRY, city.getCountry());
-					values.put(CityProvider.KEY_LONGITUDE, city.getLongitude());
-					values.put(CityProvider.KEY_LATITUDE, city.getLatitude());
-					resolver.insert(CityProvider.CONTENT_URI, values);
-					
-					result = true;
-				}
-			
-				query.close();
-			}
-		}
-		
-		return result;
-	}
-
-	private boolean deleteCityFromProvider(long cityId) {
-		String where = CityProvider.KEY_CITYID + " = " + cityId;
-		int rows = getContentResolver().delete(CityProvider.CONTENT_URI, where, null);
-		
-		return rows > 0 ? true : false;
 	}
 
 }

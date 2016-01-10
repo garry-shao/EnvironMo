@@ -8,13 +8,14 @@ import java.util.TimeZone;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.qmsos.environmo.CityProvider;
+import org.qmsos.environmo.MainProvider;
 import org.qmsos.environmo.R;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +24,7 @@ import android.widget.TextView;
 
 public class CurrentFragment extends Fragment {
 	
+	private static final String TAG = CurrentFragment.class.getSimpleName();
 	private static final String KEY_CITYID = "KEY_CITYID";
 	
 	private float CURRENT_SIZE;
@@ -46,44 +48,50 @@ public class CurrentFragment extends Fragment {
 		
 		long cityId = getArguments().getLong(KEY_CITYID);
 		
-		String[] projection = { CityProvider.KEY_CURRENT };
-		String where = CityProvider.KEY_CITYID + " = " + cityId;
-		Cursor cursor = getContext().getContentResolver()
-				.query(CityProvider.CONTENT_URI, projection, where, null, null);
-		if (cursor != null && cursor.moveToFirst()) {
-			String current = cursor.getString(cursor.getColumnIndex(CityProvider.KEY_CURRENT));
-			
-			updateCurrent(view, current);
+		Cursor cursor = null;
+		try {
+			String[] projection = { MainProvider.KEY_CURRENT, MainProvider.KEY_FORECAST };
+			String where = MainProvider.KEY_CITY_ID + " = " + cityId;
+			cursor = getContext().getContentResolver()
+					.query(MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+			if (cursor != null && cursor.moveToFirst()) {
+				String current = cursor.getString(cursor.getColumnIndexOrThrow(MainProvider.KEY_CURRENT));
+				String forecast = cursor.getString(cursor.getColumnIndexOrThrow(MainProvider.KEY_FORECAST));
+				
+				updateCurrent(view, current);
+				updateForecast(view, forecast);
+			}
+		} catch (Exception e) {
+			Log.e(TAG, "the column does not exist");
+		} finally {
+			if (cursor != null && !cursor.isClosed()) {
+				cursor.close();
+			}
 		}
-		cursor.close();
-		
-		String[] projection2 = { CityProvider.KEY_FORECAST };
-		Cursor cursor2 = getContext().getContentResolver()
-				.query(CityProvider.CONTENT_URI, projection2, where, null, null);
-		if (cursor2 != null && cursor2.moveToFirst()) {
-			String forecast = cursor2.getString(cursor2.getColumnIndex(CityProvider.KEY_FORECAST));
-			
-			updateForecast(view, forecast);
-		}
-		cursor2.close();
-		
+	
 		return view;
 	}
 
 	public void showForecast(int day) {
+		if (day < 0 || day > 3) {
+			return;
+		}
+		
 		float forecastSize = 72f;
 		
 		long cityId = getArguments().getLong(KEY_CITYID);
-		String where = CityProvider.KEY_CITYID + " = " + cityId;
+		String where = MainProvider.KEY_CITY_ID + " = " + cityId;
 
 		if (day == 0) {
-			String[] projection = { CityProvider.KEY_CURRENT };
+			String[] projection = { MainProvider.KEY_CURRENT, MainProvider.KEY_FORECAST };
 			Cursor cursor = getContext().getContentResolver()
-					.query(CityProvider.CONTENT_URI, projection, where, null, null);
+					.query(MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				String current = cursor.getString(cursor.getColumnIndex(CityProvider.KEY_CURRENT));
+				String current = cursor.getString(cursor.getColumnIndexOrThrow(MainProvider.KEY_CURRENT));
+				String forecast = cursor.getString(cursor.getColumnIndexOrThrow(MainProvider.KEY_FORECAST));
 				
 				updateCurrent(getView(), current);
+				updateForecast(getView(), forecast);
 				
 				TextView v = (TextView) getView().findViewById(R.id.current_temperature);
 				v.setTextSize(TypedValue.COMPLEX_UNIT_PX, CURRENT_SIZE);
@@ -92,22 +100,12 @@ public class CurrentFragment extends Fragment {
 				v.setText(R.string.temperature_format);
 			}
 			cursor.close();
-			
-			String[] projection2 = { CityProvider.KEY_FORECAST };
-			Cursor cursor2 = getContext().getContentResolver()
-					.query(CityProvider.CONTENT_URI, projection2, where, null, null);
-			if (cursor2 != null && cursor2.moveToFirst()) {
-				String forecast = cursor2.getString(cursor2.getColumnIndex(CityProvider.KEY_FORECAST));
-				
-				updateForecast(getView(), forecast);
-			}
-			cursor2.close();
 		} else if (day >= 1 && day <= 3) {
-			String[] projection = { CityProvider.KEY_FORECAST };
+			String[] projection = { MainProvider.KEY_FORECAST };
 			Cursor cursor = getContext().getContentResolver()
-					.query(CityProvider.CONTENT_URI, projection, where, null, null);
+					.query(MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				String results = cursor.getString(cursor.getColumnIndex(CityProvider.KEY_FORECAST));
+				String results = cursor.getString(cursor.getColumnIndex(MainProvider.KEY_FORECAST));
 				
 				try {
 					JSONObject reader = new JSONObject(results);
@@ -157,6 +155,10 @@ public class CurrentFragment extends Fragment {
 	}
 
 	private void updateCurrent(View view, String json) {
+		if (json == null) {
+			return;
+		}
+		
 		try {
 			JSONObject reader = new JSONObject(json);
 			
@@ -187,6 +189,10 @@ public class CurrentFragment extends Fragment {
 	}
 
 	private void updateForecast(View view, String json) {
+		if (json == null) {
+			return;
+		}
+		
 		try {
 			JSONObject reader = new JSONObject(json);
 	

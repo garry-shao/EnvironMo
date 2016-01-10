@@ -1,6 +1,6 @@
 package org.qmsos.environmo.util;
 
-import org.qmsos.environmo.CityProvider;
+import org.qmsos.environmo.MainProvider;
 import org.qmsos.environmo.MainUpdateService;
 import org.qmsos.environmo.R;
 
@@ -32,8 +32,8 @@ public class UtilCursorAdapter extends UtilBaseAdapter<ViewHolder> {
 
 	@Override
 	public void onBindViewHolder(ViewHolder holder, Cursor cursor) {
-		final long id = cursor.getLong(cursor.getColumnIndex(CityProvider.KEY_CITYID));
-		String name = cursor.getString(cursor.getColumnIndex(CityProvider.KEY_NAME));
+		final long id = cursor.getLong(cursor.getColumnIndex(MainProvider.KEY_CITY_ID));
+		String name = cursor.getString(cursor.getColumnIndex(MainProvider.KEY_NAME));
 
 		((UtilViewHolder) holder).cityIdView.setText(String.valueOf(id));
 		((UtilViewHolder) holder).cityNameView.setText(name);
