@@ -1,13 +1,13 @@
 package org.qmsos.environmo;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.util.regex.PatternSyntaxException;
+
 import org.qmsos.environmo.fragment.CurrentFragment;
 import org.qmsos.environmo.fragment.ForecastFragment;
 import org.qmsos.environmo.fragment.ForecastFragment.OnWeatherClickListener;
 import org.qmsos.environmo.util.UtilPagerAdapter;
 import org.qmsos.environmo.util.UtilPagerIndicator;
+import org.qmsos.environmo.util.UtilWeatherParser;
 
 import android.content.Intent;
 import android.database.Cursor;
@@ -21,6 +21,7 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
@@ -33,7 +34,11 @@ import android.widget.TextView;
  */
 public class MainActivity extends AppCompatActivity 
 implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnWeatherClickListener {
+	
+	private static final String TAG = MainActivity.class.getSimpleName();
 
+	public static final int DAY_COUNT = 3;
+	
 	private UtilPagerAdapter adapter;
 
 	@Override
@@ -121,7 +126,25 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnWeatherClickListener
 	}
 	
 	@Override
-	public void onWeatherClick(int day) {
+	public void onCurrentClick() {
+		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+		
+//		Workaround: FragmentStatePagerAdapter's instantiateItem() method will return 
+//		the reference of fragment instead of calling getItem() method to create a new 
+//		one if it exists already.
+		CurrentFragment fragment = (CurrentFragment) 
+				adapter.instantiateItem(viewPager, viewPager.getCurrentItem());
+		if (fragment != null && fragment.isAdded()) {
+			fragment.showCurrent();
+			
+			long cityId = adapter.getId(viewPager.getCurrentItem());
+
+			updateBackground(cityId, 0, UtilWeatherParser.FLAG_CURRENT);
+		}		
+	}
+
+	@Override
+	public void onForecastClick(int day) {
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
 		
 //		Workaround: FragmentStatePagerAdapter's instantiateItem() method will return 
@@ -133,7 +156,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnWeatherClickListener
 			fragment.showForecast(day);
 			
 			long cityId = adapter.getId(viewPager.getCurrentItem());
-			setBackground(cityId, day);
+
+			updateBackground(cityId, day, UtilWeatherParser.FLAG_FORECAST);
 		}
 	}
 
@@ -144,116 +168,107 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnWeatherClickListener
 			ViewPager pager = (ViewPager) findViewById(R.id.view_pager);
 			if (pager != null) {
 				int position = pager.getCurrentItem();
-				long cityid = adapter.getId(position);
-				if (cityid != 0) {
-					fragment.refresh(cityid);
+				long cityId = adapter.getId(position);
+				if (cityId != 0) {
+					fragment.refresh(cityId);
 					
-					updateBackground(cityid);
-					updateCityName(cityid);
+					updateBackground(cityId, 0, UtilWeatherParser.FLAG_CURRENT);
+					updateCityName(cityId);
 				}
-				
 			}
 		}
+		
 		UtilPagerIndicator indicator = (UtilPagerIndicator) findViewById(R.id.pager_indicator);
 		if (indicator != null) {
 			indicator.dataChanged();
 		}
 	}
 
-	private void setBackground(long cityId, int day) {
-		if (day == 0) {
-			updateBackground(cityId);
-		} else {
-			String[] projection = { MainProvider.KEY_FORECAST };
+	private void updateBackground(long cityId, int day, int flag) {
+		Cursor cursor = null;
+		try {
+			String[] projection = { MainProvider.KEY_CURRENT, MainProvider.KEY_FORECAST };
 			String where = MainProvider.KEY_CITY_ID + " = " + cityId;
-			Cursor cursor = getContentResolver()
-					.query(MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+			
+			cursor = getContentResolver().query(
+					MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				String forecast = cursor.getString(cursor.getColumnIndex(MainProvider.KEY_FORECAST));
-				
-				JSONObject reader;
-				try {
-					reader = new JSONObject(forecast);
-					JSONArray list = reader.getJSONArray("list");
-					JSONObject dayForecast = list.getJSONObject(day);
-					JSONArray weather = dayForecast.getJSONArray("weather");
-					int weatherId = weather.getJSONObject(0).getInt("id");
-					
-					View v = findViewById(R.id.swipe_refresh);
-					setBackgroundImage(v, weatherId);
-				} catch (JSONException e) {
-					e.printStackTrace();
+				switch (flag) {
+				case UtilWeatherParser.FLAG_CURRENT:
+					String current = cursor.getString(
+							cursor.getColumnIndexOrThrow(MainProvider.KEY_CURRENT));
+					if (current != null) {
+						try {
+							String[] elements = current.split("\\|");
+							if (elements.length == UtilWeatherParser.COUNT_ELEMENTS_CURRENT) {
+								int weatherId = Integer.parseInt(elements[0]);
+								
+								View v = findViewById(R.id.swipe_refresh);
+								UtilWeatherParser.setBackgroundOfView(v, weatherId);
+							}
+						} catch (PatternSyntaxException e) {
+							Log.e(TAG, "the syntax of the supplied regular expression is not valid");
+						} catch (NumberFormatException e) {
+							Log.e(TAG, "string cannot be parsed as an integer value");
+						}
+					}
+					break;
+				case UtilWeatherParser.FLAG_FORECAST:
+					String forecast = cursor.getString(
+							cursor.getColumnIndexOrThrow(MainProvider.KEY_FORECAST));
+					if (forecast != null) {
+						try {
+							String[] elements = forecast.split(";");
+							if (elements.length == DAY_COUNT) {
+								if (0 <= day && day < DAY_COUNT) {
+									String element = elements[day];
+									String[] values = element.split("\\|");
+									if (values.length == UtilWeatherParser.COUNT_ELEMENTS_FORECAST) {
+										int weatherId = Integer.parseInt(values[0]);
+										
+										View v = findViewById(R.id.swipe_refresh);
+										UtilWeatherParser.setBackgroundOfView(v, weatherId);
+									}
+								}
+							}
+						} catch (PatternSyntaxException e) {
+							Log.e(TAG, "the syntax of the supplied regular expression is not valid");
+						} catch (NumberFormatException e) {
+							Log.e(TAG, "string cannot be parsed as an integer value");
+						}
+					}
+					break;
 				}
 			}
-			cursor.close();
-		}
-	}
-	
-	private void updateBackground(long cityId) {
-		if (cityId > 0) {
-			String[] projection = { MainProvider.KEY_CITY_ID, MainProvider.KEY_CURRENT };
-			String where = MainProvider.KEY_CITY_ID + " = " + cityId;
-			Cursor cursor = getContentResolver()
-					.query(MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
-			if (cursor != null && cursor.moveToFirst()) {
-				String current = cursor.getString(cursor.getColumnIndex(MainProvider.KEY_CURRENT));
-				if (current == null) {
-					return;
-				}
-				
-				try {
-					JSONObject reader = new JSONObject(current);
-					JSONArray weather = reader.getJSONArray("weather");
-					int id = weather.getJSONObject(0).getInt("id");
-					
-					View v = findViewById(R.id.swipe_refresh);
-					setBackgroundImage(v, id);
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
+		} catch (IllegalArgumentException e) {
+			Log.e(TAG, "The column does not exist");
+		} finally {
+			if (cursor != null && !cursor.isClosed()) {
+				cursor.close();
 			}
-			cursor.close();
 		}
 	}
 	
 	private void updateCityName(long cityId) {
-		if (cityId > 0) {
+		Cursor cursor = null;
+		try {
 			String[] projection = { MainProvider.KEY_CITY_ID, MainProvider.KEY_NAME };
 			String where = MainProvider.KEY_CITY_ID + " = " + cityId;
-			Cursor cursor = getContentResolver()
-					.query(MainProvider.CONTENT_URI_CITIES, projection, where, null, null);
+			
+			cursor = getContentResolver().query(
+					MainProvider.CONTENT_URI_CITIES, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
 				String name = cursor.getString(cursor.getColumnIndex(MainProvider.KEY_NAME));
+				
 				TextView textView = (TextView) findViewById(R.id.city_name);
 				textView.setText(name);
 			}
-			cursor.close();
-		}
-	}
-
-	private void setBackgroundImage(View v, int id) {
-		if (200 <= id && id <= 299) {
-			v.setBackgroundResource(R.drawable.bg_11);
-		} else if (300 <= id && id <= 399) {
-			v.setBackgroundResource(R.drawable.bg_09);
-		} else if (500 <= id && id <= 504) {
-			v.setBackgroundResource(R.drawable.bg_10);
-		} else if (511 == id) {
-			v.setBackgroundResource(R.drawable.bg_13);
-		} else if (520 <= id && id <= 599) {
-			v.setBackgroundResource(R.drawable.bg_09);
-		} else if (600 <= id && id <= 699) {
-			v.setBackgroundResource(R.drawable.bg_13);
-		} else if (700 <= id && id <= 799) {
-			v.setBackgroundResource(R.drawable.bg_50);
-		} else if (800 == id) {
-			v.setBackgroundResource(R.drawable.bg_01);
-		} else if (801 == id) {
-			v.setBackgroundResource(R.drawable.bg_02);
-		} else if (802 == id || 803 == id) {
-			v.setBackgroundResource(R.drawable.bg_03);
-		} else if (804 == id) {
-			v.setBackgroundResource(R.drawable.bg_04);
+		} catch (IllegalArgumentException e) {
+			Log.e(TAG, "The column does not exist");
+		} finally {
+			if (cursor != null & !cursor.isClosed()) {
+				cursor.close();
+			}
 		}
 	}
 

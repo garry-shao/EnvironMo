@@ -11,6 +11,7 @@ import java.net.URL;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.qmsos.environmo.data.City;
+import org.qmsos.environmo.util.UtilWeatherParser;
 
 import android.app.IntentService;
 import android.content.ContentResolver;
@@ -41,11 +42,6 @@ public class MainUpdateService extends IntentService {
 	// private static final String API_KEY = "054dcbb7bea48220bc5d30d5fc53932e";
 	// api_key from forecast.io
 	// private static final String API_KEY = "b2794078a6804a588f58950bffd10151";
-
-	/**
-	 * Days to forecast.
-	 */
-	private static final String DAY_COUNT = "4";
 
 	private static final int FLAG_CURRENT = 1;
 	private static final int FLAG_FORECAST = 2;
@@ -91,9 +87,11 @@ public class MainUpdateService extends IntentService {
 					queryWeather(FLAG_FORECAST);
 				}
 			} else if (action.equals(ACTION_QUERY_CITY)) {
-				String cityname = intent.getStringExtra(EXTRA_KEY_CITY_NAME);
-
-				queryCity(cityname);
+				if (checkConnection()) {
+					String cityname = intent.getStringExtra(EXTRA_KEY_CITY_NAME);
+					
+					queryCity(cityname);
+				}
 			} else if (action.equals(ACTION_DELETE_CITY)) {
 				long cityId = intent.getLongExtra(EXTRA_KEY_CITY_ID, -1);
 				if (cityId != -1) {
@@ -151,7 +149,7 @@ public class MainUpdateService extends IntentService {
 					MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 			if (cursor != null) {
 				while (cursor.moveToNext()) {
-					long cityId = cursor.getLong(cursor.getColumnIndex(MainProvider.KEY_CITY_ID));
+					long cityId = cursor.getLong(cursor.getColumnIndexOrThrow(MainProvider.KEY_CITY_ID));
 					String query = assembleQuery(cityId, flag);
 					if (query != null) {
 						String result =  download(query);
@@ -160,8 +158,8 @@ public class MainUpdateService extends IntentService {
 					}
 				}
 			}
-		} catch (Exception e) {
-			Log.e(TAG, "Error found when query weather");
+		} catch (IllegalArgumentException e) {
+			Log.e(TAG, "The column does not exist");
 		} finally {
 			if (cursor != null && !cursor.isClosed()) {
 				cursor.close();
@@ -169,33 +167,6 @@ public class MainUpdateService extends IntentService {
 		}
 	}
 	
-/*	private String assembleQuery(int flag) {
-		StringBuilder b = new StringBuilder("id=");
-		
-		ContentResolver resolver = getContentResolver();
-		
-		String[] projection = { CityProvider.KEY_CITYID };
-		String where = CityProvider.KEY_CITYID;
-
-		Cursor query = resolver.query(CityProvider.CONTENT_URI, projection, where, null, null);
-		if (query != null && query.getCount() != 0) {
-			while (query.moveToNext()) {
-				Long cityId = query.getLong(query.getColumnIndex(CityProvider.KEY_CITYID));
-				b.append(cityId);
-			}
-		}
-		
-		switch (flag) {
-		case FLAG_CURRENT:
-			return "http://api.openweathermap.org/data/2.5/" 
-			+ "group?" + b.toString()
-			+ "&units=" + "metric"
-			+ "&appid=" + API_KEY;
-		default:
-			return null;
-		}
-	}
-*/	
 	private String assembleQuery(long cityId, int flag) {
 		if (cityId == 0) {
 			return null;
@@ -209,8 +180,7 @@ public class MainUpdateService extends IntentService {
 					+ "&appid=" + API_KEY;
 		case FLAG_FORECAST:
 			return "http://api.openweathermap.org/data/2.5/" 
-					+ "forecast/daily?" + "id="	+ String.valueOf(cityId) 
-					+ "&cnt=" + DAY_COUNT
+					+ "forecast?" + "id=" + String.valueOf(cityId) 
 					+ "&units=" + "metric"
 					+ "&appid=" + API_KEY;
 		default:
@@ -226,12 +196,21 @@ public class MainUpdateService extends IntentService {
 		String where = MainProvider.KEY_CITY_ID + " = " + cityId;
 		ContentValues values = new ContentValues();
 		
+		String parsed = null;
 		switch (flag) {
 		case FLAG_CURRENT:
-			values.put(MainProvider.KEY_CURRENT, result);
+			parsed = UtilWeatherParser.parseRawToPattern(result, UtilWeatherParser.FLAG_CURRENT);
+			if (parsed != null) {
+				values.put(MainProvider.KEY_CURRENT, parsed);
+			}
+			
 			break;
 		case FLAG_FORECAST:
-			values.put(MainProvider.KEY_FORECAST, result);
+			parsed = UtilWeatherParser.parseRawToPattern(result, UtilWeatherParser.FLAG_FORECAST);
+			if (parsed != null) {
+				values.put(MainProvider.KEY_FORECAST, parsed);
+			}
+			
 			break;
 		}
 		getContentResolver().update(MainProvider.CONTENT_URI_WEATHER, values, where, null);
@@ -263,7 +242,7 @@ public class MainUpdateService extends IntentService {
 				
 				flag = true;
 			}
-		} catch(Exception e) {
+		} catch (Exception e) {
 			Log.e(TAG, "Error found when adding city to provider");
 		} finally {
 			if (cursor != null && !cursor.isClosed()) {

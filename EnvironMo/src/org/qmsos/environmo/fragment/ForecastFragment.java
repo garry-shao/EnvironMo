@@ -1,14 +1,11 @@
 package org.qmsos.environmo.fragment;
 
-import java.util.Calendar;
-import java.util.TimeZone;
+import java.util.regex.PatternSyntaxException;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.qmsos.environmo.MainProvider;
 import org.qmsos.environmo.MainActivity;
+import org.qmsos.environmo.MainProvider;
 import org.qmsos.environmo.R;
+import org.qmsos.environmo.util.UtilWeatherParser;
 
 import android.database.Cursor;
 import android.os.Bundle;
@@ -23,7 +20,7 @@ import android.widget.TextView;
 public class ForecastFragment extends Fragment {
 
 	private static final String TAG = ForecastFragment.class.getSimpleName();
-	
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.view_forecast, container, false);
@@ -34,17 +31,30 @@ public class ForecastFragment extends Fragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		
-		for (int i = 0; i <= 3; i++) {
+
+		TextView textView = (TextView) getView().findViewById(R.id.current);
+		textView.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				try {
+					((OnWeatherClickListener) getContext()).onCurrentClick();
+				} catch (ClassCastException e) {
+					throw new ClassCastException("context must implement OnWeatherClickListener");
+				}
+			}
+		});
+
+		for (int i = 0; i < MainActivity.DAY_COUNT; i++) {
 			final int j = i;
-			TextView textView = (TextView) getView().findViewById(
+			textView = (TextView) getView().findViewById(
 					getResources().getIdentifier("forecast_" + j, "id", getContext().getPackageName()));
 			textView.setOnClickListener(new OnClickListener() {
-				
+
 				@Override
 				public void onClick(View v) {
 					try {
-						((OnWeatherClickListener) getContext()).onWeatherClick(j);
+						((OnWeatherClickListener) getContext()).onForecastClick(j);
 					} catch (ClassCastException e) {
 						throw new ClassCastException("context must implement OnWeatherClickListener");
 					}
@@ -56,13 +66,64 @@ public class ForecastFragment extends Fragment {
 	public void refresh(long cityId) {
 		Cursor cursor = null;
 		try {
-			String[] projection = { MainProvider.KEY_CITY_ID, MainProvider.KEY_FORECAST };
+			String[] projection = { 
+					MainProvider.KEY_CITY_ID, MainProvider.KEY_CURRENT, MainProvider.KEY_FORECAST };
 			String where = MainProvider.KEY_CITY_ID + " = " + cityId;
-			cursor = getContext().getContentResolver()
-					.query(MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+
+			cursor = getContext().getContentResolver().query(
+					MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
+				String current = cursor.getString(cursor.getColumnIndexOrThrow(MainProvider.KEY_CURRENT));
 				String forecast = cursor.getString(cursor.getColumnIndexOrThrow(MainProvider.KEY_FORECAST));
-				updateForecast(getView(), forecast);
+
+				if (current != null) {
+					try {
+						String[] elements = current.split("\\|");
+						if (elements.length == UtilWeatherParser.COUNT_ELEMENTS_CURRENT) {
+							int weatherId = Integer.parseInt(elements[0]);
+
+							String s = "Now" + "\n" + elements[1] + "\u00B0" + "C";
+
+							TextView textView = (TextView) getView().findViewById(R.id.current);
+							textView.setText(s);
+
+							UtilWeatherParser.setIconOfForecastView(textView, weatherId);
+						}
+					} catch (PatternSyntaxException e) {
+						Log.e(TAG, "the syntax of the supplied regular expression is not valid");
+					} catch (NumberFormatException e) {
+						Log.e(TAG, "string cannot be parsed as an integer value");
+					}
+				}
+				if (forecast != null) {
+					try {
+						String[] elements = forecast.split(";");
+						if (elements.length == MainActivity.DAY_COUNT) {
+							for (int i = 0; i < elements.length; i++) {
+								String element = elements[i];
+								String[] values = element.split("\\|");
+								if (values.length == UtilWeatherParser.COUNT_ELEMENTS_FORECAST) {
+									int weatherId = Integer.parseInt(values[0]);
+
+									String s = (i + 1) * 24 + "h\n" 
+											+ values[1] + "~" + values[2] + "\u00B0" + "C";
+
+									TextView v = (TextView) getView().findViewById(
+											getResources().getIdentifier(
+													"forecast_" + i, "id", getContext().getPackageName()));
+									
+									v.setText(s);
+
+									UtilWeatherParser.setIconOfForecastView(v, weatherId);
+								}
+							}
+						}
+					} catch (PatternSyntaxException e) {
+						Log.e(TAG, "the syntax of the supplied regular expression is not valid");
+					} catch (NumberFormatException e) {
+						Log.e(TAG, "string cannot be parsed as an integer value");
+					}
+				}
 			}
 		} catch (IllegalArgumentException e) {
 			Log.e(TAG, "The column does not exist");
@@ -72,102 +133,22 @@ public class ForecastFragment extends Fragment {
 			}
 		}
 	}
-	
-	private void updateForecast(View view, String json) {
-		if (json == null) {
-			return;
-		}
-		
-		try {
-			JSONObject reader = new JSONObject(json);
-	
-			JSONArray list = reader.getJSONArray("list");
-			for (int i = 0; i < list.length(); i++) {
-				JSONObject forecast = list.getJSONObject(i);
-				
-				long date = forecast.getLong("dt");
-				
-				JSONArray weather = forecast.getJSONArray("weather");
-				int weatherId = weather.getJSONObject(0).getInt("id");
-				
-				JSONObject temp = forecast.getJSONObject("temp");
-				int temperatureMin = temp.getInt("min");
-				int temperatureMax = temp.getInt("max");
-				
-				String temperatureString = String.valueOf(temperatureMin) + "~"
-						+ String.valueOf(temperatureMax) + "\u00B0" + "C";
-				String dateString = getDayOfWeek(date);
-				if (dateString != null) {
-					TextView textView = (TextView) view.findViewById(getResources().getIdentifier(
-							"forecast_" + i, "id", getContext().getPackageName()));
-					textView.setText(dateString + "\n" + temperatureString);
-					
-					setForecastIcon(textView, weatherId);
-				}
-			}
-		} catch (JSONException e) {
-			Log.e(MainActivity.class.getSimpleName(), "JSON parsing error!");
-			
-			return;
-		}
-	}
-
-	private String getDayOfWeek(long time) {
-		if (time == 0) {
-			return null;
-		}
-		Calendar c = Calendar.getInstance();
-		c.setTimeZone(TimeZone.getTimeZone("UTC"));
-		c.setTimeInMillis(time * 1000);
-		
-		int i = c.get(Calendar.DAY_OF_WEEK);
-		switch (i) {
-		case 1:
-			return "Sun";
-		case 2:
-			return "Mon";
-		case 3:
-			return "Tues";
-		case 4:
-			return "Wed";
-		case 5:
-			return "Thur";
-		case 6:
-			return "Fri";
-		case 7:
-			return "Sat";
-		default:
-			return null;
-		}
-	}
-
-	private void setForecastIcon(TextView v, int id) {
-		if (200 <= id && id <= 299) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_11, 0, 0);
-		} else if (300 <= id && id <= 399) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_09, 0, 0);
-		} else if (500 <= id && id <= 504) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_10, 0, 0);
-		} else if (511 == id) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_13, 0, 0);
-		} else if (520 <= id && id <= 599) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_09, 0, 0);
-		} else if (600 <= id && id <= 699) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_13, 0, 0);
-		} else if (700 <= id && id <= 799) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_50, 0, 0);
-		} else if (800 == id) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_01, 0, 0);
-		} else if (801 == id) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_02, 0, 0);
-		} else if (802 == id || 803 == id) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_03, 0, 0);
-		} else if (804 == id) {
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_04, 0, 0);
-		}
-	}
 
 	public interface OnWeatherClickListener {
-		void onWeatherClick(int day);
+		
+		/**
+		 * When view of current weather is clicked.
+		 */
+		void onCurrentClick();
+
+		/**
+		 * When view of forecast weather is clicked.
+		 * 
+		 * @param day
+		 *            which day is clicked(0 means next 24h, 1 means 48h,
+		 *            etc...).
+		 */
+		void onForecastClick(int day);
 	}
+
 }
