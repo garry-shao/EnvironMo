@@ -21,6 +21,9 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.app.AppCompatActivity;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.RelativeSizeSpan;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -252,16 +255,24 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnWeatherClickListener
 	private void updateCityName(long cityId) {
 		Cursor cursor = null;
 		try {
-			String[] projection = { MainProvider.KEY_CITY_ID, MainProvider.KEY_NAME };
+			String[] projection = { MainProvider.KEY_CITY_ID, MainProvider.KEY_NAME, MainProvider.KEY_COUNTRY };
 			String where = MainProvider.KEY_CITY_ID + " = " + cityId;
 			
 			cursor = getContentResolver().query(
 					MainProvider.CONTENT_URI_CITIES, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				String name = cursor.getString(cursor.getColumnIndex(MainProvider.KEY_NAME));
+				String name = cursor.getString(cursor.getColumnIndexOrThrow(MainProvider.KEY_NAME));
+				String country = cursor.getString(cursor.getColumnIndexOrThrow(MainProvider.KEY_COUNTRY));
+				
+				String raw = name + " " +country;
+				
+				SpannableString spanned = new SpannableString(raw);
+				spanned.setSpan(new RelativeSizeSpan(0.5f), 
+						name.length() + 1,raw.length(), 
+						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 				
 				TextView textView = (TextView) findViewById(R.id.city_name);
-				textView.setText(name);
+				textView.setText(spanned);
 			}
 		} catch (IllegalArgumentException e) {
 			Log.e(TAG, "The column does not exist");
