@@ -14,8 +14,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.RelativeSizeSpan;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,9 +26,8 @@ import android.widget.TextView;
 public class CurrentFragment extends Fragment {
 	
 	private static final String TAG = CurrentFragment.class.getSimpleName();
-	private static final String KEY_CITYID = "KEY_CITYID";
 	
-	private float CURRENT_SIZE;
+	private static final String KEY_CITYID = "KEY_CITYID";
 	
 	public static CurrentFragment newInstance(Context context, long cityId) {
 		Bundle b = new Bundle();
@@ -41,9 +42,6 @@ public class CurrentFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view =  inflater.inflate(R.layout.view_current, container, false);
-		
-		TextView v = (TextView) view.findViewById(R.id.current_temperature);
-		CURRENT_SIZE = v.getTextSize();
 	
 		return view;
 	}
@@ -78,14 +76,10 @@ public class CurrentFragment extends Fragment {
 							int temperature = Integer.parseInt(elements[1]);
 							
 							TextView v = (TextView) getView().findViewById(R.id.current_temperature);
-							v.setText(String.valueOf(temperature));
-							v.setTextSize(TypedValue.COMPLEX_UNIT_PX, CURRENT_SIZE);
+							v.setText(String.valueOf(temperature) + "\u00B0");
 							
 							v = (TextView) getView().findViewById(R.id.current_main);
 							v.setText(UtilWeatherParser.getDescriptionFromWeatherId(weatherId));
-							
-							v = (TextView) getView().findViewById(R.id.current_temperature_format);
-							v.setText(R.string.temperature_format);
 							
 							Calendar c = Calendar.getInstance();
 							SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd", Locale.US);
@@ -137,7 +131,6 @@ public class CurrentFragment extends Fragment {
 	
 	public void showForecast(int day) {
 		if (0 <= day && day < MainActivity.DAY_COUNT) {
-			float forecastSize = 72f;
 			
 			long cityId = getArguments().getLong(KEY_CITYID);
 			
@@ -162,15 +155,17 @@ public class CurrentFragment extends Fragment {
 									
 									String s = values[1] + "~" + values[2] + "\u00B0";
 									
+									SpannableString spanned = new SpannableString(s);
+									spanned.setSpan(new RelativeSizeSpan(0.6f), 
+											0,
+											s.length(), 
+											Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+									
 									TextView v = (TextView) getView().findViewById(
 											R.id.current_temperature);
-									v.setText(s);
-									v.setTextSize(forecastSize);
+									v.setText(spanned);
 									
 									v = (TextView) getView().findViewById(R.id.current_main);
-									v.setText(null);
-									
-									v = (TextView) getView().findViewById(R.id.current_temperature_format);
 									v.setText(null);
 									
 									v = (TextView) getView().findViewById(R.id.current_day_temperature);

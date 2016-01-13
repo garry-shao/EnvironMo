@@ -268,7 +268,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnWeatherClickListener
 				
 				SpannableString spanned = new SpannableString(raw);
 				spanned.setSpan(new RelativeSizeSpan(0.5f), 
-						name.length() + 1,raw.length(), 
+						name.length() + 1, 
+						raw.length(), 
 						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 				
 				TextView textView = (TextView) findViewById(R.id.city_name);

@@ -2,7 +2,6 @@
 
     <string name="app_name">EnvironMo</string>
     <string name="placeholder">null</string>
-    <string name="temperature_format">\u00b0</string>
     <string name="activity_city_name">Cities</string>
     <string name="activity_city_add">Add City</string>
     <string name="button_import">Import Database</string>
