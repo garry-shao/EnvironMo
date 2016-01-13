@@ -79,7 +79,7 @@ public class CurrentFragment extends Fragment {
 							v.setText(String.valueOf(temperature) + "\u00B0");
 							
 							v = (TextView) getView().findViewById(R.id.current_main);
-							v.setText(UtilWeatherParser.getDescriptionFromWeatherId(weatherId));
+							v.setText(UtilWeatherParser.getCategoryFromWeatherId(weatherId));
 							
 							Calendar c = Calendar.getInstance();
 							SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd", Locale.US);

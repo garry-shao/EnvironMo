@@ -122,6 +122,44 @@ public class UtilWeatherParser {
 		}
 	}
 
+	public static String getCategoryFromWeatherId(int weatherId) {
+		if (200 <= weatherId && weatherId <= 299) {
+			return "Thunderstorm";
+		} else if (300 <= weatherId && weatherId <= 399) {
+			return "Drizzle";
+		} else if (500 <= weatherId && weatherId <= 599) {
+			return "Rain";
+		} else if (600 <= weatherId && weatherId <= 699) {
+			return "Snow";
+		} else if (701 == weatherId) {
+			return "Mist";
+		} else if (711 == weatherId) {
+			return "Smoke";
+		} else if (721 == weatherId) {
+			return "Haze";
+		} else if (731 == weatherId) {
+			return "Sand";
+		} else if (741 == weatherId) {
+			return "Fog";
+		} else if (751 == weatherId) {
+			return "Sand";
+		} else if (761 == weatherId) {
+			return "Dust";
+		} else if (762 == weatherId) {
+			return "Volcanic Ash";
+		} else if (771 == weatherId) {
+			return "Squalls";
+		} else if (781 == weatherId) {
+			return "Tornado";
+		} else if (800 == weatherId) {
+			return "Clear";
+		} else if (801 <= weatherId && weatherId <= 899) {
+			return "Clouds";
+		} else {
+			return null;
+		}
+	}
+	
 	public static String getDescriptionFromWeatherId(int weatherId) {
 		switch (weatherId) {
 		case 200:
