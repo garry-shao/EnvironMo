@@ -36,12 +36,7 @@ public class MainUpdateService extends IntentService {
 	/**
 	 * api_key from openweathermap.org
 	 */
-	private static final String API_KEY = "2de143494c0b295cca9337e1e96b00e0";
-
-	// api_key from openweathermap.com
-	// private static final String API_KEY = "054dcbb7bea48220bc5d30d5fc53932e";
-	// api_key from forecast.io
-	// private static final String API_KEY = "b2794078a6804a588f58950bffd10151";
+	private static final String API_KEY = "054dcbb7bea48220bc5d30d5fc53932e";
 
 	private static final int FLAG_CURRENT = 1;
 	private static final int FLAG_FORECAST = 2;
