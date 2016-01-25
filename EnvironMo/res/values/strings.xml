@@ -2,8 +2,10 @@
 
     <string name="app_name">EnvironMo</string>
     <string name="placeholder">null</string>
+    <string name="weather_map">Map</string>
     <string name="activity_city_name">Cities</string>
     <string name="activity_city_add">Add City</string>
+    <string name="activity_weather_map">Weather Map</string>
     <string name="button_import">Import Database</string>
     <string name="button_add">Add City</string>
     <string name="button_delete">Delete</string>

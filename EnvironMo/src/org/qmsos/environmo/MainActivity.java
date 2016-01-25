@@ -36,7 +36,7 @@ import android.widget.TextView;
  * 
  */
 public class MainActivity extends AppCompatActivity 
-implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnWeatherClickListener {
+implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWeatherClickListener {
 	
 	private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -69,18 +69,15 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnWeatherClickListener
 		});
 
 		TextView cityName = (TextView) findViewById(R.id.city_name);
-		cityName.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				Intent i = new Intent(getBaseContext(), CityActivity.class);
-				startActivity(i);
-			}
-		});
+		cityName.setOnClickListener(this);
+		
+		TextView weatherMap = (TextView) findViewById(R.id.weather_map);
+		weatherMap.setOnClickListener(this);
 	
 		adapter = new UtilPagerAdapter(getSupportFragmentManager(), this, null);
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
 		viewPager.setAdapter(adapter);
+		
 		UtilPagerIndicator pagerIndicator = (UtilPagerIndicator) findViewById(R.id.pager_indicator);
 		pagerIndicator.setViewPager(viewPager);
 		pagerIndicator.setOnPageChangeListener(this);
@@ -128,6 +125,27 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnWeatherClickListener
 		refreshGUI();
 	}
 	
+	@Override
+	public void onClick(View v) {
+		if (v != null) {
+			if (v.getId() == R.id.weather_map) {
+				ViewPager pager = (ViewPager) findViewById(R.id.view_pager);
+				if (pager != null) {
+					int position = pager.getCurrentItem();
+					long cityId = adapter.getId(position);
+					if (cityId != 0) {
+						Intent i = new Intent(getBaseContext(), MapActivity.class);
+						i.putExtra(MainUpdateService.EXTRA_KEY_CITY_ID, cityId);
+						startActivity(i);
+					}
+				}
+			} else if (v.getId() == R.id.city_name) {
+				Intent i = new Intent(getBaseContext(), CityActivity.class);
+				startActivity(i);
+			}
+		}
+	}
+
 	@Override
 	public void onCurrentClick() {
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
