@@ -9,5 +9,14 @@
     <string name="button_import">Import Database</string>
     <string name="button_add">Add City</string>
     <string name="button_delete">Delete</string>
+    
+    <!-- Used in map layers option -->
+    <string name="layer_precipitation">Precipitation</string>
+    <string name="layer_rain">Rain</string>
+    <string name="layer_snow">Snow</string>
+    <string name="layer_clouds">Clouds</string>
+    <string name="layer_pressure">Pressure</string>
+    <string name="layer_temperature">Temperature</string>
+    <string name="layer_windspeed">Windspeed</string>
 
 </resources>

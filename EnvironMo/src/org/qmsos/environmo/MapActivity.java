@@ -20,9 +20,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.util.Log;
+import android.view.MenuItem;
 
-public class MapActivity extends AppCompatActivity implements CordovaInterface {
+public class MapActivity extends AppCompatActivity implements OnMenuItemClickListener, CordovaInterface {
 
 	private static final String START_URL = "file:///android_asset/www/index.html";
 	
@@ -34,14 +36,18 @@ public class MapActivity extends AppCompatActivity implements CordovaInterface {
 	private CordovaPlugin activityResultCallback;
 	private CordovaPlugin permissionResultCallback;	
 	private int activityResultRequestCode;
-    
+
+	private long cityId = -1;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_map);
 		
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-		setSupportActionBar(toolbar);
+		toolbar.setTitle(R.string.activity_weather_map);
+		toolbar.inflateMenu(R.menu.menu_map_layer);
+		toolbar.setOnMenuItemClickListener(this);
 		
 		ConfigXmlParser parser = new ConfigXmlParser();
         parser.parse(this);
@@ -51,20 +57,10 @@ public class MapActivity extends AppCompatActivity implements CordovaInterface {
 		systemWebView = (SystemWebView) findViewById(R.id.weather_map_view);
 		cordovaWebView = new CordovaWebViewImpl(new SystemWebViewEngine(systemWebView));
 		cordovaWebView.init(this, parser.getPluginEntries(), parser.getPreferences());
+
+		cityId = getIntent().getLongExtra(MainUpdateService.EXTRA_KEY_CITY_ID, -1);
 		
-		StringBuilder builder = new StringBuilder(START_URL + "?" + "l=temp");
-		
-		Intent i = getIntent();
-		if (i != null) {
-			long cityId = i.getLongExtra(MainUpdateService.EXTRA_KEY_CITY_ID, 0);
-			if (cityId != 0) {
-				String extra = assembleStartUrlExtra(cityId);
-				if (extra != null) {
-					builder.append(extra);
-				}
-			}
-		}
-		cordovaWebView.loadUrl(builder.toString());
+		cordovaWebView.loadUrl(assembleStartUrl(null, cityId));
 	}
 
 	@Override
@@ -74,6 +70,35 @@ public class MapActivity extends AppCompatActivity implements CordovaInterface {
 		}
 		
 		super.onDestroy();
+	}
+
+	@Override
+	public boolean onMenuItemClick(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.menu_layer_precipitation:
+			cordovaWebView.loadUrl(assembleStartUrl("precipitation", cityId));
+			return true;
+		case R.id.menu_layer_rain:
+			cordovaWebView.loadUrl(assembleStartUrl("rain", cityId));
+			return true;
+		case R.id.menu_layer_snow:
+			cordovaWebView.loadUrl(assembleStartUrl("snow", cityId));
+			return true;
+		case R.id.menu_layer_clouds:
+			cordovaWebView.loadUrl(assembleStartUrl("clouds", cityId));
+			return true;
+		case R.id.menu_layer_pressure:
+			cordovaWebView.loadUrl(assembleStartUrl("pressure", cityId));
+			return true;
+		case R.id.menu_layer_temperature:
+			cordovaWebView.loadUrl(assembleStartUrl("temp", cityId));
+			return true;
+		case R.id.menu_layer_windspeed:
+			cordovaWebView.loadUrl(assembleStartUrl("wind", cityId));
+			return true;
+		default:
+			return false;
+		}
 	}
 
 	@Override
@@ -134,9 +159,6 @@ public class MapActivity extends AppCompatActivity implements CordovaInterface {
         permissionResultCallback = plugin;
         
         String[] permissions = { permission };
-//        String[] permissions = new String [1];
-//        permissions[0] = permission;
-//        
         getActivity().requestPermissions(permissions, requestCode);		
 	}
 
@@ -157,6 +179,24 @@ public class MapActivity extends AppCompatActivity implements CordovaInterface {
 		}
 	}
 
+	private String assembleStartUrl(String layer, long cityId) {
+		StringBuilder builder;
+		if (layer == null) {
+			builder = new StringBuilder(START_URL + "?");
+		} else {
+			builder = new StringBuilder(START_URL + "?l=" + layer);
+		}
+		
+		if (cityId > 0) {
+			String extra = assembleStartUrlExtra(cityId);
+			if (extra != null) {
+				builder.append(extra);
+			}
+		}
+		
+		return builder.toString();
+	}
+	
 	private String assembleStartUrlExtra(long cityId) {
 		if (cityId <= 0) {
 			return null;
@@ -175,11 +215,14 @@ public class MapActivity extends AppCompatActivity implements CordovaInterface {
 				long longitude = cursor.getLong(cursor.getColumnIndexOrThrow(MainProvider.KEY_LONGITUDE));
 				long latitude = cursor.getLong(cursor.getColumnIndexOrThrow(MainProvider.KEY_LATITUDE));
 				
+				int zoomlevel = 4;
+				
 				builder.append("&lon=");
 				builder.append(longitude);
 				builder.append("&lat=");
 				builder.append(latitude);
-				builder.append("&zoom=5");
+				builder.append("&zoom=");
+				builder.append(zoomlevel);
 			}
 		} catch (IllegalArgumentException e) {
 			Log.e(TAG, "The column does not exist");
