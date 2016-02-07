@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.LinkedList;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -307,42 +308,56 @@ public class MainUpdateService extends IntentService {
 
 	private void readAssets() {
 		try {
+			LinkedList<ContentValues> cityList = new LinkedList<ContentValues>();
+			
 			InputStream in = getAssets().open("city.list.json");
-			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-			while (reader.readLine() != null) {
-				City city = readCityFromAssets(reader.readLine());
-				if (city != null) {
-					boolean flag =  addCityToProvider(city);
-					if (flag) {
-						queryWeather(FLAG_CURRENT);
-						queryWeather(FLAG_FORECAST);
+			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
+			while (bufferedReader.readLine() != null) {
+				String s = bufferedReader.readLine();
+				
+				JSONObject reader;
+				try {
+					reader = new JSONObject(s);
+					long id = Long.parseLong(reader.getString("_id"));
+					String name = reader.getString("name");
+					String country = reader.getString("country");
+					
+					JSONObject coord = reader.getJSONObject("coord");
+					double longitude = coord.getDouble("lon");
+					double latitude = coord.getDouble("lat");
+					
+					Cursor cursor = null;
+					try {
+						ContentResolver resolver = getContentResolver();
+						String where = MainProvider.KEY_CITY_ID + " = " + id;
+						cursor = resolver.query(MainProvider.CONTENT_URI_CITIES, null, where, null, null);
+						if (cursor != null && !cursor.moveToNext()) {
+							ContentValues value = new ContentValues();
+							value.put(MainProvider.KEY_CITY_ID, id);
+							value.put(MainProvider.KEY_NAME, name);
+							value.put(MainProvider.KEY_COUNTRY, country);
+							value.put(MainProvider.KEY_LONGITUDE, longitude);
+							value.put(MainProvider.KEY_LATITUDE, latitude);
+							
+							cityList.add(value);
+							
+						}
+					} finally {
+						if (cursor != null && !cursor.isClosed()) {
+							cursor.close();
+						}
 					}
+				} catch (JSONException e) {
 				}
 			}
+			
+			int cityListSize = cityList.size();
+			ContentValues[] values = new ContentValues[cityListSize];
+			cityList.toArray(values);
+			
+			getContentResolver().bulkInsert(MainProvider.CONTENT_URI_CITIES, values);
 		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private City readCityFromAssets(String line) {
-		if (line == null) {
-			return null;
-		}
-		
-		JSONObject reader;
-		try {
-			reader = new JSONObject(line);
-			long id = Long.parseLong(reader.getString("_id"));
-			String name = reader.getString("name");
-			String country = reader.getString("country");
-			
-			JSONObject coord = reader.getJSONObject("coord");
-			double longitude = coord.getDouble("lon");
-			double latitude = coord.getDouble("lat");
-			
-			return new City(id, name, country, longitude, latitude);
-		} catch (JSONException e) {
-			return null;
+			Log.e(TAG, "Something wrong with the result JSON");
 		}
 	}
 

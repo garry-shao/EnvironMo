@@ -147,6 +147,52 @@ public class MainProvider extends ContentProvider {
 	}
 
 	@Override
+	public int bulkInsert(Uri uri, ContentValues[] values) {
+		SQLiteDatabase database = dbHelper.getWritableDatabase();
+		
+		switch (uriMatcher.match(uri)) {
+		case CITIES:
+		case CITY_ID:
+			database.beginTransaction();
+			try {
+				for (ContentValues value : values) {
+					long rowID = database.insert(DatabaseHelper.TABLE_CITIES, "city", value);
+					if (rowID < 0) {
+						return 0;
+					}
+				}
+				database.setTransactionSuccessful();
+			} finally {
+				database.endTransaction();
+			}
+			
+			getContext().getContentResolver().notifyChange(uri, null);
+			
+			return values.length;
+		case WEATHER:
+		case WEATHER_ID:
+			database.beginTransaction();
+			try {
+				for (ContentValues value : values) {
+					long rowID = database.insert(DatabaseHelper.TABLE_WEATHER, "weather", value);
+					if (rowID < 0) {
+						return 0;
+					}
+				}
+				database.setTransactionSuccessful();
+			} finally {
+				database.endTransaction();
+			}
+			
+			getContext().getContentResolver().notifyChange(uri, null);
+			
+			return values.length;
+		default:
+			throw new SQLException("Failed to insert row into " + uri);
+		}
+	}
+
+	@Override
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
 		SQLiteDatabase database = dbHelper.getWritableDatabase();
 		
