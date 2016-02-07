@@ -1,14 +1,14 @@
-package org.qmsos.environmo.fragment;
+package org.qmsos.weathermo.fragment;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.regex.PatternSyntaxException;
 
-import org.qmsos.environmo.MainActivity;
-import org.qmsos.environmo.MainProvider;
-import org.qmsos.environmo.R;
-import org.qmsos.environmo.util.UtilWeatherParser;
+import org.qmsos.weathermo.MainActivity;
+import org.qmsos.weathermo.R;
+import org.qmsos.weathermo.WeatherProvider;
+import org.qmsos.weathermo.util.WeatherParser;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -23,17 +23,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-public class CurrentFragment extends Fragment {
+public class CurrentWeather extends Fragment {
 	
-	private static final String TAG = CurrentFragment.class.getSimpleName();
+	private static final String TAG = CurrentWeather.class.getSimpleName();
 	
 	private static final String KEY_CITYID = "KEY_CITYID";
 	
-	public static CurrentFragment newInstance(Context context, long cityId) {
+	public static CurrentWeather newInstance(Context context, long cityId) {
 		Bundle b = new Bundle();
 		b.putLong(KEY_CITYID, cityId);
 
-		CurrentFragment fragment = new CurrentFragment();
+		CurrentWeather fragment = new CurrentWeather();
 		fragment.setArguments(b);
 		
 		return fragment;
@@ -41,7 +41,7 @@ public class CurrentFragment extends Fragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view =  inflater.inflate(R.layout.view_current, container, false);
+		View view =  inflater.inflate(R.layout.fragment_current, container, false);
 	
 		return view;
 	}
@@ -59,19 +59,19 @@ public class CurrentFragment extends Fragment {
 		
 		Cursor cursor = null;
 		try {
-			String[] projection = { MainProvider.KEY_CURRENT, MainProvider.KEY_FORECAST };
-			String where = MainProvider.KEY_CITY_ID + " = " + cityId;
+			String[] projection = { WeatherProvider.KEY_CURRENT, WeatherProvider.KEY_FORECAST };
+			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
 			
 			cursor = getContext().getContentResolver().query(
-					MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+					WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				String current = cursor.getString(cursor.getColumnIndexOrThrow(MainProvider.KEY_CURRENT));
-				String forecast = cursor.getString(cursor.getColumnIndexOrThrow(MainProvider.KEY_FORECAST));
+				String current = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CURRENT));
+				String forecast = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_FORECAST));
 				
 				if (current != null) {
 					try {
 						String[] elements = current.split("\\|");
-						if (elements.length == UtilWeatherParser.COUNT_ELEMENTS_CURRENT) {
+						if (elements.length == WeatherParser.COUNT_ELEMENTS_CURRENT) {
 							int weatherId = Integer.parseInt(elements[0]);
 							int temperature = Integer.parseInt(elements[1]);
 							
@@ -79,13 +79,13 @@ public class CurrentFragment extends Fragment {
 							v.setText(String.valueOf(temperature) + "\u00B0");
 							
 							v = (TextView) getView().findViewById(R.id.current_main);
-							v.setText(UtilWeatherParser.getCategoryFromWeatherId(weatherId));
+							v.setText(WeatherParser.getCategoryFromWeatherId(weatherId));
 							
 							Calendar c = Calendar.getInstance();
 							SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd", Locale.US);
 							String date = dateFormat.format(c.getTime());
 							
-							String day = UtilWeatherParser.getCurrentDayOfWeek();
+							String day = WeatherParser.getCurrentDayOfWeek();
 							if (day != null) {
 								v = (TextView) getView().findViewById(R.id.current_date);
 								v.setText(date + " " + day);
@@ -104,7 +104,7 @@ public class CurrentFragment extends Fragment {
 						if (elements.length == MainActivity.DAY_COUNT) {
 							String element = elements[0];
 							String[] values = element.split("\\|");
-							if (values.length == UtilWeatherParser.COUNT_ELEMENTS_FORECAST) {
+							if (values.length == WeatherParser.COUNT_ELEMENTS_FORECAST) {
 								String s = values[1] + "~" + values[2] + "\u00B0" + "C";
 								
 								TextView textView = (TextView) getView().findViewById(
@@ -136,21 +136,21 @@ public class CurrentFragment extends Fragment {
 			
 			Cursor cursor = null;
 			try {
-				String where = MainProvider.KEY_CITY_ID + " = " + cityId;
-				String[] projection = { MainProvider.KEY_FORECAST };
+				String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
+				String[] projection = { WeatherProvider.KEY_FORECAST };
 				
 				cursor = getContext().getContentResolver().query(
-						MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+						WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 				if (cursor != null && cursor.moveToFirst()) {
 					String forecast = cursor.getString(
-							cursor.getColumnIndexOrThrow(MainProvider.KEY_FORECAST));
+							cursor.getColumnIndexOrThrow(WeatherProvider.KEY_FORECAST));
 					if (forecast != null) {
 						try {
 							String[] elements = forecast.split(";");
 							if (elements.length == MainActivity.DAY_COUNT) {
 								String element = elements[day];
 								String[] values = element.split("\\|");
-								if (values.length == UtilWeatherParser.COUNT_ELEMENTS_FORECAST) {
+								if (values.length == WeatherParser.COUNT_ELEMENTS_FORECAST) {
 									int weatherId = Integer.parseInt(values[0]);
 									
 									String s = values[1] + "~" + values[2] + "\u00B0";
@@ -169,7 +169,7 @@ public class CurrentFragment extends Fragment {
 									v.setText(null);
 									
 									v = (TextView) getView().findViewById(R.id.current_day_temperature);
-									v.setText(UtilWeatherParser.getDescriptionFromWeatherId(weatherId));
+									v.setText(WeatherParser.getDescriptionFromWeatherId(weatherId));
 									
 									v = (TextView) getView().findViewById(R.id.current_date);
 									v.setText("+" + (day + 1) * 24 + ":00h");

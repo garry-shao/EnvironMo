@@ -1,8 +1,8 @@
-package org.qmsos.environmo.util;
+package org.qmsos.weathermo.widget;
 
-import org.qmsos.environmo.MainProvider;
-import org.qmsos.environmo.MainUpdateService;
-import org.qmsos.environmo.R;
+import org.qmsos.weathermo.R;
+import org.qmsos.weathermo.WeatherProvider;
+import org.qmsos.weathermo.WeatherService;
 
 import android.content.Context;
 import android.content.Intent;
@@ -20,11 +20,11 @@ import android.widget.TextView;
  * 
  *
  */
-public class UtilCursorAdapter extends UtilBaseAdapter<ViewHolder> {
+public class RecyclerViewCursorAdapter extends RecyclerViewBaseAdapter<ViewHolder> {
 	
 	private Context context;
 
-	public UtilCursorAdapter(Context context, Cursor cursor) {
+	public RecyclerViewCursorAdapter(Context context, Cursor cursor) {
 		super(context, cursor);
 		
 		this.context = context;
@@ -32,8 +32,8 @@ public class UtilCursorAdapter extends UtilBaseAdapter<ViewHolder> {
 
 	@Override
 	public void onBindViewHolder(ViewHolder holder, Cursor cursor) {
-		final long id = cursor.getLong(cursor.getColumnIndex(MainProvider.KEY_CITY_ID));
-		String name = cursor.getString(cursor.getColumnIndex(MainProvider.KEY_NAME));
+		final long id = cursor.getLong(cursor.getColumnIndex(WeatherProvider.KEY_CITY_ID));
+		String name = cursor.getString(cursor.getColumnIndex(WeatherProvider.KEY_NAME));
 
 		((UtilViewHolder) holder).cityIdView.setText(String.valueOf(id));
 		((UtilViewHolder) holder).cityNameView.setText(name);
@@ -41,9 +41,9 @@ public class UtilCursorAdapter extends UtilBaseAdapter<ViewHolder> {
 
 			@Override
 			public void onClick(View v) {
-				Intent i = new Intent(context, MainUpdateService.class);
-				i.setAction(MainUpdateService.ACTION_DELETE_CITY);
-				i.putExtra(MainUpdateService.EXTRA_KEY_CITY_ID, id);
+				Intent i = new Intent(context, WeatherService.class);
+				i.setAction(WeatherService.ACTION_DELETE_CITY);
+				i.putExtra(WeatherService.EXTRA_KEY_CITY_ID, id);
 				context.startService(i);
 			}
 		});

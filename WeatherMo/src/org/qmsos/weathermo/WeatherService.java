@@ -1,4 +1,4 @@
-package org.qmsos.environmo;
+package org.qmsos.weathermo;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,8 +11,8 @@ import java.util.LinkedList;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.qmsos.environmo.data.City;
-import org.qmsos.environmo.util.UtilWeatherParser;
+import org.qmsos.weathermo.util.City;
+import org.qmsos.weathermo.util.WeatherParser;
 
 import android.app.IntentService;
 import android.content.ContentResolver;
@@ -30,9 +30,9 @@ import android.util.Log;
  * @author environmo(at)sina.com
  *
  */
-public class MainUpdateService extends IntentService {
+public class WeatherService extends IntentService {
 
-	private static final String TAG = MainUpdateService.class.getSimpleName();
+	private static final String TAG = WeatherService.class.getSimpleName();
 	
 	/**
 	 * api_key from openweathermap.org
@@ -59,7 +59,7 @@ public class MainUpdateService extends IntentService {
 	/**
 	 * Default empty constructor.
 	 */
-	public MainUpdateService() {
+	public WeatherService() {
 		super(TAG);
 	}
 
@@ -69,7 +69,7 @@ public class MainUpdateService extends IntentService {
 	 * @param name
 	 *            Used to name the worker thread, important only for debugging.
 	 */
-	public MainUpdateService(String name) {
+	public WeatherService(String name) {
 		super(name);
 	}
 
@@ -107,7 +107,7 @@ public class MainUpdateService extends IntentService {
 		String request = "http://api.openweathermap.org/data/2.5/"
 				+ "weather?" + "q=" + cityName
 				+ "&units=" + "metric"
-				+ "&appid=" + MainUpdateService.API_KEY;
+				+ "&appid=" + WeatherService.API_KEY;
 		String result = download(request);
 		if (result == null) {
 			return false;
@@ -139,13 +139,13 @@ public class MainUpdateService extends IntentService {
 	private void queryWeather(int flag) {
 		Cursor cursor = null;
 		try {
-			String[] projection = { MainProvider.KEY_CITY_ID };
-			String where = MainProvider.KEY_CITY_ID;
+			String[] projection = { WeatherProvider.KEY_CITY_ID };
+			String where = WeatherProvider.KEY_CITY_ID;
 			cursor = getContentResolver().query(
-					MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+					WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 			if (cursor != null) {
 				while (cursor.moveToNext()) {
-					long cityId = cursor.getLong(cursor.getColumnIndexOrThrow(MainProvider.KEY_CITY_ID));
+					long cityId = cursor.getLong(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CITY_ID));
 					String query = assembleQuery(cityId, flag);
 					if (query != null) {
 						String result =  download(query);
@@ -189,27 +189,27 @@ public class MainUpdateService extends IntentService {
 			return;
 		}
 		
-		String where = MainProvider.KEY_CITY_ID + " = " + cityId;
+		String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
 		ContentValues values = new ContentValues();
 		
 		String parsed = null;
 		switch (flag) {
 		case FLAG_CURRENT:
-			parsed = UtilWeatherParser.parseRawToPattern(result, UtilWeatherParser.FLAG_CURRENT);
+			parsed = WeatherParser.parseRawToPattern(result, WeatherParser.FLAG_CURRENT);
 			if (parsed != null) {
-				values.put(MainProvider.KEY_CURRENT, parsed);
+				values.put(WeatherProvider.KEY_CURRENT, parsed);
 			}
 			
 			break;
 		case FLAG_FORECAST:
-			parsed = UtilWeatherParser.parseRawToPattern(result, UtilWeatherParser.FLAG_FORECAST);
+			parsed = WeatherParser.parseRawToPattern(result, WeatherParser.FLAG_FORECAST);
 			if (parsed != null) {
-				values.put(MainProvider.KEY_FORECAST, parsed);
+				values.put(WeatherProvider.KEY_FORECAST, parsed);
 			}
 			
 			break;
 		}
-		getContentResolver().update(MainProvider.CONTENT_URI_WEATHER, values, where, null);
+		getContentResolver().update(WeatherProvider.CONTENT_URI_WEATHER, values, where, null);
 	}
 
 	private boolean addCityToProvider(City city) {
@@ -222,19 +222,19 @@ public class MainUpdateService extends IntentService {
 		Cursor cursor = null;
 		try {
 			ContentResolver resolver = getContentResolver();
-			String where = MainProvider.KEY_CITY_ID + " = " + city.getCityId();
-			cursor = resolver.query(MainProvider.CONTENT_URI_CITIES, null, where, null, null);
+			String where = WeatherProvider.KEY_CITY_ID + " = " + city.getCityId();
+			cursor = resolver.query(WeatherProvider.CONTENT_URI_CITIES, null, where, null, null);
 			if (cursor != null && !cursor.moveToNext()) {
 				ContentValues values = new ContentValues();
-				values.put(MainProvider.KEY_CITY_ID, city.getCityId());
+				values.put(WeatherProvider.KEY_CITY_ID, city.getCityId());
 				
-				resolver.insert(MainProvider.CONTENT_URI_WEATHER, values);
+				resolver.insert(WeatherProvider.CONTENT_URI_WEATHER, values);
 				
-				values.put(MainProvider.KEY_NAME, city.getName());
-				values.put(MainProvider.KEY_COUNTRY, city.getCountry());
-				values.put(MainProvider.KEY_LONGITUDE, city.getLongitude());
-				values.put(MainProvider.KEY_LATITUDE, city.getLatitude());
-				resolver.insert(MainProvider.CONTENT_URI_CITIES, values);
+				values.put(WeatherProvider.KEY_NAME, city.getName());
+				values.put(WeatherProvider.KEY_COUNTRY, city.getCountry());
+				values.put(WeatherProvider.KEY_LONGITUDE, city.getLongitude());
+				values.put(WeatherProvider.KEY_LATITUDE, city.getLatitude());
+				resolver.insert(WeatherProvider.CONTENT_URI_CITIES, values);
 				
 				flag = true;
 			}
@@ -250,9 +250,9 @@ public class MainUpdateService extends IntentService {
 	}
 
 	private boolean deleteCityFromProvider(long cityId) {
-		String where = MainProvider.KEY_CITY_ID + " = " + cityId;
-		int rows1 = getContentResolver().delete(MainProvider.CONTENT_URI_CITIES, where, null);
-		int rows2 = getContentResolver().delete(MainProvider.CONTENT_URI_WEATHER, where, null);
+		String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
+		int rows1 = getContentResolver().delete(WeatherProvider.CONTENT_URI_CITIES, where, null);
+		int rows2 = getContentResolver().delete(WeatherProvider.CONTENT_URI_WEATHER, where, null);
 		
 		return (rows1 > 0 && rows2 > 0) ? true : false;
 	}
@@ -329,15 +329,15 @@ public class MainUpdateService extends IntentService {
 					Cursor cursor = null;
 					try {
 						ContentResolver resolver = getContentResolver();
-						String where = MainProvider.KEY_CITY_ID + " = " + id;
-						cursor = resolver.query(MainProvider.CONTENT_URI_CITIES, null, where, null, null);
+						String where = WeatherProvider.KEY_CITY_ID + " = " + id;
+						cursor = resolver.query(WeatherProvider.CONTENT_URI_CITIES, null, where, null, null);
 						if (cursor != null && !cursor.moveToNext()) {
 							ContentValues value = new ContentValues();
-							value.put(MainProvider.KEY_CITY_ID, id);
-							value.put(MainProvider.KEY_NAME, name);
-							value.put(MainProvider.KEY_COUNTRY, country);
-							value.put(MainProvider.KEY_LONGITUDE, longitude);
-							value.put(MainProvider.KEY_LATITUDE, latitude);
+							value.put(WeatherProvider.KEY_CITY_ID, id);
+							value.put(WeatherProvider.KEY_NAME, name);
+							value.put(WeatherProvider.KEY_COUNTRY, country);
+							value.put(WeatherProvider.KEY_LONGITUDE, longitude);
+							value.put(WeatherProvider.KEY_LATITUDE, latitude);
 							
 							cityList.add(value);
 							
@@ -355,7 +355,7 @@ public class MainUpdateService extends IntentService {
 			ContentValues[] values = new ContentValues[cityListSize];
 			cityList.toArray(values);
 			
-			getContentResolver().bulkInsert(MainProvider.CONTENT_URI_CITIES, values);
+			getContentResolver().bulkInsert(WeatherProvider.CONTENT_URI_CITIES, values);
 		} catch (IOException e) {
 			Log.e(TAG, "Something wrong with the result JSON");
 		}

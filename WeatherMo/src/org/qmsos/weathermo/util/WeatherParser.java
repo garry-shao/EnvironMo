@@ -1,4 +1,4 @@
-package org.qmsos.environmo.util;
+package org.qmsos.weathermo.util;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -9,7 +9,7 @@ import java.util.TimeZone;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.qmsos.environmo.R;
+import org.qmsos.weathermo.R;
 
 import android.util.Log;
 import android.util.SparseIntArray;
@@ -21,9 +21,9 @@ import android.widget.TextView;
  * 
  *
  */
-public class UtilWeatherParser {
+public class WeatherParser {
 	
-	private static final String TAG = UtilWeatherParser.class.getSimpleName();
+	private static final String TAG = WeatherParser.class.getSimpleName();
 	
 	public static final int FLAG_CURRENT = 1;
 	public static final int FLAG_FORECAST = 2;

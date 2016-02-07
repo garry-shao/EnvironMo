@@ -1,11 +1,11 @@
-package org.qmsos.environmo.fragment;
+package org.qmsos.weathermo.fragment;
 
 import java.util.regex.PatternSyntaxException;
 
-import org.qmsos.environmo.MainActivity;
-import org.qmsos.environmo.MainProvider;
-import org.qmsos.environmo.R;
-import org.qmsos.environmo.util.UtilWeatherParser;
+import org.qmsos.weathermo.MainActivity;
+import org.qmsos.weathermo.R;
+import org.qmsos.weathermo.WeatherProvider;
+import org.qmsos.weathermo.util.WeatherParser;
 
 import android.database.Cursor;
 import android.os.Bundle;
@@ -17,13 +17,13 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-public class ForecastFragment extends Fragment {
+public class ForecastWeather extends Fragment {
 
-	private static final String TAG = ForecastFragment.class.getSimpleName();
+	private static final String TAG = ForecastWeather.class.getSimpleName();
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.view_forecast, container, false);
+		View view = inflater.inflate(R.layout.fragment_forecast, container, false);
 
 		return view;
 	}
@@ -67,19 +67,19 @@ public class ForecastFragment extends Fragment {
 		Cursor cursor = null;
 		try {
 			String[] projection = { 
-					MainProvider.KEY_CITY_ID, MainProvider.KEY_CURRENT, MainProvider.KEY_FORECAST };
-			String where = MainProvider.KEY_CITY_ID + " = " + cityId;
+					WeatherProvider.KEY_CITY_ID, WeatherProvider.KEY_CURRENT, WeatherProvider.KEY_FORECAST };
+			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
 
 			cursor = getContext().getContentResolver().query(
-					MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+					WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				String current = cursor.getString(cursor.getColumnIndexOrThrow(MainProvider.KEY_CURRENT));
-				String forecast = cursor.getString(cursor.getColumnIndexOrThrow(MainProvider.KEY_FORECAST));
+				String current = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CURRENT));
+				String forecast = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_FORECAST));
 
 				if (current != null) {
 					try {
 						String[] elements = current.split("\\|");
-						if (elements.length == UtilWeatherParser.COUNT_ELEMENTS_CURRENT) {
+						if (elements.length == WeatherParser.COUNT_ELEMENTS_CURRENT) {
 							int weatherId = Integer.parseInt(elements[0]);
 
 							String s = "Now" + "\n" + elements[1] + "\u00B0" + "C";
@@ -87,7 +87,7 @@ public class ForecastFragment extends Fragment {
 							TextView textView = (TextView) getView().findViewById(R.id.current);
 							textView.setText(s);
 
-							UtilWeatherParser.setIconOfForecastView(textView, weatherId);
+							WeatherParser.setIconOfForecastView(textView, weatherId);
 						}
 					} catch (PatternSyntaxException e) {
 						Log.e(TAG, "the syntax of the supplied regular expression is not valid");
@@ -102,7 +102,7 @@ public class ForecastFragment extends Fragment {
 							for (int i = 0; i < elements.length; i++) {
 								String element = elements[i];
 								String[] values = element.split("\\|");
-								if (values.length == UtilWeatherParser.COUNT_ELEMENTS_FORECAST) {
+								if (values.length == WeatherParser.COUNT_ELEMENTS_FORECAST) {
 									int weatherId = Integer.parseInt(values[0]);
 
 									String s = (i + 1) * 24 + "h\n" 
@@ -114,7 +114,7 @@ public class ForecastFragment extends Fragment {
 									
 									v.setText(s);
 
-									UtilWeatherParser.setIconOfForecastView(v, weatherId);
+									WeatherParser.setIconOfForecastView(v, weatherId);
 								}
 							}
 						}

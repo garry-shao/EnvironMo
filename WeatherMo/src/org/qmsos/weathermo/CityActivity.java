@@ -1,6 +1,6 @@
-package org.qmsos.environmo;
+package org.qmsos.weathermo;
 
-import org.qmsos.environmo.util.UtilCursorAdapter;
+import org.qmsos.weathermo.widget.RecyclerViewCursorAdapter;
 
 import android.content.Intent;
 import android.database.Cursor;
@@ -18,7 +18,7 @@ import android.widget.Button;
 
 public class CityActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 	
-	private UtilCursorAdapter adapter;
+	private RecyclerViewCursorAdapter adapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -28,7 +28,7 @@ public class CityActivity extends AppCompatActivity implements LoaderCallbacks<C
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
-		adapter = new UtilCursorAdapter(this, null);
+		adapter = new RecyclerViewCursorAdapter(this, null);
 		RecyclerView cityNames = (RecyclerView) findViewById(R.id.city_candidate);
 		cityNames.setLayoutManager(new LinearLayoutManager(this));
 		cityNames.setAdapter(adapter);
@@ -55,10 +55,10 @@ public class CityActivity extends AppCompatActivity implements LoaderCallbacks<C
 
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String where = MainProvider.KEY_CITY_ID;
-		String[] projection = { MainProvider.KEY_ID, MainProvider.KEY_CITY_ID, MainProvider.KEY_NAME };
+		String where = WeatherProvider.KEY_CITY_ID;
+		String[] projection = { WeatherProvider.KEY_ID, WeatherProvider.KEY_CITY_ID, WeatherProvider.KEY_NAME };
 		
-		return new CursorLoader(this, MainProvider.CONTENT_URI_CITIES, projection, where, null, null);
+		return new CursorLoader(this, WeatherProvider.CONTENT_URI_CITIES, projection, where, null, null);
 	}
 
 	@Override

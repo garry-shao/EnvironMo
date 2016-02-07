@@ -1,6 +1,6 @@
-package org.qmsos.environmo.util;
+package org.qmsos.weathermo.widget;
 
-import org.qmsos.environmo.R;
+import org.qmsos.weathermo.R;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -18,7 +18,7 @@ import android.view.View;
  * 
  *
  */
-public class UtilPagerIndicator extends View implements OnPageChangeListener {
+public class DotViewPagerIndicator extends View implements OnPageChangeListener {
 
 	private ViewPager viewPager;
 	private OnPageChangeListener listener;
@@ -30,7 +30,7 @@ public class UtilPagerIndicator extends View implements OnPageChangeListener {
 	
 	private int current;
 	
-	public UtilPagerIndicator(Context context, AttributeSet attrs, int defStyleAttr) {
+	public DotViewPagerIndicator(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 		
 		final Resources res = getResources();
@@ -42,23 +42,23 @@ public class UtilPagerIndicator extends View implements OnPageChangeListener {
 				ContextCompat.getColor(getContext(), R.color.default_unselected_color); 
 		
 		TypedArray a = context.obtainStyledAttributes(
-				attrs, R.styleable.UtilPagerIndicator, defStyleAttr, 0);
+				attrs, R.styleable.DotViewPagerIndicator, defStyleAttr, 0);
 		
-		radius = a.getDimension(R.styleable.UtilPagerIndicator_radius, defaultRadius);
-		padding = a.getDimension(R.styleable.UtilPagerIndicator_padding, defaultPadding);
+		radius = a.getDimension(R.styleable.DotViewPagerIndicator_radius, defaultRadius);
+		padding = a.getDimension(R.styleable.DotViewPagerIndicator_padding, defaultPadding);
 		selectedPaint.setColor(
-				a.getColor(R.styleable.UtilPagerIndicator_selectedColor, defaultSelectedColor));
+				a.getColor(R.styleable.DotViewPagerIndicator_selectedColor, defaultSelectedColor));
 		unselectedPaint.setColor(
-				a.getColor(R.styleable.UtilPagerIndicator_unselectedColor, defaultUnselectedColor));
+				a.getColor(R.styleable.DotViewPagerIndicator_unselectedColor, defaultUnselectedColor));
 		
 		a.recycle();
 	}
 
-	public UtilPagerIndicator(Context context, AttributeSet attrs) {
+	public DotViewPagerIndicator(Context context, AttributeSet attrs) {
 		this(context, attrs, 0);
 	}
 
-	public UtilPagerIndicator(Context context) {
+	public DotViewPagerIndicator(Context context) {
 		this(context, null);
 	}
 

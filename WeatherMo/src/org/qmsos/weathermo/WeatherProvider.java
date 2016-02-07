@@ -1,4 +1,4 @@
-package org.qmsos.environmo;
+package org.qmsos.weathermo;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;
@@ -15,12 +15,12 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
-public class MainProvider extends ContentProvider {
+public class WeatherProvider extends ContentProvider {
 
 	public static final Uri CONTENT_URI_CITIES = 
-			Uri.parse("content://org.qmsos.environmo.mainprovider/cities");
+			Uri.parse("content://org.qmsos.weathermo.weatherprovider/cities");
 	public static final Uri CONTENT_URI_WEATHER = 
-			Uri.parse("content://org.qmsos.environmo.mainprovider/weather");
+			Uri.parse("content://org.qmsos.weathermo.weatherprovider/weather");
 	
 	// base columns of database
 	
@@ -45,10 +45,10 @@ public class MainProvider extends ContentProvider {
 	static {
 		uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 		
-		uriMatcher.addURI("org.qmsos.environmo.mainprovider", "cities", CITIES);
-		uriMatcher.addURI("org.qmsos.environmo.mainprovider", "cities/#", CITY_ID);
-		uriMatcher.addURI("org.qmsos.environmo.mainprovider", "weather", WEATHER);
-		uriMatcher.addURI("org.qmsos.environmo.mainprovider", "weather/#", WEATHER_ID);
+		uriMatcher.addURI("org.qmsos.weathermo.weatherprovider", "cities", CITIES);
+		uriMatcher.addURI("org.qmsos.weathermo.weatherprovider", "cities/#", CITY_ID);
+		uriMatcher.addURI("org.qmsos.weathermo.weatherprovider", "weather", WEATHER);
+		uriMatcher.addURI("org.qmsos.weathermo.weatherprovider", "weather/#", WEATHER_ID);
 	}
 
 	private DatabaseHelper dbHelper;
@@ -107,10 +107,10 @@ public class MainProvider extends ContentProvider {
 		switch (uriMatcher.match(uri)) {
 		case CITIES:
 		case WEATHER:
-			return "vnd.android.cursor.dir/vnd.org.qmsos.environmo";
+			return "vnd.android.cursor.dir/vnd.org.qmsos.weathermo";
 		case CITY_ID:
 		case WEATHER_ID:
-			return "vnd.android.cursor.item/vnd.org.qmsos.environmo";
+			return "vnd.android.cursor.item/vnd.org.qmsos.weathermo";
 		default:
 			throw new IllegalArgumentException("Unsupported URI: " + uri);
 		}
@@ -264,7 +264,7 @@ public class MainProvider extends ContentProvider {
 
 	private static class DatabaseHelper extends SQLiteOpenHelper {
 
-		private static final String TAG = MainProvider.class.getSimpleName();
+		private static final String TAG = WeatherProvider.class.getSimpleName();
 		
 		private static final String DATABASE_NAME = "weathers.db";
 		private static final int DATABASE_VERSION = 1;

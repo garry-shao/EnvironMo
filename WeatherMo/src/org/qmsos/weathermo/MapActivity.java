@@ -1,4 +1,4 @@
-package org.qmsos.environmo;
+package org.qmsos.weathermo;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,7 +58,7 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
 		cordovaWebView = new CordovaWebViewImpl(new SystemWebViewEngine(systemWebView));
 		cordovaWebView.init(this, parser.getPluginEntries(), parser.getPreferences());
 
-		cityId = getIntent().getLongExtra(MainUpdateService.EXTRA_KEY_CITY_ID, -1);
+		cityId = getIntent().getLongExtra(WeatherService.EXTRA_KEY_CITY_ID, -1);
 		
 		cordovaWebView.loadUrl(assembleStartUrl(null, cityId));
 	}
@@ -206,14 +206,14 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
 		
 		Cursor cursor = null;
 		try {
-			String[] projection = { MainProvider.KEY_LONGITUDE, MainProvider.KEY_LATITUDE };
-			String where = MainProvider.KEY_CITY_ID + " = " + cityId;
+			String[] projection = { WeatherProvider.KEY_LONGITUDE, WeatherProvider.KEY_LATITUDE };
+			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
 			
 			cursor = getContentResolver().query(
-					MainProvider.CONTENT_URI_CITIES, projection, where, null, null);
+					WeatherProvider.CONTENT_URI_CITIES, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				long longitude = cursor.getLong(cursor.getColumnIndexOrThrow(MainProvider.KEY_LONGITUDE));
-				long latitude = cursor.getLong(cursor.getColumnIndexOrThrow(MainProvider.KEY_LATITUDE));
+				long longitude = cursor.getLong(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_LONGITUDE));
+				long latitude = cursor.getLong(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_LATITUDE));
 				
 				int zoomlevel = 4;
 				

@@ -1,4 +1,4 @@
-package org.qmsos.environmo.data;
+package org.qmsos.weathermo.util;
 
 public class Weather {
 	

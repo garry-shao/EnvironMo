@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.qmsos.environmo"
+    package="org.qmsos.weathermo"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -39,14 +39,14 @@
         </activity>
 
         <service
-            android:name=".MainUpdateService"
+            android:name=".WeatherService"
             android:enabled="true"
             android:exported="false" >
         </service>
 
         <provider
-            android:name=".MainProvider"
-            android:authorities="org.qmsos.environmo.mainprovider"
+            android:name=".WeatherProvider"
+            android:authorities="org.qmsos.weathermo.weatherprovider"
             android:exported="false" >
         </provider>
     </application>

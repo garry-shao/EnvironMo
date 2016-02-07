@@ -1,4 +1,4 @@
-package org.qmsos.environmo;
+package org.qmsos.weathermo;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -47,8 +47,8 @@ public class AddActivity extends AppCompatActivity implements OnEditorActionList
 
 			@Override
 			public void onClick(View v) {
-				Intent i = new Intent(getBaseContext(), MainUpdateService.class);
-				i.setAction(MainUpdateService.ACTION_IMPORT_CITY);
+				Intent i = new Intent(getBaseContext(), WeatherService.class);
+				i.setAction(WeatherService.ACTION_IMPORT_CITY);
 				startService(i);
 				
 				finish();				
@@ -60,9 +60,9 @@ public class AddActivity extends AppCompatActivity implements OnEditorActionList
 	public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 		String cityName = v.getText().toString();
 		
-		Intent intent = new Intent(this, MainUpdateService.class);
-		intent.setAction(MainUpdateService.ACTION_QUERY_CITY);
-		intent.putExtra(MainUpdateService.EXTRA_KEY_CITY_NAME, cityName);
+		Intent intent = new Intent(this, WeatherService.class);
+		intent.setAction(WeatherService.ACTION_QUERY_CITY);
+		intent.putExtra(WeatherService.EXTRA_KEY_CITY_NAME, cityName);
 	
 		startService(intent);
 		

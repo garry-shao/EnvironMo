@@ -1,13 +1,13 @@
-package org.qmsos.environmo;
+package org.qmsos.weathermo;
 
 import java.util.regex.PatternSyntaxException;
 
-import org.qmsos.environmo.fragment.CurrentFragment;
-import org.qmsos.environmo.fragment.ForecastFragment;
-import org.qmsos.environmo.fragment.ForecastFragment.OnWeatherClickListener;
-import org.qmsos.environmo.util.UtilPagerAdapter;
-import org.qmsos.environmo.util.UtilPagerIndicator;
-import org.qmsos.environmo.util.UtilWeatherParser;
+import org.qmsos.weathermo.fragment.CurrentWeather;
+import org.qmsos.weathermo.fragment.ForecastWeather;
+import org.qmsos.weathermo.fragment.ForecastWeather.OnWeatherClickListener;
+import org.qmsos.weathermo.fragment.WeatherPagerAdapter;
+import org.qmsos.weathermo.util.WeatherParser;
+import org.qmsos.weathermo.widget.DotViewPagerIndicator;
 
 import android.content.Intent;
 import android.database.Cursor;
@@ -42,7 +42,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 
 	public static final int DAY_COUNT = 3;
 	
-	private UtilPagerAdapter adapter;
+	private WeatherPagerAdapter adapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -60,8 +60,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 					public void run() {
 						refreshLayout.setRefreshing(false);
 
-						Intent intent = new Intent(getBaseContext(), MainUpdateService.class);
-						intent.setAction(MainUpdateService.ACTION_REFRESH);
+						Intent intent = new Intent(getBaseContext(), WeatherService.class);
+						intent.setAction(WeatherService.ACTION_REFRESH);
 						startService(intent);
 					}
 				}, 500);					
@@ -74,11 +74,11 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 		TextView weatherMap = (TextView) findViewById(R.id.weather_map);
 		weatherMap.setOnClickListener(this);
 	
-		adapter = new UtilPagerAdapter(getSupportFragmentManager(), this, null);
+		adapter = new WeatherPagerAdapter(getSupportFragmentManager(), this, null);
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
 		viewPager.setAdapter(adapter);
 		
-		UtilPagerIndicator pagerIndicator = (UtilPagerIndicator) findViewById(R.id.pager_indicator);
+		DotViewPagerIndicator pagerIndicator = (DotViewPagerIndicator) findViewById(R.id.pager_indicator);
 		pagerIndicator.setViewPager(viewPager);
 		pagerIndicator.setOnPageChangeListener(this);
 		
@@ -94,10 +94,10 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String[] projection = { MainProvider.KEY_CITY_ID };
-		String where = MainProvider.KEY_CITY_ID;
+		String[] projection = { WeatherProvider.KEY_CITY_ID };
+		String where = WeatherProvider.KEY_CITY_ID;
 
-		return new CursorLoader(this, MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+		return new CursorLoader(this, WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 	}
 
 	@Override
@@ -135,7 +135,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 					long cityId = adapter.getId(position);
 					if (cityId != 0) {
 						Intent i = new Intent(getBaseContext(), MapActivity.class);
-						i.putExtra(MainUpdateService.EXTRA_KEY_CITY_ID, cityId);
+						i.putExtra(WeatherService.EXTRA_KEY_CITY_ID, cityId);
 						startActivity(i);
 					}
 				}
@@ -153,14 +153,14 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 //		Workaround: FragmentStatePagerAdapter's instantiateItem() method will return 
 //		the reference of fragment instead of calling getItem() method to create a new 
 //		one if it exists already.
-		CurrentFragment fragment = (CurrentFragment) 
+		CurrentWeather fragment = (CurrentWeather) 
 				adapter.instantiateItem(viewPager, viewPager.getCurrentItem());
 		if (fragment != null && fragment.isAdded()) {
 			fragment.showCurrent();
 			
 			long cityId = adapter.getId(viewPager.getCurrentItem());
 
-			updateBackground(cityId, 0, UtilWeatherParser.FLAG_CURRENT);
+			updateBackground(cityId, 0, WeatherParser.FLAG_CURRENT);
 		}		
 	}
 
@@ -171,19 +171,19 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 //		Workaround: FragmentStatePagerAdapter's instantiateItem() method will return 
 //		the reference of fragment instead of calling getItem() method to create a new 
 //		one if it exists already.
-		CurrentFragment fragment = (CurrentFragment) 
+		CurrentWeather fragment = (CurrentWeather) 
 				adapter.instantiateItem(viewPager, viewPager.getCurrentItem());
 		if (fragment != null && fragment.isAdded()) {
 			fragment.showForecast(day);
 			
 			long cityId = adapter.getId(viewPager.getCurrentItem());
 
-			updateBackground(cityId, day, UtilWeatherParser.FLAG_FORECAST);
+			updateBackground(cityId, day, WeatherParser.FLAG_FORECAST);
 		}
 	}
 
 	private void refreshGUI() {
-		ForecastFragment fragment = (ForecastFragment) 
+		ForecastWeather fragment = (ForecastWeather) 
 				getSupportFragmentManager().findFragmentById(R.id.forecast_fragment);
 		if (fragment != null && fragment.isAdded()) {
 			ViewPager pager = (ViewPager) findViewById(R.id.view_pager);
@@ -193,13 +193,13 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 				if (cityId != 0) {
 					fragment.refresh(cityId);
 					
-					updateBackground(cityId, 0, UtilWeatherParser.FLAG_CURRENT);
+					updateBackground(cityId, 0, WeatherParser.FLAG_CURRENT);
 					updateCityName(cityId);
 				}
 			}
 		}
 		
-		UtilPagerIndicator indicator = (UtilPagerIndicator) findViewById(R.id.pager_indicator);
+		DotViewPagerIndicator indicator = (DotViewPagerIndicator) findViewById(R.id.pager_indicator);
 		if (indicator != null) {
 			indicator.dataChanged();
 		}
@@ -208,24 +208,24 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 	private void updateBackground(long cityId, int day, int flag) {
 		Cursor cursor = null;
 		try {
-			String[] projection = { MainProvider.KEY_CURRENT, MainProvider.KEY_FORECAST };
-			String where = MainProvider.KEY_CITY_ID + " = " + cityId;
+			String[] projection = { WeatherProvider.KEY_CURRENT, WeatherProvider.KEY_FORECAST };
+			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
 			
 			cursor = getContentResolver().query(
-					MainProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+					WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
 				switch (flag) {
-				case UtilWeatherParser.FLAG_CURRENT:
+				case WeatherParser.FLAG_CURRENT:
 					String current = cursor.getString(
-							cursor.getColumnIndexOrThrow(MainProvider.KEY_CURRENT));
+							cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CURRENT));
 					if (current != null) {
 						try {
 							String[] elements = current.split("\\|");
-							if (elements.length == UtilWeatherParser.COUNT_ELEMENTS_CURRENT) {
+							if (elements.length == WeatherParser.COUNT_ELEMENTS_CURRENT) {
 								int weatherId = Integer.parseInt(elements[0]);
 								
 								View v = findViewById(R.id.swipe_refresh);
-								UtilWeatherParser.setBackgroundOfView(v, weatherId);
+								WeatherParser.setBackgroundOfView(v, weatherId);
 							}
 						} catch (PatternSyntaxException e) {
 							Log.e(TAG, "the syntax of the supplied regular expression is not valid");
@@ -234,9 +234,9 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 						}
 					}
 					break;
-				case UtilWeatherParser.FLAG_FORECAST:
+				case WeatherParser.FLAG_FORECAST:
 					String forecast = cursor.getString(
-							cursor.getColumnIndexOrThrow(MainProvider.KEY_FORECAST));
+							cursor.getColumnIndexOrThrow(WeatherProvider.KEY_FORECAST));
 					if (forecast != null) {
 						try {
 							String[] elements = forecast.split(";");
@@ -244,11 +244,11 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 								if (0 <= day && day < DAY_COUNT) {
 									String element = elements[day];
 									String[] values = element.split("\\|");
-									if (values.length == UtilWeatherParser.COUNT_ELEMENTS_FORECAST) {
+									if (values.length == WeatherParser.COUNT_ELEMENTS_FORECAST) {
 										int weatherId = Integer.parseInt(values[0]);
 										
 										View v = findViewById(R.id.swipe_refresh);
-										UtilWeatherParser.setBackgroundOfView(v, weatherId);
+										WeatherParser.setBackgroundOfView(v, weatherId);
 									}
 								}
 							}
@@ -273,14 +273,14 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 	private void updateCityName(long cityId) {
 		Cursor cursor = null;
 		try {
-			String[] projection = { MainProvider.KEY_CITY_ID, MainProvider.KEY_NAME, MainProvider.KEY_COUNTRY };
-			String where = MainProvider.KEY_CITY_ID + " = " + cityId;
+			String[] projection = { WeatherProvider.KEY_CITY_ID, WeatherProvider.KEY_NAME, WeatherProvider.KEY_COUNTRY };
+			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
 			
 			cursor = getContentResolver().query(
-					MainProvider.CONTENT_URI_CITIES, projection, where, null, null);
+					WeatherProvider.CONTENT_URI_CITIES, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				String name = cursor.getString(cursor.getColumnIndexOrThrow(MainProvider.KEY_NAME));
-				String country = cursor.getString(cursor.getColumnIndexOrThrow(MainProvider.KEY_COUNTRY));
+				String name = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_NAME));
+				String country = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_COUNTRY));
 				
 				String raw = name + " " +country;
 				
