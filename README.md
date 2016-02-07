@@ -1,2 +1,2 @@
-# EnvironMo
-Environment Monitor
+# WeatherMo
+Weather Monitor
