@@ -62,15 +62,15 @@ public class WeatherParser {
 				JSONObject reader = new JSONObject(raw);
 				JSONArray list = reader.getJSONArray("list");
 				int count = list.length();
-				if (count < 24) {
+				if (count < 12) {
 					return null;
 				}
 				
 				for (int i = 0; i < 3; i++) {
 					SparseIntArray a = new SparseIntArray(); 
 					List<Integer> temps = new ArrayList<Integer>();
-					for (int j = 0; j < 8; j++) {
-						JSONObject forecast = list.getJSONObject(j + 8 * i);
+					for (int j = 0; j < 4; j++) {
+						JSONObject forecast = list.getJSONObject(j + 4 * i);
 						
 						JSONArray weather = forecast.getJSONArray("weather");
 						int weatherId = weather.getJSONObject(0).getInt("id");

@@ -105,7 +105,7 @@ public class ForecastWeather extends Fragment {
 								if (values.length == WeatherParser.COUNT_ELEMENTS_FORECAST) {
 									int weatherId = Integer.parseInt(values[0]);
 
-									String s = (i + 1) * 24 + "h\n" 
+									String s = (i + 1) * 12 + "h\n" 
 											+ values[1] + "~" + values[2] + "\u00B0" + "C";
 
 									TextView v = (TextView) getView().findViewById(
