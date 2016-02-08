@@ -4,6 +4,7 @@ import java.util.regex.PatternSyntaxException;
 
 import org.qmsos.weathermo.R;
 import org.qmsos.weathermo.WeatherProvider;
+import org.qmsos.weathermo.util.WeatherInfoAdapter;
 import org.qmsos.weathermo.util.WeatherParser;
 
 import android.database.Cursor;
@@ -86,7 +87,7 @@ public class ForecastWeather extends Fragment {
 							TextView textView = (TextView) getView().findViewById(R.id.current);
 							textView.setText(s);
 
-							WeatherParser.setIconOfForecastView(textView, weatherId);
+							WeatherInfoAdapter.setIconOfForecastView(textView, weatherId);
 						}
 					} catch (PatternSyntaxException e) {
 						Log.e(TAG, "the syntax of the supplied regular expression is not valid");
@@ -113,7 +114,7 @@ public class ForecastWeather extends Fragment {
 									
 									v.setText(s);
 
-									WeatherParser.setIconOfForecastView(v, weatherId);
+									WeatherInfoAdapter.setIconOfForecastView(v, weatherId);
 								}
 							}
 						}

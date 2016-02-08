@@ -7,6 +7,7 @@ import java.util.regex.PatternSyntaxException;
 
 import org.qmsos.weathermo.R;
 import org.qmsos.weathermo.WeatherProvider;
+import org.qmsos.weathermo.util.WeatherInfoAdapter;
 import org.qmsos.weathermo.util.WeatherParser;
 
 import android.content.Context;
@@ -78,13 +79,13 @@ public class CurrentWeather extends Fragment {
 							v.setText(String.valueOf(temperature) + "\u00B0");
 							
 							v = (TextView) getView().findViewById(R.id.current_main);
-							v.setText(WeatherParser.getCategoryFromWeatherId(weatherId));
+							v.setText(WeatherInfoAdapter.getCategoryFromWeatherId(weatherId));
 							
 							Calendar c = Calendar.getInstance();
 							SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd", Locale.US);
 							String date = dateFormat.format(c.getTime());
 							
-							String day = WeatherParser.getCurrentDayOfWeek();
+							String day = WeatherInfoAdapter.getCurrentDayOfWeek();
 							if (day != null) {
 								v = (TextView) getView().findViewById(R.id.current_date);
 								v.setText(date + " " + day);
@@ -168,7 +169,7 @@ public class CurrentWeather extends Fragment {
 									v.setText(null);
 									
 									v = (TextView) getView().findViewById(R.id.current_day_temperature);
-									v.setText(WeatherParser.getDescriptionFromWeatherId(weatherId));
+									v.setText(WeatherInfoAdapter.getDescriptionFromWeatherId(weatherId));
 									
 									v = (TextView) getView().findViewById(R.id.current_date);
 									v.setText("+" + (day + 1) * 12 + ":00h");

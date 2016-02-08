@@ -7,6 +7,7 @@ import org.qmsos.weathermo.fragment.ForecastWeather;
 import org.qmsos.weathermo.fragment.ForecastWeather.OnWeatherClickListener;
 import org.qmsos.weathermo.fragment.WeatherPagerAdapter;
 import org.qmsos.weathermo.util.IpcConstants;
+import org.qmsos.weathermo.util.WeatherInfoAdapter;
 import org.qmsos.weathermo.util.WeatherParser;
 import org.qmsos.weathermo.widget.DotViewPagerIndicator;
 
@@ -224,7 +225,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 								int weatherId = Integer.parseInt(elements[0]);
 								
 								View v = findViewById(R.id.swipe_refresh);
-								WeatherParser.setBackgroundOfView(v, weatherId);
+								WeatherInfoAdapter.setBackgroundOfView(v, weatherId);
 							}
 						} catch (PatternSyntaxException e) {
 							Log.e(TAG, "the syntax of the supplied regular expression is not valid");
@@ -247,7 +248,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 										int weatherId = Integer.parseInt(values[0]);
 										
 										View v = findViewById(R.id.swipe_refresh);
-										WeatherParser.setBackgroundOfView(v, weatherId);
+										WeatherInfoAdapter.setBackgroundOfView(v, weatherId);
 									}
 								}
 							}
