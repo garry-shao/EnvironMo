@@ -30,14 +30,14 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
 	
 	private static final String TAG = MapActivity.class.getSimpleName();
 	
-	private SystemWebView systemWebView;
-	private CordovaWebView cordovaWebView;
-	private ExecutorService threadPool;
-	private CordovaPlugin activityResultCallback;
-	private CordovaPlugin permissionResultCallback;	
-	private int activityResultRequestCode;
+	private SystemWebView mSystemWebView;
+	private CordovaWebView mCordovaWebView;
+	private ExecutorService mThreadPool;
+	private CordovaPlugin mActivityResultCallback;
+	private CordovaPlugin mPermissionResultCallback;	
+	private int mActivityResultRequestCode;
 
-	private long cityId = -1;
+	private long mCityId = -1;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -52,21 +52,21 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
 		ConfigXmlParser parser = new ConfigXmlParser();
         parser.parse(this);
 		
-        threadPool = Executors.newCachedThreadPool();
+        mThreadPool = Executors.newCachedThreadPool();
         
-		systemWebView = (SystemWebView) findViewById(R.id.weather_map_view);
-		cordovaWebView = new CordovaWebViewImpl(new SystemWebViewEngine(systemWebView));
-		cordovaWebView.init(this, parser.getPluginEntries(), parser.getPreferences());
+		mSystemWebView = (SystemWebView) findViewById(R.id.weather_map_view);
+		mCordovaWebView = new CordovaWebViewImpl(new SystemWebViewEngine(mSystemWebView));
+		mCordovaWebView.init(this, parser.getPluginEntries(), parser.getPreferences());
 
-		cityId = getIntent().getLongExtra(WeatherService.EXTRA_KEY_CITY_ID, -1);
+		mCityId = getIntent().getLongExtra(WeatherService.EXTRA_KEY_CITY_ID, -1);
 		
-		cordovaWebView.loadUrl(assembleStartUrl(null, cityId));
+		mCordovaWebView.loadUrl(assembleStartUrl(null, mCityId));
 	}
 
 	@Override
 	protected void onDestroy() {
-		if (systemWebView != null && systemWebView.getCordovaWebView() != null) {
-			systemWebView.getCordovaWebView().handleDestroy();
+		if (mSystemWebView != null && mSystemWebView.getCordovaWebView() != null) {
+			mSystemWebView.getCordovaWebView().handleDestroy();
 		}
 		
 		super.onDestroy();
@@ -76,25 +76,25 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
 	public boolean onMenuItemClick(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_layer_precipitation:
-			cordovaWebView.loadUrl(assembleStartUrl("precipitation", cityId));
+			mCordovaWebView.loadUrl(assembleStartUrl("precipitation", mCityId));
 			return true;
 		case R.id.menu_layer_rain:
-			cordovaWebView.loadUrl(assembleStartUrl("rain", cityId));
+			mCordovaWebView.loadUrl(assembleStartUrl("rain", mCityId));
 			return true;
 		case R.id.menu_layer_snow:
-			cordovaWebView.loadUrl(assembleStartUrl("snow", cityId));
+			mCordovaWebView.loadUrl(assembleStartUrl("snow", mCityId));
 			return true;
 		case R.id.menu_layer_clouds:
-			cordovaWebView.loadUrl(assembleStartUrl("clouds", cityId));
+			mCordovaWebView.loadUrl(assembleStartUrl("clouds", mCityId));
 			return true;
 		case R.id.menu_layer_pressure:
-			cordovaWebView.loadUrl(assembleStartUrl("pressure", cityId));
+			mCordovaWebView.loadUrl(assembleStartUrl("pressure", mCityId));
 			return true;
 		case R.id.menu_layer_temperature:
-			cordovaWebView.loadUrl(assembleStartUrl("temp", cityId));
+			mCordovaWebView.loadUrl(assembleStartUrl("temp", mCityId));
 			return true;
 		case R.id.menu_layer_windspeed:
-			cordovaWebView.loadUrl(assembleStartUrl("wind", cityId));
+			mCordovaWebView.loadUrl(assembleStartUrl("wind", mCityId));
 			return true;
 		default:
 			return false;
@@ -105,14 +105,14 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 		
-        if(permissionResultCallback != null)
+        if(mPermissionResultCallback != null)
         {
             try {
-				permissionResultCallback.onRequestPermissionResult(requestCode, permissions, grantResults);
+				mPermissionResultCallback.onRequestPermissionResult(requestCode, permissions, grantResults);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-            permissionResultCallback = null;
+            mPermissionResultCallback = null;
         }
 	}
 
@@ -122,7 +122,7 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
         try {
             startActivityForResult(intent, requestCode);
         } catch (RuntimeException e) { // E.g.: ActivityNotFoundException
-            activityResultCallback = null;
+            mActivityResultCallback = null;
             throw e;
         }		
 	}
@@ -130,10 +130,10 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
 	@Override
 	public void setActivityResultCallback(CordovaPlugin plugin) {
 	    // Cancel any previously pending activity.
-        if (activityResultCallback != null) {
-            activityResultCallback.onActivityResult(activityResultRequestCode, Activity.RESULT_CANCELED, null);
+        if (mActivityResultCallback != null) {
+            mActivityResultCallback.onActivityResult(mActivityResultRequestCode, Activity.RESULT_CANCELED, null);
         }
-        activityResultCallback = plugin;
+        mActivityResultCallback = plugin;
 	}
 
 	@Override
@@ -151,12 +151,12 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
 
 	@Override
 	public ExecutorService getThreadPool() {
-		return threadPool;
+		return mThreadPool;
 	}
 
 	@Override
 	public void requestPermission(CordovaPlugin plugin, int requestCode, String permission) {
-        permissionResultCallback = plugin;
+        mPermissionResultCallback = plugin;
         
         String[] permissions = { permission };
         getActivity().requestPermissions(permissions, requestCode);		
@@ -164,7 +164,7 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
 
 	@Override
 	public void requestPermissions(CordovaPlugin plugin, int requestCode, String[] permissions) {
-        permissionResultCallback = plugin;
+        mPermissionResultCallback = plugin;
         
         getActivity().requestPermissions(permissions, requestCode);
 	}

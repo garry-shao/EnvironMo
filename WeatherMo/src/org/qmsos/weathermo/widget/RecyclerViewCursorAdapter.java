@@ -22,12 +22,12 @@ import android.widget.TextView;
  */
 public class RecyclerViewCursorAdapter extends RecyclerViewBaseAdapter<ViewHolder> {
 	
-	private Context context;
+	private Context mContext;
 
 	public RecyclerViewCursorAdapter(Context context, Cursor cursor) {
 		super(context, cursor);
 		
-		this.context = context;
+		this.mContext = context;
 	}
 
 	@Override
@@ -35,16 +35,16 @@ public class RecyclerViewCursorAdapter extends RecyclerViewBaseAdapter<ViewHolde
 		final long id = cursor.getLong(cursor.getColumnIndex(WeatherProvider.KEY_CITY_ID));
 		String name = cursor.getString(cursor.getColumnIndex(WeatherProvider.KEY_NAME));
 
-		((UtilViewHolder) holder).cityIdView.setText(String.valueOf(id));
-		((UtilViewHolder) holder).cityNameView.setText(name);
-		((UtilViewHolder) holder).deleteButton.setOnClickListener(new OnClickListener() {
+		((RecyclerViewHolder) holder).mCityIdView.setText(String.valueOf(id));
+		((RecyclerViewHolder) holder).mCityNameView.setText(name);
+		((RecyclerViewHolder) holder).mDeleteButton.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				Intent i = new Intent(context, WeatherService.class);
+				Intent i = new Intent(mContext, WeatherService.class);
 				i.setAction(WeatherService.ACTION_DELETE_CITY);
 				i.putExtra(WeatherService.EXTRA_KEY_CITY_ID, id);
-				context.startService(i);
+				mContext.startService(i);
 			}
 		});
 	}
@@ -53,20 +53,20 @@ public class RecyclerViewCursorAdapter extends RecyclerViewBaseAdapter<ViewHolde
 	public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 		View view = View.inflate(parent.getContext(), R.layout.view_holder, null);
 
-		return new UtilViewHolder(view);
+		return new RecyclerViewHolder(view);
 	}
 
-	public static class UtilViewHolder extends ViewHolder {
-		TextView cityIdView;
-		TextView cityNameView;
-		Button deleteButton;
+	static class RecyclerViewHolder extends ViewHolder {
+		TextView mCityIdView;
+		TextView mCityNameView;
+		Button mDeleteButton;
 
-		public UtilViewHolder(View itemView) {
+		public RecyclerViewHolder(View itemView) {
 			super(itemView);
 
-			cityIdView = (TextView) itemView.findViewById(R.id.cityId);
-			cityNameView = (TextView) itemView.findViewById(R.id.cityName);
-			deleteButton = (Button) itemView.findViewById(R.id.cityDelete);
+			mCityIdView = (TextView) itemView.findViewById(R.id.cityId);
+			mCityNameView = (TextView) itemView.findViewById(R.id.cityName);
+			mDeleteButton = (Button) itemView.findViewById(R.id.cityDelete);
 		}
 	}
 

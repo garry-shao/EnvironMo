@@ -42,11 +42,11 @@ public class WeatherService extends IntentService {
 	private static final int FLAG_CURRENT = 1;
 	private static final int FLAG_FORECAST = 2;
 
-	public static final String ACTION_REFRESH = "org.qmsos.environmo.ACTION_REFRESH";
-	public static final String ACTION_DELETE_CITY = "org.qmsos.environmo.ACTION_DELETE_CITY";
-	public static final String ACTION_QUERY_CITY = "org.qmsos.environmo.ACTION_QUERY_CITY";
-	public static final String ACTION_IMPORT_CITY = "org.qmsos.environmo.ACTION_IMPORT_CITY";
-	public static final String ACTION_CITY_CHANGED = "org.qmsos.environmo.ACTION_CITY_CHANGED";
+	public static final String ACTION_REFRESH = "org.qmsos.weathermo.ACTION_REFRESH";
+	public static final String ACTION_DELETE_CITY = "org.qmsos.weathermo.ACTION_DELETE_CITY";
+	public static final String ACTION_QUERY_CITY = "org.qmsos.weathermo.ACTION_QUERY_CITY";
+	public static final String ACTION_IMPORT_CITY = "org.qmsos.weathermo.ACTION_IMPORT_CITY";
+	public static final String ACTION_CITY_CHANGED = "org.qmsos.weathermo.ACTION_CITY_CHANGED";
 	
 	public static final String BUNDLE_KEY_CURRENT = "BUNDLE_KEY_CURRENT";
 	public static final String BUNDLE_KEY_FORECAST = "BUNDLE_KEY_FORECAST";
@@ -230,7 +230,7 @@ public class WeatherService extends IntentService {
 				
 				resolver.insert(WeatherProvider.CONTENT_URI_WEATHER, values);
 				
-				values.put(WeatherProvider.KEY_NAME, city.getName());
+				values.put(WeatherProvider.KEY_NAME, city.getCityName());
 				values.put(WeatherProvider.KEY_COUNTRY, city.getCountry());
 				values.put(WeatherProvider.KEY_LONGITUDE, city.getLongitude());
 				values.put(WeatherProvider.KEY_LATITUDE, city.getLatitude());

@@ -18,7 +18,7 @@ import android.widget.Button;
 
 public class CityActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 	
-	private RecyclerViewCursorAdapter adapter;
+	private RecyclerViewCursorAdapter mCursorAdapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -28,10 +28,10 @@ public class CityActivity extends AppCompatActivity implements LoaderCallbacks<C
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
-		adapter = new RecyclerViewCursorAdapter(this, null);
+		mCursorAdapter = new RecyclerViewCursorAdapter(this, null);
 		RecyclerView cityNames = (RecyclerView) findViewById(R.id.city_candidate);
 		cityNames.setLayoutManager(new LinearLayoutManager(this));
-		cityNames.setAdapter(adapter);
+		cityNames.setAdapter(mCursorAdapter);
 		
 		getSupportLoaderManager().initLoader(0, null, this);
 
@@ -63,12 +63,12 @@ public class CityActivity extends AppCompatActivity implements LoaderCallbacks<C
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-		adapter.swapCursor(data);
+		mCursorAdapter.swapCursor(data);
 	}
 
 	@Override
 	public void onLoaderReset(Loader<Cursor> loader) {
-		adapter.swapCursor(null);
+		mCursorAdapter.swapCursor(null);
 	}
 
 }

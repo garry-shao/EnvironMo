@@ -16,7 +16,7 @@ public class WeatherPagerAdapter extends FragmentStatePagerAdapter {
 	private Cursor mCursor;
 	private Context mContext;
 	
-	private SparseLongArray ids;
+	private SparseLongArray mCityIds;
 	
 	public WeatherPagerAdapter(FragmentManager fm, Context context, Cursor cursor) {
 		super(fm);
@@ -30,7 +30,7 @@ public class WeatherPagerAdapter extends FragmentStatePagerAdapter {
 		mCursor = cursor;
 		mContext = context;
 		
-		ids = new SparseLongArray();
+		mCityIds = new SparseLongArray();
 	}
 
 	@Override
@@ -70,7 +70,7 @@ public class WeatherPagerAdapter extends FragmentStatePagerAdapter {
 
 	@Override
 	public void destroyItem(ViewGroup container, int position, Object object) {
-		ids.delete(position);
+		mCityIds.delete(position);
 
 		super.destroyItem(container, position, object);
 	}
@@ -79,7 +79,7 @@ public class WeatherPagerAdapter extends FragmentStatePagerAdapter {
 	public Object instantiateItem(ViewGroup container, int position) {
 		if (mCursor.moveToPosition(position)) {
 			long cityId = mCursor.getLong(mCursor.getColumnIndexOrThrow(WeatherProvider.KEY_CITY_ID));
-			ids.append(position, cityId);
+			mCityIds.append(position, cityId);
 		}
 		
 		return super.instantiateItem(container, position);
@@ -109,9 +109,9 @@ public class WeatherPagerAdapter extends FragmentStatePagerAdapter {
 		return oldCursor;
 	}
 
-	public long getId(int position) {
-		if (ids != null) {
-			return ids.get(position);
+	public long getCityId(int position) {
+		if (mCityIds != null) {
+			return mCityIds.get(position);
 		} else {
 			return 0;
 		}

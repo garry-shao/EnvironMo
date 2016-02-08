@@ -41,21 +41,21 @@ public class WeatherProvider extends ContentProvider {
 	private static final int WEATHER = 3;
 	private static final int WEATHER_ID = 4;
 	
-	private static final UriMatcher uriMatcher;
+	private static final UriMatcher URI_MATCHER;
 	static {
-		uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+		URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
 		
-		uriMatcher.addURI("org.qmsos.weathermo.weatherprovider", "cities", CITIES);
-		uriMatcher.addURI("org.qmsos.weathermo.weatherprovider", "cities/#", CITY_ID);
-		uriMatcher.addURI("org.qmsos.weathermo.weatherprovider", "weather", WEATHER);
-		uriMatcher.addURI("org.qmsos.weathermo.weatherprovider", "weather/#", WEATHER_ID);
+		URI_MATCHER.addURI("org.qmsos.weathermo.weatherprovider", "cities", CITIES);
+		URI_MATCHER.addURI("org.qmsos.weathermo.weatherprovider", "cities/#", CITY_ID);
+		URI_MATCHER.addURI("org.qmsos.weathermo.weatherprovider", "weather", WEATHER);
+		URI_MATCHER.addURI("org.qmsos.weathermo.weatherprovider", "weather/#", WEATHER_ID);
 	}
 
-	private DatabaseHelper dbHelper;
+	private DatabaseHelper mDatabaseHelper;
 	
 	@Override
 	public boolean onCreate() {
-		dbHelper = new DatabaseHelper(getContext(), 
+		mDatabaseHelper = new DatabaseHelper(getContext(), 
 				DatabaseHelper.DATABASE_NAME, null, DatabaseHelper.DATABASE_VERSION);
 		
 		return true;
@@ -65,11 +65,11 @@ public class WeatherProvider extends ContentProvider {
 	public Cursor query(Uri uri, String[] projection, String selection, 
 			String[] selectionArgs, String sortOrder) {
 		
-		SQLiteDatabase database = dbHelper.getWritableDatabase();
+		SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
 		
 		SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 		
-		switch (uriMatcher.match(uri)) {
+		switch (URI_MATCHER.match(uri)) {
 		case CITIES:
 		case CITY_ID:
 			queryBuilder.setTables(DatabaseHelper.TABLE_CITIES);
@@ -104,7 +104,7 @@ public class WeatherProvider extends ContentProvider {
 
 	@Override
 	public String getType(Uri uri) {
-		switch (uriMatcher.match(uri)) {
+		switch (URI_MATCHER.match(uri)) {
 		case CITIES:
 		case WEATHER:
 			return "vnd.android.cursor.dir/vnd.org.qmsos.weathermo";
@@ -118,9 +118,9 @@ public class WeatherProvider extends ContentProvider {
 
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
-		SQLiteDatabase database = dbHelper.getWritableDatabase();
+		SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
 		
-		switch (uriMatcher.match(uri)) {
+		switch (URI_MATCHER.match(uri)) {
 		case CITIES:
 		case CITY_ID:
 			long rowID = database.insert(DatabaseHelper.TABLE_CITIES, "city", values);
@@ -148,9 +148,9 @@ public class WeatherProvider extends ContentProvider {
 
 	@Override
 	public int bulkInsert(Uri uri, ContentValues[] values) {
-		SQLiteDatabase database = dbHelper.getWritableDatabase();
+		SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
 		
-		switch (uriMatcher.match(uri)) {
+		switch (URI_MATCHER.match(uri)) {
 		case CITIES:
 		case CITY_ID:
 			database.beginTransaction();
@@ -194,10 +194,10 @@ public class WeatherProvider extends ContentProvider {
 
 	@Override
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
-		SQLiteDatabase database = dbHelper.getWritableDatabase();
+		SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
 		
 		int count;
-		switch (uriMatcher.match(uri)) {
+		switch (URI_MATCHER.match(uri)) {
 		case CITIES:
 			count = database.delete(DatabaseHelper.TABLE_CITIES, selection, selectionArgs);
 			
@@ -229,10 +229,10 @@ public class WeatherProvider extends ContentProvider {
 
 	@Override
 	public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-		SQLiteDatabase database = dbHelper.getWritableDatabase();
+		SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
 		
 		int count;
-		switch (uriMatcher.match(uri)) {
+		switch (URI_MATCHER.match(uri)) {
 		case CITIES:
 			count = database.update(DatabaseHelper.TABLE_CITIES, values, selection, selectionArgs);
 			

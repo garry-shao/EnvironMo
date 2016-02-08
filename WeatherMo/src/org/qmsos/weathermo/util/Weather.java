@@ -2,20 +2,20 @@ package org.qmsos.weathermo.util;
 
 public class Weather {
 	
-	private final int weatherId;
-	private final int temperature;
+	private final int mWeatherId;
+	private final int mTemperature;
 	
 	public Weather(int weatherId, int temperature) {
-		this.weatherId = weatherId;
-		this.temperature = temperature;
+		this.mWeatherId = weatherId;
+		this.mTemperature = temperature;
 	}
 
 	public int getWeatherId() {
-		return weatherId;
+		return mWeatherId;
 	}
 
 	public int getTemperature() {
-		return temperature;
+		return mTemperature;
 	}
 
 }

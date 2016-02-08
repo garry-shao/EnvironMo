@@ -20,15 +20,15 @@ import android.view.View;
  */
 public class DotViewPagerIndicator extends View implements OnPageChangeListener {
 
-	private ViewPager viewPager;
-	private OnPageChangeListener listener;
+	private ViewPager mViewPager;
+	private OnPageChangeListener mListener;
 	
-	private float radius;
-	private float padding;
-	private Paint selectedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-	private Paint unselectedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+	private float mRadius;
+	private float mPadding;
+	private Paint mSelectedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+	private Paint mUnselectedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 	
-	private int current;
+	private int mCurrent;
 	
 	public DotViewPagerIndicator(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
@@ -44,11 +44,11 @@ public class DotViewPagerIndicator extends View implements OnPageChangeListener 
 		TypedArray a = context.obtainStyledAttributes(
 				attrs, R.styleable.DotViewPagerIndicator, defStyleAttr, 0);
 		
-		radius = a.getDimension(R.styleable.DotViewPagerIndicator_radius, defaultRadius);
-		padding = a.getDimension(R.styleable.DotViewPagerIndicator_padding, defaultPadding);
-		selectedPaint.setColor(
+		mRadius = a.getDimension(R.styleable.DotViewPagerIndicator_radius, defaultRadius);
+		mPadding = a.getDimension(R.styleable.DotViewPagerIndicator_padding, defaultPadding);
+		mSelectedPaint.setColor(
 				a.getColor(R.styleable.DotViewPagerIndicator_selectedColor, defaultSelectedColor));
-		unselectedPaint.setColor(
+		mUnselectedPaint.setColor(
 				a.getColor(R.styleable.DotViewPagerIndicator_unselectedColor, defaultUnselectedColor));
 		
 		a.recycle();
@@ -64,25 +64,25 @@ public class DotViewPagerIndicator extends View implements OnPageChangeListener 
 
 	@Override
 	protected void onDraw(Canvas canvas) {
-		if (viewPager == null) {
+		if (mViewPager == null) {
 			return;
 		}
-		final int count = viewPager.getAdapter().getCount();
+		final int count = mViewPager.getAdapter().getCount();
 		if (count == 0 || count == 1) {
 			return;
 		}
-		if (current >= count) {
-			current = count - 1;
+		if (mCurrent >= count) {
+			mCurrent = count - 1;
 			return;
 		}
 		
 		for (int i = 0; i < count; i++) {
-			float cx = i * ( 2 * radius + padding) + radius;
-			float cy = radius;
-			if (i == current) {
-				canvas.drawCircle(cx, cy, radius, selectedPaint);
+			float cx = i * ( 2 * mRadius + mPadding) + mRadius;
+			float cy = mRadius;
+			if (i == mCurrent) {
+				canvas.drawCircle(cx, cy, mRadius, mSelectedPaint);
 			} else {
-				canvas.drawCircle(cx, cy, radius, unselectedPaint);
+				canvas.drawCircle(cx, cy, mRadius, mUnselectedPaint);
 			}
 		}
 	}
@@ -96,42 +96,42 @@ public class DotViewPagerIndicator extends View implements OnPageChangeListener 
 
 	@Override
 	public void onPageScrollStateChanged(int state) {
-		if (listener != null) {
-			listener.onPageScrollStateChanged(state);
+		if (mListener != null) {
+			mListener.onPageScrollStateChanged(state);
 		}
 	}
 
 	@Override
 	public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-		if (listener != null) {
-			listener.onPageScrolled(position, positionOffset, positionOffsetPixels);
+		if (mListener != null) {
+			mListener.onPageScrolled(position, positionOffset, positionOffsetPixels);
 		}
 	}
 
 	@Override
 	public void onPageSelected(int position) {
-		current = position;
+		mCurrent = position;
 		invalidate();
 		
-		if (listener != null) {
-			listener.onPageSelected(position);
+		if (mListener != null) {
+			mListener.onPageSelected(position);
 		}
 	}
 
 	public void setViewPager(ViewPager viewPager) {
-		if (this.viewPager == viewPager) {
+		if (this.mViewPager == viewPager) {
 			return;
 		}
 		if (viewPager.getAdapter() == null) {
 			throw new IllegalStateException("ViewPager does not have adapter.");
 		}
-		this.viewPager = viewPager;
-		this.viewPager.addOnPageChangeListener(this);
+		this.mViewPager = viewPager;
+		this.mViewPager.addOnPageChangeListener(this);
 		dataChanged();
 	}
 
 	public void setOnPageChangeListener(OnPageChangeListener listener) {
-		this.listener = listener;
+		this.mListener = listener;
 	}
 
 	public void dataChanged() {
@@ -143,9 +143,9 @@ public class DotViewPagerIndicator extends View implements OnPageChangeListener 
 	
 	private int getWidth(int measureSpec) {
 		int rawWidth;
-		if (viewPager != null) {
-			int count = viewPager.getAdapter().getCount();
-			rawWidth = (int) (2 * count * radius + (count - 1) * padding
+		if (mViewPager != null) {
+			int count = mViewPager.getAdapter().getCount();
+			rawWidth = (int) (2 * count * mRadius + (count - 1) * mPadding
 					+ 1 + getPaddingLeft() + getPaddingRight());
 		} else {
 			rawWidth = 0;
@@ -158,7 +158,7 @@ public class DotViewPagerIndicator extends View implements OnPageChangeListener 
         case MeasureSpec.EXACTLY:
         	return specSize;
         case MeasureSpec.AT_MOST:
-        	if (viewPager != null) {
+        	if (mViewPager != null) {
         		return Math.min(rawWidth, specSize);
         	} else {
         		return specSize;
@@ -170,7 +170,7 @@ public class DotViewPagerIndicator extends View implements OnPageChangeListener 
 	}
 	
 	private int getHeight(int measureSpec) {
-		int rawHeight = (int) (2 * radius + 1 + getPaddingTop() + getPaddingBottom());
+		int rawHeight = (int) (2 * mRadius + 1 + getPaddingTop() + getPaddingBottom());
 		
 		int specMode = MeasureSpec.getMode(measureSpec);
         int specSize = MeasureSpec.getSize(measureSpec);
