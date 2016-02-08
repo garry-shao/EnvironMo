@@ -2,7 +2,6 @@ package org.qmsos.weathermo.fragment;
 
 import java.util.regex.PatternSyntaxException;
 
-import org.qmsos.weathermo.MainActivity;
 import org.qmsos.weathermo.R;
 import org.qmsos.weathermo.WeatherProvider;
 import org.qmsos.weathermo.util.WeatherParser;
@@ -45,7 +44,7 @@ public class ForecastWeather extends Fragment {
 			}
 		});
 
-		for (int i = 0; i < MainActivity.DAY_COUNT; i++) {
+		for (int i = 0; i < 3; i++) {
 			final int j = i;
 			textView = (TextView) getView().findViewById(
 					getResources().getIdentifier("forecast_" + j, "id", getContext().getPackageName()));
@@ -98,7 +97,7 @@ public class ForecastWeather extends Fragment {
 				if (forecast != null) {
 					try {
 						String[] elements = forecast.split(";");
-						if (elements.length == MainActivity.DAY_COUNT) {
+						if (elements.length == 3) {
 							for (int i = 0; i < elements.length; i++) {
 								String element = elements[i];
 								String[] values = element.split("\\|");

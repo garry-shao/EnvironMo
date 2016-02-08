@@ -5,7 +5,6 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.regex.PatternSyntaxException;
 
-import org.qmsos.weathermo.MainActivity;
 import org.qmsos.weathermo.R;
 import org.qmsos.weathermo.WeatherProvider;
 import org.qmsos.weathermo.util.WeatherParser;
@@ -101,7 +100,7 @@ public class CurrentWeather extends Fragment {
 				if (forecast != null) {
 					try {
 						String[] elements = forecast.split(";");
-						if (elements.length == MainActivity.DAY_COUNT) {
+						if (elements.length == 3) {
 							String element = elements[0];
 							String[] values = element.split("\\|");
 							if (values.length == WeatherParser.COUNT_ELEMENTS_FORECAST) {
@@ -130,7 +129,7 @@ public class CurrentWeather extends Fragment {
 	}
 	
 	public void showForecast(int day) {
-		if (0 <= day && day < MainActivity.DAY_COUNT) {
+		if (0 <= day && day < 3) {
 			
 			long cityId = getArguments().getLong(KEY_CITYID);
 			
@@ -147,7 +146,7 @@ public class CurrentWeather extends Fragment {
 					if (forecast != null) {
 						try {
 							String[] elements = forecast.split(";");
-							if (elements.length == MainActivity.DAY_COUNT) {
+							if (elements.length == 3) {
 								String element = elements[day];
 								String[] values = element.split("\\|");
 								if (values.length == WeatherParser.COUNT_ELEMENTS_FORECAST) {

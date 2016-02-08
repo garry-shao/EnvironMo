@@ -6,6 +6,7 @@ import org.qmsos.weathermo.fragment.CurrentWeather;
 import org.qmsos.weathermo.fragment.ForecastWeather;
 import org.qmsos.weathermo.fragment.ForecastWeather.OnWeatherClickListener;
 import org.qmsos.weathermo.fragment.WeatherPagerAdapter;
+import org.qmsos.weathermo.util.IpcConstants;
 import org.qmsos.weathermo.util.WeatherParser;
 import org.qmsos.weathermo.widget.DotViewPagerIndicator;
 
@@ -40,9 +41,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 	
 	private static final String TAG = MainActivity.class.getSimpleName();
 
-	public static final int DAY_COUNT = 3;
-	
-	private WeatherPagerAdapter adapter;
+	private WeatherPagerAdapter mPagerAdapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +60,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 						refreshLayout.setRefreshing(false);
 
 						Intent intent = new Intent(getBaseContext(), WeatherService.class);
-						intent.setAction(WeatherService.ACTION_REFRESH);
+						intent.setAction(IpcConstants.ACTION_REFRESH_WEATHER);
 						startService(intent);
 					}
 				}, 500);					
@@ -74,9 +73,9 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 		TextView weatherMap = (TextView) findViewById(R.id.weather_map);
 		weatherMap.setOnClickListener(this);
 	
-		adapter = new WeatherPagerAdapter(getSupportFragmentManager(), this, null);
+		mPagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager(), this, null);
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
-		viewPager.setAdapter(adapter);
+		viewPager.setAdapter(mPagerAdapter);
 		
 		DotViewPagerIndicator pagerIndicator = (DotViewPagerIndicator) findViewById(R.id.pager_indicator);
 		pagerIndicator.setViewPager(viewPager);
@@ -102,14 +101,14 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-		adapter.swapCursor(data);
+		mPagerAdapter.swapCursor(data);
 		
 		refreshGUI();
 	}
 
 	@Override
 	public void onLoaderReset(Loader<Cursor> loader) {
-		adapter.swapCursor(null);
+		mPagerAdapter.swapCursor(null);
 	}
 
 	@Override
@@ -132,10 +131,10 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 				ViewPager pager = (ViewPager) findViewById(R.id.view_pager);
 				if (pager != null) {
 					int position = pager.getCurrentItem();
-					long cityId = adapter.getCityId(position);
+					long cityId = mPagerAdapter.getCityId(position);
 					if (cityId != 0) {
 						Intent i = new Intent(getBaseContext(), MapActivity.class);
-						i.putExtra(WeatherService.EXTRA_KEY_CITY_ID, cityId);
+						i.putExtra(IpcConstants.EXTRA_CITY_ID, cityId);
 						startActivity(i);
 					}
 				}
@@ -154,11 +153,11 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 //		the reference of fragment instead of calling getItem() method to create a new 
 //		one if it exists already.
 		CurrentWeather fragment = (CurrentWeather) 
-				adapter.instantiateItem(viewPager, viewPager.getCurrentItem());
+				mPagerAdapter.instantiateItem(viewPager, viewPager.getCurrentItem());
 		if (fragment != null && fragment.isAdded()) {
 			fragment.showCurrent();
 			
-			long cityId = adapter.getCityId(viewPager.getCurrentItem());
+			long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
 
 			updateBackground(cityId, 0, WeatherParser.FLAG_CURRENT);
 		}		
@@ -172,11 +171,11 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 //		the reference of fragment instead of calling getItem() method to create a new 
 //		one if it exists already.
 		CurrentWeather fragment = (CurrentWeather) 
-				adapter.instantiateItem(viewPager, viewPager.getCurrentItem());
+				mPagerAdapter.instantiateItem(viewPager, viewPager.getCurrentItem());
 		if (fragment != null && fragment.isAdded()) {
 			fragment.showForecast(day);
 			
-			long cityId = adapter.getCityId(viewPager.getCurrentItem());
+			long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
 
 			updateBackground(cityId, day, WeatherParser.FLAG_FORECAST);
 		}
@@ -189,7 +188,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 			ViewPager pager = (ViewPager) findViewById(R.id.view_pager);
 			if (pager != null) {
 				int position = pager.getCurrentItem();
-				long cityId = adapter.getCityId(position);
+				long cityId = mPagerAdapter.getCityId(position);
 				if (cityId != 0) {
 					fragment.refresh(cityId);
 					
@@ -240,8 +239,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 					if (forecast != null) {
 						try {
 							String[] elements = forecast.split(";");
-							if (elements.length == DAY_COUNT) {
-								if (0 <= day && day < DAY_COUNT) {
+							if (elements.length == 3) {
+								if (0 <= day && day < 3) {
 									String element = elements[day];
 									String[] values = element.split("\\|");
 									if (values.length == WeatherParser.COUNT_ELEMENTS_FORECAST) {

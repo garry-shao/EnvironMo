@@ -11,6 +11,7 @@ import java.net.URL;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.qmsos.weathermo.util.City;
+import org.qmsos.weathermo.util.IpcConstants;
 import org.qmsos.weathermo.util.WeatherParser;
 
 import android.app.IntentService;
@@ -26,7 +27,6 @@ import android.util.Log;
 /**
  * Update weather info and city info in background.
  * 
- * @author environmo(at)sina.com
  *
  */
 public class WeatherService extends IntentService {
@@ -40,19 +40,6 @@ public class WeatherService extends IntentService {
 
 	private static final int FLAG_CURRENT = 1;
 	private static final int FLAG_FORECAST = 2;
-
-	public static final String ACTION_REFRESH = "org.qmsos.weathermo.ACTION_REFRESH";
-	public static final String ACTION_DELETE_CITY = "org.qmsos.weathermo.ACTION_DELETE_CITY";
-	public static final String ACTION_QUERY_CITY = "org.qmsos.weathermo.ACTION_QUERY_CITY";
-	public static final String ACTION_CITY_CHANGED = "org.qmsos.weathermo.ACTION_CITY_CHANGED";
-	
-	public static final String BUNDLE_KEY_CURRENT = "BUNDLE_KEY_CURRENT";
-	public static final String BUNDLE_KEY_FORECAST = "BUNDLE_KEY_FORECAST";
-	
-	public static final String EXTRA_KEY_CITY_NAME = "EXTRA_KEY_CITY_NAME";
-	public static final String EXTRA_KEY_CITY_ID = "EXTRA_KEY_CITY_ID";
-
-	public static final int RESULT_CODE_REFRESHED = 1;
 	
 	/**
 	 * Default empty constructor.
@@ -74,23 +61,25 @@ public class WeatherService extends IntentService {
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		String action = intent.getAction();
-		if (action != null) {
-			if (action.equals(ACTION_REFRESH)) {
-				if (checkConnection()) {
-					queryWeather(FLAG_CURRENT);
-					queryWeather(FLAG_FORECAST);
-				}
-			} else if (action.equals(ACTION_QUERY_CITY)) {
-				if (checkConnection()) {
-					String cityname = intent.getStringExtra(EXTRA_KEY_CITY_NAME);
-					
-					queryCity(cityname);
-				}
-			} else if (action.equals(ACTION_DELETE_CITY)) {
-				long cityId = intent.getLongExtra(EXTRA_KEY_CITY_ID, -1);
-				if (cityId != -1) {
-					deleteCityFromProvider(cityId);
-				}
+		if (action == null) {
+			return;
+		}
+		
+		if (action.equals(IpcConstants.ACTION_REFRESH_WEATHER)) {
+			if (checkConnection()) {
+				queryWeather(FLAG_CURRENT);
+				queryWeather(FLAG_FORECAST);
+			}
+		} else if (action.equals(IpcConstants.ACTION_QUERY_CITY)) {
+			if (checkConnection()) {
+				String cityname = intent.getStringExtra(IpcConstants.EXTRA_CITY_NAME);
+				
+				queryCity(cityname);
+			}
+		} else if (action.equals(IpcConstants.ACTION_DELETE_CITY)) {
+			long cityId = intent.getLongExtra(IpcConstants.EXTRA_CITY_ID, -1);
+			if (cityId != -1) {
+				deleteCityFromProvider(cityId);
 			}
 		}
 	}

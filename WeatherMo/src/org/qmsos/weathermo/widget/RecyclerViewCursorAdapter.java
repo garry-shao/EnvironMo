@@ -3,6 +3,7 @@ package org.qmsos.weathermo.widget;
 import org.qmsos.weathermo.R;
 import org.qmsos.weathermo.WeatherProvider;
 import org.qmsos.weathermo.WeatherService;
+import org.qmsos.weathermo.util.IpcConstants;
 
 import android.content.Context;
 import android.content.Intent;
@@ -42,8 +43,8 @@ public class RecyclerViewCursorAdapter extends RecyclerViewBaseAdapter<ViewHolde
 			@Override
 			public void onClick(View v) {
 				Intent i = new Intent(mContext, WeatherService.class);
-				i.setAction(WeatherService.ACTION_DELETE_CITY);
-				i.putExtra(WeatherService.EXTRA_KEY_CITY_ID, id);
+				i.setAction(IpcConstants.ACTION_DELETE_CITY);
+				i.putExtra(IpcConstants.EXTRA_CITY_ID, id);
 				mContext.startService(i);
 			}
 		});

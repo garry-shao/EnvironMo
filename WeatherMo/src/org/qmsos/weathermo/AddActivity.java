@@ -1,5 +1,7 @@
 package org.qmsos.weathermo;
 
+import org.qmsos.weathermo.util.IpcConstants;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -45,8 +47,8 @@ public class AddActivity extends AppCompatActivity implements OnEditorActionList
 		String cityName = v.getText().toString();
 		
 		Intent intent = new Intent(this, WeatherService.class);
-		intent.setAction(WeatherService.ACTION_QUERY_CITY);
-		intent.putExtra(WeatherService.EXTRA_KEY_CITY_NAME, cityName);
+		intent.setAction(IpcConstants.ACTION_QUERY_CITY);
+		intent.putExtra(IpcConstants.EXTRA_CITY_NAME, cityName);
 	
 		startService(intent);
 		
