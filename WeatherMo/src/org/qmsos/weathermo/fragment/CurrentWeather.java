@@ -172,7 +172,7 @@ public class CurrentWeather extends Fragment {
 									v.setText(WeatherParser.getDescriptionFromWeatherId(weatherId));
 									
 									v = (TextView) getView().findViewById(R.id.current_date);
-									v.setText("+" + (day + 1) * 24 + ":00h");
+									v.setText("+" + (day + 1) * 12 + ":00h");
 								}
 							}
 						} catch (PatternSyntaxException e) {
