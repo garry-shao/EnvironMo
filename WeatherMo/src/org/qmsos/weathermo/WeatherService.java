@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.LinkedList;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,7 +44,6 @@ public class WeatherService extends IntentService {
 	public static final String ACTION_REFRESH = "org.qmsos.weathermo.ACTION_REFRESH";
 	public static final String ACTION_DELETE_CITY = "org.qmsos.weathermo.ACTION_DELETE_CITY";
 	public static final String ACTION_QUERY_CITY = "org.qmsos.weathermo.ACTION_QUERY_CITY";
-	public static final String ACTION_IMPORT_CITY = "org.qmsos.weathermo.ACTION_IMPORT_CITY";
 	public static final String ACTION_CITY_CHANGED = "org.qmsos.weathermo.ACTION_CITY_CHANGED";
 	
 	public static final String BUNDLE_KEY_CURRENT = "BUNDLE_KEY_CURRENT";
@@ -93,8 +91,6 @@ public class WeatherService extends IntentService {
 				if (cityId != -1) {
 					deleteCityFromProvider(cityId);
 				}
-			} else if (action.equals(ACTION_IMPORT_CITY)) {
-				readAssets();
 			}
 		}
 	}
@@ -304,61 +300,6 @@ public class WeatherService extends IntentService {
 		}
 	
 		return builder.toString();
-	}
-
-	private void readAssets() {
-		try {
-			LinkedList<ContentValues> cityList = new LinkedList<ContentValues>();
-			
-			InputStream in = getAssets().open("city.list.json");
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
-			while (bufferedReader.readLine() != null) {
-				String s = bufferedReader.readLine();
-				
-				JSONObject reader;
-				try {
-					reader = new JSONObject(s);
-					long id = Long.parseLong(reader.getString("_id"));
-					String name = reader.getString("name");
-					String country = reader.getString("country");
-					
-					JSONObject coord = reader.getJSONObject("coord");
-					double longitude = coord.getDouble("lon");
-					double latitude = coord.getDouble("lat");
-					
-					Cursor cursor = null;
-					try {
-						ContentResolver resolver = getContentResolver();
-						String where = WeatherProvider.KEY_CITY_ID + " = " + id;
-						cursor = resolver.query(WeatherProvider.CONTENT_URI_CITIES, null, where, null, null);
-						if (cursor != null && !cursor.moveToNext()) {
-							ContentValues value = new ContentValues();
-							value.put(WeatherProvider.KEY_CITY_ID, id);
-							value.put(WeatherProvider.KEY_NAME, name);
-							value.put(WeatherProvider.KEY_COUNTRY, country);
-							value.put(WeatherProvider.KEY_LONGITUDE, longitude);
-							value.put(WeatherProvider.KEY_LATITUDE, latitude);
-							
-							cityList.add(value);
-							
-						}
-					} finally {
-						if (cursor != null && !cursor.isClosed()) {
-							cursor.close();
-						}
-					}
-				} catch (JSONException e) {
-				}
-			}
-			
-			int cityListSize = cityList.size();
-			ContentValues[] values = new ContentValues[cityListSize];
-			cityList.toArray(values);
-			
-			getContentResolver().bulkInsert(WeatherProvider.CONTENT_URI_CITIES, values);
-		} catch (IOException e) {
-			Log.e(TAG, "Something wrong with the result JSON");
-		}
 	}
 
 }

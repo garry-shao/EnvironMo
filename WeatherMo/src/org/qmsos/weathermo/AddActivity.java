@@ -7,9 +7,6 @@ import android.support.v7.widget.Toolbar;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.view.KeyEvent;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
@@ -41,19 +38,6 @@ public class AddActivity extends AppCompatActivity implements OnEditorActionList
 		EditText cityNameEditText = (EditText) findViewById(R.id.city_name);
 		cityNameEditText.setFilters(new InputFilter[] { noWhitespaceFilter });
 		cityNameEditText.setOnEditorActionListener(this);
-		
-		Button importButton = (Button) findViewById(R.id.button_import);
-		importButton.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				Intent i = new Intent(getBaseContext(), WeatherService.class);
-				i.setAction(WeatherService.ACTION_IMPORT_CITY);
-				startService(i);
-				
-				finish();				
-			}
-		});
 	}
 
 	@Override
