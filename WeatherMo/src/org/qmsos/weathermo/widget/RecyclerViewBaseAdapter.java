@@ -9,9 +9,8 @@ import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 
 /**
- * This is basically a mock up of CursorAdapter class with minimum feature, will
- * add more if needed.
- * 
+ * This is basically a mock up of CursorAdapter class with minimum feature, implements 
+ * to show another view type on tail of cursor views. 
  *
  * @param <VH>
  *            subclass of ViewHolder.
@@ -19,6 +18,9 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
 public abstract class RecyclerViewBaseAdapter<VH extends ViewHolder> extends Adapter<VH> {
 
 	public static final int FLAG_REGISTER_CONTENT_OBSERVER = 0x02;
+	
+	protected static final int VIEW_TYPE_CURSOR = 0x00;
+	protected static final int VIEW_TYPE_OTHER = 0x02;
 
 	protected Cursor mCursor;
 	protected Context mContext;
@@ -62,7 +64,7 @@ public abstract class RecyclerViewBaseAdapter<VH extends ViewHolder> extends Ada
 	@Override
 	public int getItemCount() {
 		if (mDataValid && mCursor != null) {
-			return mCursor.getCount();
+			return mCursor.getCount() + 1;
 		} else {
 			return 0;
 		}
@@ -70,7 +72,7 @@ public abstract class RecyclerViewBaseAdapter<VH extends ViewHolder> extends Ada
 
 	@Override
 	public long getItemId(int position) {
-		if (mDataValid && mCursor != null) {
+		if (mDataValid && mCursor != null && (position < mCursor.getCount())) {
 			if (mCursor.moveToPosition(position)) {
 				return mCursor.getLong(mRowIDColumn);
 			} else {
@@ -82,18 +84,34 @@ public abstract class RecyclerViewBaseAdapter<VH extends ViewHolder> extends Ada
 	}
 
 	@Override
+	public int getItemViewType(int position) {
+		if (mDataValid && mCursor != null && (position < mCursor.getCount())) {
+			return VIEW_TYPE_CURSOR;
+		} else {
+			return VIEW_TYPE_OTHER;
+		}
+	}
+
+	@Override
 	public void onBindViewHolder(VH holder, int position) {
 		if (!mDataValid) {
 			throw new IllegalStateException("cursor data is invalid!");
 		}
-		if (!mCursor.moveToPosition(position)) {
-			throw new IllegalStateException("moving cursor to position " + position + " failed.");
-		}
 
-		onBindViewHolder(holder, mCursor);
+		if (position < mCursor.getCount()) {
+			if (mCursor.moveToPosition(position)) {
+				onBindViewHolderCursor(holder, mCursor);
+			} else {
+				throw new IllegalStateException("moving cursor to position " + position + " failed.");
+			}
+		} else {
+			onBindViewHolderOther(holder);
+		}
 	}
 
-	public abstract void onBindViewHolder(VH holder, Cursor cursor);
+	public abstract void onBindViewHolderCursor(VH holder, Cursor cursor);
+
+	public abstract void onBindViewHolderOther(VH holder);
 
 	public void changeCursor(Cursor cursor) {
 		Cursor old = swapCursor(cursor);

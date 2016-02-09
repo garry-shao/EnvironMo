@@ -1,5 +1,6 @@
 package org.qmsos.weathermo.widget;
 
+import org.qmsos.weathermo.AddActivity;
 import org.qmsos.weathermo.R;
 import org.qmsos.weathermo.WeatherProvider;
 import org.qmsos.weathermo.WeatherService;
@@ -16,9 +17,8 @@ import android.widget.Button;
 import android.widget.TextView;
 
 /**
- * This is a customized Adapter class used on RecyclerView, basically a mock up
- * of SimpleCursorAdapter class .
- * 
+ * This is a customized Adapter class used on RecyclerView, can show another view 
+ * on tail of the regular cursor views.
  *
  */
 public class RecyclerViewCursorAdapter extends RecyclerViewBaseAdapter<ViewHolder> {
@@ -32,14 +32,14 @@ public class RecyclerViewCursorAdapter extends RecyclerViewBaseAdapter<ViewHolde
 	}
 
 	@Override
-	public void onBindViewHolder(ViewHolder holder, Cursor cursor) {
+	public void onBindViewHolderCursor(ViewHolder holder, Cursor cursor) {
 		final long id = cursor.getLong(cursor.getColumnIndex(WeatherProvider.KEY_CITY_ID));
 		String name = cursor.getString(cursor.getColumnIndex(WeatherProvider.KEY_NAME));
-
-		((RecyclerViewHolder) holder).mCityIdView.setText(String.valueOf(id));
-		((RecyclerViewHolder) holder).mCityNameView.setText(name);
-		((RecyclerViewHolder) holder).mDeleteButton.setOnClickListener(new OnClickListener() {
-
+		
+		((CursorViewHolder) holder).mCityIdView.setText(String.valueOf(id));
+		((CursorViewHolder) holder).mCityNameView.setText(name);
+		((CursorViewHolder) holder).mDeleteButton.setOnClickListener(new OnClickListener() {
+			
 			@Override
 			public void onClick(View v) {
 				Intent i = new Intent(mContext, WeatherService.class);
@@ -51,23 +51,54 @@ public class RecyclerViewCursorAdapter extends RecyclerViewBaseAdapter<ViewHolde
 	}
 
 	@Override
-	public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-		View view = View.inflate(parent.getContext(), R.layout.view_holder, null);
-
-		return new RecyclerViewHolder(view);
+	public void onBindViewHolderOther(ViewHolder holder) {
+		((AddViewHolder) holder).mAddButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Intent i = new Intent(mContext, AddActivity.class);
+				mContext.startActivity(i);
+			}
+		});
 	}
 
-	static class RecyclerViewHolder extends ViewHolder {
+	@Override
+	public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+		switch (viewType) {
+		case VIEW_TYPE_CURSOR:
+			View view = View.inflate(parent.getContext(), R.layout.view_holder_cursor, null);
+			
+			return new CursorViewHolder(view);
+		case VIEW_TYPE_OTHER:
+			View addView = View.inflate(parent.getContext(), R.layout.view_holder_add, null);
+			
+			return new AddViewHolder(addView);
+		default:
+			return null;
+		}
+	}
+
+	static class CursorViewHolder extends ViewHolder {
 		TextView mCityIdView;
 		TextView mCityNameView;
 		Button mDeleteButton;
 
-		public RecyclerViewHolder(View itemView) {
+		public CursorViewHolder(View itemView) {
 			super(itemView);
 
 			mCityIdView = (TextView) itemView.findViewById(R.id.cityId);
 			mCityNameView = (TextView) itemView.findViewById(R.id.cityName);
 			mDeleteButton = (Button) itemView.findViewById(R.id.cityDelete);
+		}
+	}
+	
+	static class AddViewHolder extends ViewHolder {
+		Button mAddButton;
+		
+		public AddViewHolder(View itemView) {
+			super(itemView);
+			
+			mAddButton = (Button) itemView.findViewById(R.id.cityAdd);
 		}
 	}
 
