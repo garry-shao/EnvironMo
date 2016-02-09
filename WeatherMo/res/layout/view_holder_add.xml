@@ -7,7 +7,7 @@
     android:paddingStart="?android:attr/listPreferredItemPaddingStart" >
 
     <Button
-        android:id="@+id/cityAdd"
+        android:id="@+id/city_add"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/button_add"

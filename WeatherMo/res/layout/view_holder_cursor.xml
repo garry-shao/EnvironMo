@@ -7,7 +7,7 @@
     android:paddingStart="?android:attr/listPreferredItemPaddingStart" >
 
     <TextView
-        android:id="@+id/cityId"
+        android:id="@+id/city_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -15,18 +15,18 @@
         android:textAppearance="?android:attr/textAppearanceListItem" />
 
     <TextView
-        android:id="@+id/cityName"
+        android:id="@+id/city_geo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@id/cityId"
-        android:layout_below="@id/cityId"
+        android:layout_alignStart="@id/city_info"
+        android:layout_below="@id/city_info"
         android:ellipsize="end"
         android:singleLine="true"
         android:textColor="?android:attr/textColorPrimary"
         android:textSize="14sp" />
 
     <Button
-        android:id="@+id/cityDelete"
+        android:id="@+id/city_delete"
         android:layout_centerVertical="true"
         android:layout_alignParentEnd="true"
         android:layout_width="wrap_content"

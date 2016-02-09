@@ -10,6 +10,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView.ViewHolder;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.RelativeSizeSpan;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -33,11 +36,23 @@ public class RecyclerViewCursorAdapter extends RecyclerViewBaseAdapter<ViewHolde
 
 	@Override
 	public void onBindViewHolderCursor(ViewHolder holder, Cursor cursor) {
-		final long id = cursor.getLong(cursor.getColumnIndex(WeatherProvider.KEY_CITY_ID));
-		String name = cursor.getString(cursor.getColumnIndex(WeatherProvider.KEY_NAME));
+		final long id = cursor.getLong(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CITY_ID));
+		String name = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_NAME));
+		String country = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_COUNTRY));
+		double longitude = cursor.getDouble(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_LONGITUDE));
+		double latitude = cursor.getDouble(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_LATITUDE));
 		
-		((CursorViewHolder) holder).mCityIdView.setText(String.valueOf(id));
-		((CursorViewHolder) holder).mCityNameView.setText(name);
+		String nameRaw = name + " " +country;
+		
+		SpannableString spanned = new SpannableString(nameRaw);
+		spanned.setSpan(new RelativeSizeSpan(0.5f), 
+				name.length() + 1, nameRaw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+		
+		String lon = longitude > 0 ? Math.abs(longitude) + "\u00b0E" : Math.abs(longitude) + "\u00b0W";
+		String lat = latitude > 0 ? Math.abs(latitude) + "\u00b0N" : Math.abs(latitude) + "\u00b0S";
+		
+		((CursorViewHolder) holder).mCityInfoView.setText(spanned);
+		((CursorViewHolder) holder).mCityGeoView.setText(lon + " " + lat);
 		((CursorViewHolder) holder).mDeleteButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -79,17 +94,18 @@ public class RecyclerViewCursorAdapter extends RecyclerViewBaseAdapter<ViewHolde
 	}
 
 	static class CursorViewHolder extends ViewHolder {
-		TextView mCityIdView;
-		TextView mCityNameView;
+		TextView mCityInfoView;
+		TextView mCityGeoView;
 		Button mDeleteButton;
 
 		public CursorViewHolder(View itemView) {
 			super(itemView);
 
-			mCityIdView = (TextView) itemView.findViewById(R.id.cityId);
-			mCityNameView = (TextView) itemView.findViewById(R.id.cityName);
-			mDeleteButton = (Button) itemView.findViewById(R.id.cityDelete);
+			mCityInfoView = (TextView) itemView.findViewById(R.id.city_info);
+			mCityGeoView = (TextView) itemView.findViewById(R.id.city_geo);
+			mDeleteButton = (Button) itemView.findViewById(R.id.city_delete);
 		}
+	
 	}
 	
 	static class AddViewHolder extends ViewHolder {
@@ -98,8 +114,9 @@ public class RecyclerViewCursorAdapter extends RecyclerViewBaseAdapter<ViewHolde
 		public AddViewHolder(View itemView) {
 			super(itemView);
 			
-			mAddButton = (Button) itemView.findViewById(R.id.cityAdd);
+			mAddButton = (Button) itemView.findViewById(R.id.city_add);
 		}
+	
 	}
 
 }

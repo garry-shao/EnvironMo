@@ -42,10 +42,8 @@ public class CityActivity extends AppCompatActivity implements LoaderCallbacks<C
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		String where = WeatherProvider.KEY_CITY_ID;
-		String[] projection = { 
-				WeatherProvider.KEY_ID, WeatherProvider.KEY_CITY_ID, WeatherProvider.KEY_NAME };
 		
-		return new CursorLoader(this, WeatherProvider.CONTENT_URI_CITIES, projection, where, null, null);
+		return new CursorLoader(this, WeatherProvider.CONTENT_URI_CITIES, null, where, null, null);
 	}
 
 	@Override
