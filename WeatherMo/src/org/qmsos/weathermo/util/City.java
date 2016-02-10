@@ -1,6 +1,9 @@
 package org.qmsos.weathermo.util;
 
-public class City {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class City implements Parcelable {
 
 	private final long mCityId;
 	private final String mCityName;
@@ -41,5 +44,40 @@ public class City {
 		return "id=" + mCityId + ",name=" + mCityName 
 				+ ",country=" + mCountry + ",Longitude:" + mLongitude + ",Latitude:" + mLatitude;
 	}
+
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeLong(mCityId);
+		dest.writeString(mCityName);
+		dest.writeString(mCountry);
+		dest.writeDouble(mLongitude);
+		dest.writeDouble(mLatitude);
+	}
 	
+	public static final Parcelable.Creator<City> CREATOR = new Parcelable.Creator<City>() {
+
+		@Override
+		public City createFromParcel(Parcel source) {
+			return new City(source);
+		}
+
+		@Override
+		public City[] newArray(int size) {
+			return new City[size];
+		}
+	};
+
+	private City(Parcel parcel) {
+		mCityId = parcel.readLong();
+		mCityName = parcel.readString();
+		mCountry = parcel.readString();
+		mLongitude = parcel.readDouble();
+		mLatitude = parcel.readDouble();
+	}
+
 }
