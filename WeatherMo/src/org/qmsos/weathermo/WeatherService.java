@@ -8,8 +8,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.qmsos.weathermo.util.City;
 import org.qmsos.weathermo.util.IpcConstants;
 import org.qmsos.weathermo.util.WeatherParser;
@@ -22,6 +20,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 /**
@@ -71,10 +70,31 @@ public class WeatherService extends IntentService {
 				queryWeather(FLAG_FORECAST);
 			}
 		} else if (action.equals(IpcConstants.ACTION_QUERY_CITY)) {
+			Intent localIntent = new Intent(IpcConstants.ACTION_QUERY_EXECUTED);
 			if (checkConnection()) {
 				String cityname = intent.getStringExtra(IpcConstants.EXTRA_CITY_NAME);
 				
-				queryCity(cityname);
+				String result = executeSearchCity(cityname);
+				if (result != null) {
+					localIntent.putExtra(IpcConstants.EXTRA_QUERY_EXECUTED, true);
+					localIntent.putExtra(IpcConstants.EXTRA_QUERY_RESULT, result);
+				} else {
+					localIntent.putExtra(IpcConstants.EXTRA_QUERY_EXECUTED, false);
+				}
+			} else {
+				localIntent.putExtra(IpcConstants.EXTRA_QUERY_EXECUTED, false);
+			}
+			
+			LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
+		} else if (action.equals(IpcConstants.ACTION_ADD_CITY)) {
+			City city = intent.getParcelableExtra(IpcConstants.EXTRA_ADD_CITY);
+			if (city != null) {
+				boolean flag = addCityToProvider(city);
+				
+				Intent localIntent = new Intent(IpcConstants.ACTION_ADD_EXECUTED);
+				localIntent.putExtra(IpcConstants.EXTRA_ADD_EXECUTED, flag);
+				
+				LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
 			}
 		} else if (action.equals(IpcConstants.ACTION_DELETE_CITY)) {
 			long cityId = intent.getLongExtra(IpcConstants.EXTRA_CITY_ID, -1);
@@ -84,41 +104,19 @@ public class WeatherService extends IntentService {
 		}
 	}
 
-	private boolean queryCity(String cityName) {
+	private String executeSearchCity(String cityName) {
 		if (cityName == null) {
-			return false;
+			return null;
 		}
 		
 		String request = "http://api.openweathermap.org/data/2.5/"
-				+ "weather?" + "q=" + cityName
+				+ "find?" + "q=" + cityName
+				+ "&type=" + "like"
 				+ "&units=" + "metric"
 				+ "&appid=" + WeatherService.API_KEY;
 		String result = download(request);
-		if (result == null) {
-			return false;
-		}
-			
-		boolean flag = false;
-		try {
-			JSONObject reader = new JSONObject(result);
-			long id = reader.getLong("id");
-			String name = reader.getString("name");
-			
-			JSONObject sys = reader.getJSONObject("sys");
-			String country = sys.getString("country");
-			
-			JSONObject coord = reader.getJSONObject("coord");
-			double longitude = coord.getDouble("lon");
-			double latitude = coord.getDouble("lat");
-			
-			City city =  new City(id, name, country, longitude, latitude);
-			
-			flag = addCityToProvider(city);
-		} catch (JSONException e) {
-			Log.e(TAG, "Error parsing json when querying for city id");
-		}
 		
-		return flag;
+		return result;
 	}
 	
 	private void queryWeather(int flag) {

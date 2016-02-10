@@ -6,7 +6,7 @@
     <string name="activity_city_name">Cities</string>
     <string name="activity_city_add">Add City</string>
     <string name="activity_weather_map">Weather Map</string>
-    <string name="button_import">Import Database</string>
+    <string name="button_candidate">Add</string>
     <string name="button_add">Add City</string>
     <string name="button_delete">Delete</string>
     
