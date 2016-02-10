@@ -39,6 +39,7 @@ public class WeatherService extends IntentService {
 
 	private static final int FLAG_CURRENT = 1;
 	private static final int FLAG_FORECAST = 2;
+	private static final int FLAG_SEARCH = 3;
 	
 	/**
 	 * Default empty constructor.
@@ -66,8 +67,8 @@ public class WeatherService extends IntentService {
 		
 		if (action.equals(IpcConstants.ACTION_REFRESH_WEATHER)) {
 			if (checkConnection()) {
-				queryWeather(FLAG_CURRENT);
-				queryWeather(FLAG_FORECAST);
+				executeRefreshWeather(FLAG_CURRENT);
+				executeRefreshWeather(FLAG_FORECAST);
 			}
 		} else if (action.equals(IpcConstants.ACTION_QUERY_CITY)) {
 			Intent localIntent = new Intent(IpcConstants.ACTION_QUERY_EXECUTED);
@@ -89,7 +90,7 @@ public class WeatherService extends IntentService {
 		} else if (action.equals(IpcConstants.ACTION_ADD_CITY)) {
 			City city = intent.getParcelableExtra(IpcConstants.EXTRA_ADD_CITY);
 			if (city != null) {
-				boolean flag = addCityToProvider(city);
+				boolean flag = insertCity(city);
 				
 				Intent localIntent = new Intent(IpcConstants.ACTION_ADD_EXECUTED);
 				localIntent.putExtra(IpcConstants.EXTRA_ADD_EXECUTED, flag);
@@ -99,7 +100,7 @@ public class WeatherService extends IntentService {
 		} else if (action.equals(IpcConstants.ACTION_DELETE_CITY)) {
 			long cityId = intent.getLongExtra(IpcConstants.EXTRA_CITY_ID, -1);
 			if (cityId != -1) {
-				deleteCityFromProvider(cityId);
+				deleteCity(cityId);
 			}
 		}
 	}
@@ -109,17 +110,13 @@ public class WeatherService extends IntentService {
 			return null;
 		}
 		
-		String request = "http://api.openweathermap.org/data/2.5/"
-				+ "find?" + "q=" + cityName
-				+ "&type=" + "like"
-				+ "&units=" + "metric"
-				+ "&appid=" + WeatherService.API_KEY;
+		String request = assembleRequest(FLAG_SEARCH, 0, cityName);
 		String result = download(request);
 		
 		return result;
 	}
 	
-	private void queryWeather(int flag) {
+	private void executeRefreshWeather(int flag) {
 		Cursor cursor = null;
 		try {
 			String[] projection = { WeatherProvider.KEY_CITY_ID };
@@ -128,12 +125,14 @@ public class WeatherService extends IntentService {
 					WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 			if (cursor != null) {
 				while (cursor.moveToNext()) {
-					long cityId = cursor.getLong(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CITY_ID));
-					String query = assembleQuery(cityId, flag);
+					long cityId = cursor.getLong(
+							cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CITY_ID));
+					
+					String query = assembleRequest(flag, cityId, null);
 					if (query != null) {
 						String result =  download(query);
 						
-						updateWeatherToProvider(result, cityId, flag);
+						updateWeather(flag, cityId, result);
 					}
 				}
 			}
@@ -146,28 +145,7 @@ public class WeatherService extends IntentService {
 		}
 	}
 	
-	private String assembleQuery(long cityId, int flag) {
-		if (cityId == 0) {
-			return null;
-		}
-		
-		switch (flag) {
-		case FLAG_CURRENT:
-			return "http://api.openweathermap.org/data/2.5/" 
-					+ "weather?" + "id=" + String.valueOf(cityId)
-					+ "&units=" + "metric"
-					+ "&appid=" + API_KEY;
-		case FLAG_FORECAST:
-			return "http://api.openweathermap.org/data/2.5/" 
-					+ "forecast?" + "id=" + String.valueOf(cityId) 
-					+ "&units=" + "metric"
-					+ "&appid=" + API_KEY;
-		default:
-			return null;
-		}
-	}
-
-	private void updateWeatherToProvider(String result, long cityId, int flag) {
+	private void updateWeather(int flag, long cityId, String result) {
 		if (result == null || cityId == 0 || !(flag == FLAG_CURRENT || flag == FLAG_FORECAST)) {
 			return;
 		}
@@ -195,7 +173,7 @@ public class WeatherService extends IntentService {
 		getContentResolver().update(WeatherProvider.CONTENT_URI_WEATHER, values, where, null);
 	}
 
-	private boolean addCityToProvider(City city) {
+	private boolean insertCity(City city) {
 		if (city == null) {
 			return false;
 		}
@@ -232,23 +210,12 @@ public class WeatherService extends IntentService {
 		return flag;
 	}
 
-	private boolean deleteCityFromProvider(long cityId) {
+	private boolean deleteCity(long cityId) {
 		String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
 		int rows1 = getContentResolver().delete(WeatherProvider.CONTENT_URI_CITIES, where, null);
 		int rows2 = getContentResolver().delete(WeatherProvider.CONTENT_URI_WEATHER, where, null);
 		
 		return (rows1 > 0 && rows2 > 0) ? true : false;
-	}
-
-	private boolean checkConnection() {
-		ConnectivityManager manager = 
-				(ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo info = manager.getActiveNetworkInfo();
-		if (info != null && info.isConnected()) {
-			return true;
-		} else {
-			return false;
-		}
 	}
 
 	/**
@@ -287,6 +254,40 @@ public class WeatherService extends IntentService {
 		}
 	
 		return builder.toString();
+	}
+
+	private String assembleRequest(int flag, long cityId, String cityName) {
+		switch (flag) {
+		case FLAG_CURRENT:
+			return "http://api.openweathermap.org/data/2.5/" 
+					+ "weather?" + "id=" + String.valueOf(cityId)
+					+ "&units=" + "metric"
+					+ "&appid=" + API_KEY;
+		case FLAG_FORECAST:
+			return "http://api.openweathermap.org/data/2.5/" 
+					+ "forecast?" + "id=" + String.valueOf(cityId) 
+					+ "&units=" + "metric"
+					+ "&appid=" + API_KEY;
+		case FLAG_SEARCH:
+			return "http://api.openweathermap.org/data/2.5/"
+					+ "find?" + "q=" + cityName
+					+ "&type=" + "like"
+					+ "&units=" + "metric"
+					+ "&appid=" + WeatherService.API_KEY;
+		default:
+			return null;
+		}
+	}
+
+	private boolean checkConnection() {
+		ConnectivityManager manager = 
+				(ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo info = manager.getActiveNetworkInfo();
+		if (info != null && info.isConnected()) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 }
