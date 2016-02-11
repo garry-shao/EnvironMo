@@ -1,6 +1,6 @@
 package org.qmsos.weathermo;
 
-import org.qmsos.weathermo.widget.RecyclerViewCursorAdapter;
+import org.qmsos.weathermo.widget.CursorRecyclerViewAdapter;
 
 import android.database.Cursor;
 import android.os.Bundle;
@@ -14,7 +14,7 @@ import android.support.v7.widget.Toolbar;
 
 public class CityActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 	
-	private RecyclerViewCursorAdapter mCursorAdapter;
+	private CursorRecyclerViewAdapter mCursorAdapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -24,7 +24,7 @@ public class CityActivity extends AppCompatActivity implements LoaderCallbacks<C
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
-		mCursorAdapter = new RecyclerViewCursorAdapter(this, null);
+		mCursorAdapter = new CursorRecyclerViewAdapter(this, null);
 		RecyclerView citiesView = (RecyclerView) findViewById(R.id.cities);
 		citiesView.setLayoutManager(new LinearLayoutManager(this));
 		citiesView.setAdapter(mCursorAdapter);

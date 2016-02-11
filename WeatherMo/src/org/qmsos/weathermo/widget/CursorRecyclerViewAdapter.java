@@ -24,11 +24,11 @@ import android.widget.TextView;
  * on tail of the regular cursor views.
  *
  */
-public class RecyclerViewCursorAdapter extends RecyclerViewBaseAdapter<ViewHolder> {
+public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<ViewHolder> {
 	
 	private Context mContext;
 
-	public RecyclerViewCursorAdapter(Context context, Cursor cursor) {
+	public CursorRecyclerViewAdapter(Context context, Cursor cursor) {
 		super(context, cursor);
 		
 		this.mContext = context;
