@@ -64,72 +64,82 @@ public class ForecastWeather extends Fragment {
 	}
 
 	public void refresh(long cityId) {
+		String current = null;
+		String forecast = null;
 		Cursor cursor = null;
 		try {
-			String[] projection = { 
-					WeatherProvider.KEY_CITY_ID, WeatherProvider.KEY_CURRENT, WeatherProvider.KEY_FORECAST };
+			String[] projection = { WeatherProvider.KEY_CURRENT, WeatherProvider.KEY_FORECAST };
 			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
 
 			cursor = getContext().getContentResolver().query(
 					WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				String current = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CURRENT));
-				String forecast = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_FORECAST));
-
-				if (current != null) {
-					try {
-						String[] elements = current.split("\\|");
-						if (elements.length == WeatherParser.COUNT_ELEMENTS_CURRENT) {
-							int weatherId = Integer.parseInt(elements[0]);
-
-							String s = "Now" + "\n" + elements[1] + "\u00B0" + "C";
-
-							TextView textView = (TextView) getView().findViewById(R.id.current);
-							textView.setText(s);
-
-							WeatherInfoAdapter.setIconOfForecastView(textView, weatherId);
-						}
-					} catch (PatternSyntaxException e) {
-						Log.e(TAG, "the syntax of the supplied regular expression is not valid");
-					} catch (NumberFormatException e) {
-						Log.e(TAG, "string cannot be parsed as an integer value");
-					}
-				}
-				if (forecast != null) {
-					try {
-						String[] elements = forecast.split(";");
-						if (elements.length == 3) {
-							for (int i = 0; i < elements.length; i++) {
-								String element = elements[i];
-								String[] values = element.split("\\|");
-								if (values.length == WeatherParser.COUNT_ELEMENTS_FORECAST) {
-									int weatherId = Integer.parseInt(values[0]);
-
-									String s = (i + 1) * 12 + "h\n" 
-											+ values[1] + "~" + values[2] + "\u00B0" + "C";
-
-									TextView v = (TextView) getView().findViewById(
-											getResources().getIdentifier(
-													"forecast_" + i, "id", getContext().getPackageName()));
-									
-									v.setText(s);
-
-									WeatherInfoAdapter.setIconOfForecastView(v, weatherId);
-								}
-							}
-						}
-					} catch (PatternSyntaxException e) {
-						Log.e(TAG, "the syntax of the supplied regular expression is not valid");
-					} catch (NumberFormatException e) {
-						Log.e(TAG, "string cannot be parsed as an integer value");
-					}
-				}
+				current = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CURRENT));
+				forecast = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_FORECAST));
 			}
 		} catch (IllegalArgumentException e) {
 			Log.e(TAG, "The column does not exist");
 		} finally {
 			if (cursor != null && !cursor.isClosed()) {
 				cursor.close();
+			}
+		}
+		
+		if (current != null) {
+			try {
+				String[] elements = current.split("\\|");
+				if (elements.length != WeatherParser.COUNT_ELEMENTS_CURRENT) {
+					return;
+				}
+				
+				int weatherId = Integer.parseInt(elements[0]);
+				int temperature = Integer.parseInt(elements[1]);
+				
+				TextView textView = (TextView) getView().findViewById(R.id.current);
+				
+				WeatherInfoAdapter.setIconOfForecastView(textView, weatherId);
+				
+				textView.setText("Now" + "\n" + temperature + "\u00B0" + "C");
+				
+			} catch (PatternSyntaxException e) {
+				Log.e(TAG, "the syntax of the supplied regular expression is not valid");
+			} catch (NumberFormatException e) {
+				Log.e(TAG, "string cannot be parsed as an integer value");
+			}
+		}
+		
+		if (forecast != null) {
+			try {
+				String[] elements = forecast.split(";");
+				if (elements.length != WeatherParser.COUNT_FORECAST_DAY) {
+					return;
+				}
+				
+				for (int i = 0; i < elements.length; i++) {
+					String element = elements[i];
+					
+					String[] values = element.split("\\|");
+					if (values.length != WeatherParser.COUNT_ELEMENTS_FORECAST) {
+						return;
+					}
+					
+					int weatherId = Integer.parseInt(values[0]);
+					int temperatureMin = Integer.parseInt(values[1]);
+					int temperatureMax = Integer.parseInt(values[2]);
+					
+					TextView v = (TextView) getView().findViewById(
+							getResources().getIdentifier(
+									"forecast_" + i, "id", getContext().getPackageName()));
+					
+					WeatherInfoAdapter.setIconOfForecastView(v, weatherId);
+					
+					v.setText(WeatherInfoAdapter.getDayOfWeek(i + 1) + "\n" 
+							+ temperatureMin + "~" + temperatureMax + "\u00B0" + "C");
+				}
+			} catch (PatternSyntaxException e) {
+				Log.e(TAG, "the syntax of the supplied regular expression is not valid");
+			} catch (NumberFormatException e) {
+				Log.e(TAG, "string cannot be parsed as an integer value");
 			}
 		}
 	}

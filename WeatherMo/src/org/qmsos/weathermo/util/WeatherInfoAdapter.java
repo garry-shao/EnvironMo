@@ -10,9 +10,9 @@ import android.widget.TextView;
 
 public class WeatherInfoAdapter {
 
-	public static String getCurrentDayOfWeek() {
-		Calendar c = Calendar.getInstance();
-		c.setTimeZone(TimeZone.getTimeZone("UTC"));
+	public static String getDayOfWeek(int day) {
+		Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+		c.add(Calendar.DAY_OF_YEAR, day);
 		int i = c.get(Calendar.DAY_OF_WEEK);
 		switch (i) {
 		case 1:

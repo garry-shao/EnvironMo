@@ -264,8 +264,11 @@ public class WeatherService extends IntentService {
 					+ "&units=" + "metric"
 					+ "&appid=" + API_KEY;
 		case FLAG_FORECAST:
+			int days = WeatherParser.COUNT_FORECAST_DAY + 1;
+			
 			return "http://api.openweathermap.org/data/2.5/" 
-					+ "forecast?" + "id=" + String.valueOf(cityId) 
+					+ "forecast/daily?" + "id=" + String.valueOf(cityId) 
+					+ "&cnt=" + days
 					+ "&units=" + "metric"
 					+ "&appid=" + API_KEY;
 		case FLAG_SEARCH:

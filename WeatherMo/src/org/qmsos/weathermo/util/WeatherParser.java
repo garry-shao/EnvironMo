@@ -1,15 +1,10 @@
 package org.qmsos.weathermo.util;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.util.Log;
-import android.util.SparseIntArray;
 
 /**
  * Utility class for several useful methods.
@@ -26,6 +21,8 @@ public class WeatherParser {
 	// count of parsed weather, RELLY THINK BEFORE MODIFY!!!
 	public static final int COUNT_ELEMENTS_CURRENT = 2;
 	public static final int COUNT_ELEMENTS_FORECAST = 3;
+	
+	public static final int COUNT_FORECAST_DAY = 3;
 	
 	public static String parseRawToPattern(String raw, int flag) {
 		if (raw == null) {
@@ -56,56 +53,46 @@ public class WeatherParser {
 			try {
 				JSONObject reader = new JSONObject(raw);
 				JSONArray list = reader.getJSONArray("list");
-				int count = list.length();
-				if (count < 12) {
+				int length = list.length();
+				
+				if (length < COUNT_FORECAST_DAY + 1) {
 					return null;
 				}
 				
-				for (int i = 0; i < 3; i++) {
-					SparseIntArray a = new SparseIntArray(); 
-					List<Integer> temps = new ArrayList<Integer>();
-					for (int j = 0; j < 4; j++) {
-						JSONObject forecast = list.getJSONObject(j + 4 * i);
-						
-						JSONArray weather = forecast.getJSONArray("weather");
-						int weatherId = weather.getJSONObject(0).getInt("id");
-						
-						JSONObject main = forecast.getJSONObject("main");
-						int temperature = main.getInt("temp");
-						
-						
-						int value = a.get(weatherId);
-						if (value > 0) {
-							value++;
-							a.put(weatherId, value);
-						} else {
-							a.put(weatherId, 1);
-						}
-						temps.add(temperature);
-					}
+				int i;
+				int count;
+				
+				long currentMillis = System.currentTimeMillis();
+				JSONObject forecastFirst = list.getJSONObject(0);
+				long firstTime = forecastFirst.getLong("dt");
+				if (currentMillis > firstTime) {
+					i = 1;
+					count = COUNT_FORECAST_DAY + 1;
+				} else {
+					i = 0;
+					count = COUNT_FORECAST_DAY;
+				}
+				
+				while (i < count) {
+					JSONObject forecast = list.getJSONObject(i);
 					
-					int weatherId = 0;
-					int counts = 0;
-					for (int k = 0; k < a.size(); k++) {
-						int tempKey = a.keyAt(k);
-						int tempCounts = a.get(tempKey);
-						if (counts < tempCounts) {
-							weatherId = tempKey;
-							counts = tempCounts;
-						}
-					}
+					JSONArray weather = forecast.getJSONArray("weather");
+					int weatherId = weather.getJSONObject(0).getInt("id");
 					
-					int temperatureMax = Collections.max(temps);
-					int temperatureMin = Collections.min(temps);
+					JSONObject temp = forecast.getJSONObject("temp");
+					int temperatureMin = (int) Math.floor(temp.getDouble("min"));
+					int temperatureMax = (int) Math.ceil(temp.getDouble("max"));
 					
 					builder.append(weatherId);
 					builder.append('|');
 					builder.append(temperatureMin);
 					builder.append('|');
 					builder.append(temperatureMax);
-					if (i < 2) {
+					if (i < length - 1) {
 						builder.append(';');
 					}
+					
+					i++;
 				}
 				
 				return builder.toString();

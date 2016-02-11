@@ -34,7 +34,7 @@
         android:textSize="24sp" />
 
     <TextView
-        android:id="@+id/current_day_temperature"
+        android:id="@+id/current_uv_index"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
