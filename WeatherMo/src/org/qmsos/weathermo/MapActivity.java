@@ -106,10 +106,10 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 		
-        if(mPermissionResultCallback != null)
-        {
+        if (mPermissionResultCallback != null) {
             try {
-				mPermissionResultCallback.onRequestPermissionResult(requestCode, permissions, grantResults);
+				mPermissionResultCallback.onRequestPermissionResult(
+						requestCode, permissions, grantResults);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -132,7 +132,8 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
 	public void setActivityResultCallback(CordovaPlugin plugin) {
 	    // Cancel any previously pending activity.
         if (mActivityResultCallback != null) {
-            mActivityResultCallback.onActivityResult(mActivityResultRequestCode, Activity.RESULT_CANCELED, null);
+            mActivityResultCallback.onActivityResult(
+            		mActivityResultRequestCode, Activity.RESULT_CANCELED, null);
         }
         mActivityResultCallback = plugin;
 	}
@@ -159,20 +160,24 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
 	public void requestPermission(CordovaPlugin plugin, int requestCode, String permission) {
         mPermissionResultCallback = plugin;
         
-        String[] permissions = { permission };
-        getActivity().requestPermissions(permissions, requestCode);		
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        	String[] permissions = { permission };
+        	requestPermissions(permissions, requestCode);		
+        }
 	}
 
 	@Override
 	public void requestPermissions(CordovaPlugin plugin, int requestCode, String[] permissions) {
         mPermissionResultCallback = plugin;
         
-        getActivity().requestPermissions(permissions, requestCode);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        	requestPermissions(permissions, requestCode);
+        }
 	}
 
 	@Override
 	public boolean hasPermission(String permission) {
-		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 			int result = checkSelfPermission(permission);
 			return PackageManager.PERMISSION_GRANTED == result;
 		} else {
@@ -213,8 +218,10 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
 			cursor = getContentResolver().query(
 					WeatherProvider.CONTENT_URI_CITIES, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				long longitude = cursor.getLong(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_LONGITUDE));
-				long latitude = cursor.getLong(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_LATITUDE));
+				long longitude = cursor.getLong(
+						cursor.getColumnIndexOrThrow(WeatherProvider.KEY_LONGITUDE));
+				long latitude = cursor.getLong(
+						cursor.getColumnIndexOrThrow(WeatherProvider.KEY_LATITUDE));
 				
 				int zoomlevel = 4;
 				
