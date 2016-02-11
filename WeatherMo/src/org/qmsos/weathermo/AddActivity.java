@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.qmsos.weathermo.util.City;
 import org.qmsos.weathermo.util.IpcConstants;
+import org.qmsos.weathermo.widget.CityRecyclerViewAdapter;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -15,18 +16,12 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.Adapter;
-import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.Toolbar;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.view.KeyEvent;
-import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
@@ -35,7 +30,7 @@ import android.widget.Toast;
 public class AddActivity extends AppCompatActivity {
 
 	private MessageReceiver mMessageReceiver;
-	private CandidateAdapter mCandidateAdapter;
+	private CityRecyclerViewAdapter mCandidateAdapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +42,7 @@ public class AddActivity extends AppCompatActivity {
 		
 		mMessageReceiver = new MessageReceiver();
 		
-		mCandidateAdapter = new CandidateAdapter(this);
+		mCandidateAdapter = new CityRecyclerViewAdapter(this);
 		RecyclerView candidatesView = (RecyclerView) findViewById(R.id.city_candidates);
 		candidatesView.setLayoutManager(new LinearLayoutManager(this));
 		candidatesView.setAdapter(mCandidateAdapter);
@@ -170,70 +165,6 @@ public class AddActivity extends AppCompatActivity {
 				}
 			}
 		}
-	}
-
-	private class CandidateAdapter extends Adapter<CandidateAdapter.CandidateViewHolder> {
-
-		private City[] mDataArray;
-		private Context mContext;
-		
-		public CandidateAdapter(Context context) {
-			mContext = context;
-		}
-		
-		@Override
-		public int getItemCount() {
-			return mDataArray == null ? 0 : mDataArray.length;
-		}
-
-		@Override
-		public void onBindViewHolder(CandidateViewHolder holder, int position) {
-			if (mDataArray == null || position >= mDataArray.length) {
-				return;
-			}
-			
-			final City city = mDataArray[position];
-			
-			holder.mCandidateAddButton.setOnClickListener(new OnClickListener() {
-				
-				@Override
-				public void onClick(View v) {
-					Intent i = new Intent(mContext, WeatherService.class);
-					i.setAction(IpcConstants.ACTION_ADD_CITY);
-					i.putExtra(IpcConstants.EXTRA_ADD_CITY, city);
-					
-					mContext.startService(i);
-				}
-			});
-			holder.mCandidateInfoView.setText(city.getCityName() + " " + city.getCountry());
-		}
-
-		@Override
-		public CandidateViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-			View view = View.inflate(parent.getContext(), R.layout.view_holder_candidate, null);
-			
-			return new CandidateViewHolder(view);
-		}
-		
-		public void swapData(City[] dataArray) {
-			mDataArray = dataArray;
-			
-			notifyDataSetChanged();
-		}
-		
-		private class CandidateViewHolder extends ViewHolder {
-			TextView mCandidateInfoView;
-			Button mCandidateAddButton;
-			
-			public CandidateViewHolder(View itemView) {
-				super(itemView);
-				
-				mCandidateInfoView = (TextView) itemView.findViewById(R.id.candidate_info);
-				mCandidateAddButton = (Button) itemView.findViewById(R.id.candidate_add);
-			}
-			
-		}
-	
 	}
 
 }
