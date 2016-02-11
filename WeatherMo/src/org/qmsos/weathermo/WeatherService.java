@@ -87,13 +87,13 @@ public class WeatherService extends IntentService {
 			}
 			
 			LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
-		} else if (action.equals(IpcConstants.ACTION_ADD_CITY)) {
-			City city = intent.getParcelableExtra(IpcConstants.EXTRA_ADD_CITY);
+		} else if (action.equals(IpcConstants.ACTION_INSERT_CITY)) {
+			City city = intent.getParcelableExtra(IpcConstants.EXTRA_INSERT_CITY);
 			if (city != null) {
 				boolean flag = insertCity(city);
 				
-				Intent localIntent = new Intent(IpcConstants.ACTION_ADD_EXECUTED);
-				localIntent.putExtra(IpcConstants.EXTRA_ADD_EXECUTED, flag);
+				Intent localIntent = new Intent(IpcConstants.ACTION_INSERT_EXECUTED);
+				localIntent.putExtra(IpcConstants.EXTRA_INSERT_EXECUTED, flag);
 				
 				LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
 			}

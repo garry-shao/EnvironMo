@@ -61,13 +61,13 @@ public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<Vie
 
 	@Override
 	public void onBindViewHolderOther(ViewHolder holder) {
-		((AddViewHolder) holder).mAddButton.setOnClickListener(new OnClickListener() {
+		((AddMoreViewHolder) holder).mAddMoreButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
 				Context context = v.getContext();
 				try {
-					((ManageCityCallback) context).onInsertCity();
+					((ManageCityCallback) context).onAddMoreCity();
 				} catch (ClassCastException e) {
 					throw new ClassCastException("context must implements ManageCityCallback");
 				}
@@ -83,9 +83,9 @@ public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<Vie
 			
 			return new CursorViewHolder(view);
 		case VIEW_TYPE_OTHER:
-			View addView = View.inflate(parent.getContext(), R.layout.view_holder_add, null);
+			View addView = View.inflate(parent.getContext(), R.layout.view_holder_add_more, null);
 			
-			return new AddViewHolder(addView);
+			return new AddMoreViewHolder(addView);
 		default:
 			return null;
 		}
@@ -106,13 +106,13 @@ public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<Vie
 	
 	}
 	
-	static class AddViewHolder extends ViewHolder {
-		Button mAddButton;
+	static class AddMoreViewHolder extends ViewHolder {
+		Button mAddMoreButton;
 		
-		public AddViewHolder(View itemView) {
+		public AddMoreViewHolder(View itemView) {
 			super(itemView);
 			
-			mAddButton = (Button) itemView.findViewById(R.id.city_add);
+			mAddMoreButton = (Button) itemView.findViewById(R.id.city_add_more);
 		}
 	
 	}
@@ -125,9 +125,9 @@ public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<Vie
 	 */
 	public interface ManageCityCallback {
 		/**
-		 * Callback to start inserting city.
+		 * Callback to start an inserting city workflow.
 		 */
-		void onInsertCity();
+		void onAddMoreCity();
 		/**
 		 * Callback to delete city.
 		 * 

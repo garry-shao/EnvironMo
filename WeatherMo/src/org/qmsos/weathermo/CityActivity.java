@@ -61,7 +61,7 @@ implements LoaderCallbacks<Cursor>, ManageCityCallback {
 	}
 
 	@Override
-	public void onInsertCity() {
+	public void onAddMoreCity() {
 		Intent i = new Intent(this, AddActivity.class);
 		startActivity(i);		
 	}

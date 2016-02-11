@@ -24,16 +24,16 @@ public class CityRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, 
 		
 		String info = data.getCityName() + " " + data.getCountry();
 		
-		((RecyclerViewHolder) holder).mCandidateInfoView.setText(info);		
-		((RecyclerViewHolder) holder).mCandidateAddButton.setOnClickListener(new OnClickListener() {
+		((RecyclerViewHolder) holder).mCityInfoView.setText(info);		
+		((RecyclerViewHolder) holder).mInsertButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
 				Context context = v.getContext();
 				try {
-					((AddCityCallback) context).onAddCity(dataCopy);
+					((InsertCityCallback) context).onInsertCity(dataCopy);
 				} catch (ClassCastException e) {
-					throw new ClassCastException("context must implements AddCityCallback");
+					throw new ClassCastException("context must implements InsertCityCallback");
 				}
 			}
 		});
@@ -41,20 +41,20 @@ public class CityRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, 
 
 	@Override
 	public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-		View view = View.inflate(parent.getContext(), R.layout.view_holder_candidate, null);
+		View view = View.inflate(parent.getContext(), R.layout.view_holder_insert, null);
 		
 		return new RecyclerViewHolder(view);
 	}
 
 	static class RecyclerViewHolder extends ViewHolder {
-		TextView mCandidateInfoView;
-		Button mCandidateAddButton;
+		TextView mCityInfoView;
+		Button mInsertButton;
 		
 		public RecyclerViewHolder(View itemView) {
 			super(itemView);
 			
-			mCandidateInfoView = (TextView) itemView.findViewById(R.id.candidate_info);
-			mCandidateAddButton = (Button) itemView.findViewById(R.id.candidate_add);
+			mCityInfoView = (TextView) itemView.findViewById(R.id.city_info);
+			mInsertButton = (Button) itemView.findViewById(R.id.city_insert);
 		}
 	
 	}
@@ -65,14 +65,14 @@ public class CityRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, 
 	 * 
 	 *
 	 */
-	public interface AddCityCallback {
+	public interface InsertCityCallback {
 		/**
-		 * Callback to add city.
+		 * Callback to insert city.
 		 * 
 		 * @param city
-		 *            The city to add.
+		 *            The city to insert.
 		 */
-		void onAddCity(City city);
+		void onInsertCity(City city);
 	}
 
 }

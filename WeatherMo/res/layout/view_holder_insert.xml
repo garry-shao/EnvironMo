@@ -7,7 +7,7 @@
     android:paddingStart="?android:attr/listPreferredItemPaddingStart" >
 
     <TextView
-        android:id="@+id/candidate_info"
+        android:id="@+id/city_info"
         android:layout_centerVertical="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -18,12 +18,12 @@
         android:textAppearance="?android:attr/textAppearanceListItem" />
 
     <Button
-        android:id="@+id/candidate_add"
+        android:id="@+id/city_insert"
         android:layout_centerVertical="true"
         android:layout_alignParentEnd="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/button_candidate"
+        android:text="@string/button_insert"
         android:textColor="?android:attr/textColorPrimary"
         android:textSize="14sp" />
 

@@ -7,10 +7,10 @@
     android:paddingStart="?android:attr/listPreferredItemPaddingStart" >
 
     <Button
-        android:id="@+id/city_add"
+        android:id="@+id/city_add_more"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/button_add"
+        android:text="@string/button_add_more"
         android:textColor="?android:attr/textColorPrimary"
         android:textSize="14sp" />
 

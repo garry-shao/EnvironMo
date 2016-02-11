@@ -6,7 +6,7 @@ import org.json.JSONObject;
 import org.qmsos.weathermo.util.City;
 import org.qmsos.weathermo.util.IpcConstants;
 import org.qmsos.weathermo.widget.CityRecyclerViewAdapter;
-import org.qmsos.weathermo.widget.CityRecyclerViewAdapter.AddCityCallback;
+import org.qmsos.weathermo.widget.CityRecyclerViewAdapter.InsertCityCallback;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -28,7 +28,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
-public class AddActivity extends AppCompatActivity implements AddCityCallback {
+public class AddActivity extends AppCompatActivity implements InsertCityCallback {
 
 	private MessageReceiver mMessageReceiver;
 	private CityRecyclerViewAdapter mCandidateAdapter;
@@ -103,15 +103,15 @@ public class AddActivity extends AppCompatActivity implements AddCityCallback {
 		
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(IpcConstants.ACTION_QUERY_EXECUTED);
-		filter.addAction(IpcConstants.ACTION_ADD_EXECUTED);
+		filter.addAction(IpcConstants.ACTION_INSERT_EXECUTED);
 		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, filter);
 	}
 
 	@Override
-	public void onAddCity(City city) {
+	public void onInsertCity(City city) {
 		Intent i = new Intent(this, WeatherService.class);
-		i.setAction(IpcConstants.ACTION_ADD_CITY);
-		i.putExtra(IpcConstants.EXTRA_ADD_CITY, city);
+		i.setAction(IpcConstants.ACTION_INSERT_CITY);
+		i.putExtra(IpcConstants.EXTRA_INSERT_CITY, city);
 		
 		startService(i);
 	}
@@ -168,8 +168,8 @@ public class AddActivity extends AppCompatActivity implements AddCityCallback {
 						String result = intent.getStringExtra(IpcConstants.EXTRA_QUERY_RESULT);
 						parseSearchResult(result);
 					}
-				} else if (action.equals(IpcConstants.ACTION_ADD_EXECUTED)) {
-					boolean flag = intent.getBooleanExtra(IpcConstants.EXTRA_ADD_EXECUTED, false);
+				} else if (action.equals(IpcConstants.ACTION_INSERT_EXECUTED)) {
+					boolean flag = intent.getBooleanExtra(IpcConstants.EXTRA_INSERT_EXECUTED, false);
 					String text = flag ? "Succeeded" : "Failed";
 					Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
 				}
