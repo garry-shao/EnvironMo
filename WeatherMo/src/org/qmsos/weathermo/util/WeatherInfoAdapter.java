@@ -1,7 +1,6 @@
 package org.qmsos.weathermo.util;
 
 import java.util.Calendar;
-import java.util.TimeZone;
 
 import org.qmsos.weathermo.R;
 
@@ -11,7 +10,7 @@ import android.widget.TextView;
 public class WeatherInfoAdapter {
 
 	public static String getDayOfWeek(int day) {
-		Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DAY_OF_YEAR, day);
 		int i = c.get(Calendar.DAY_OF_WEEK);
 		switch (i) {
