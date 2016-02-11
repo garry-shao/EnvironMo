@@ -1,7 +1,10 @@
 package org.qmsos.weathermo;
 
+import org.qmsos.weathermo.util.IpcConstants;
 import org.qmsos.weathermo.widget.CursorRecyclerViewAdapter;
+import org.qmsos.weathermo.widget.CursorRecyclerViewAdapter.ManageCityCallback;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
@@ -12,7 +15,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 
-public class CityActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class CityActivity extends AppCompatActivity 
+implements LoaderCallbacks<Cursor>, ManageCityCallback {
 	
 	private CursorRecyclerViewAdapter mCursorAdapter;
 
@@ -54,6 +58,20 @@ public class CityActivity extends AppCompatActivity implements LoaderCallbacks<C
 	@Override
 	public void onLoaderReset(Loader<Cursor> loader) {
 		mCursorAdapter.swapCursor(null);
+	}
+
+	@Override
+	public void onInsertCity() {
+		Intent i = new Intent(this, AddActivity.class);
+		startActivity(i);		
+	}
+
+	@Override
+	public void onDeleteCity(long cityId) {
+		Intent i = new Intent(this, WeatherService.class);
+		i.setAction(IpcConstants.ACTION_DELETE_CITY);
+		i.putExtra(IpcConstants.EXTRA_CITY_ID, cityId);
+		startService(i);		
 	}
 
 }

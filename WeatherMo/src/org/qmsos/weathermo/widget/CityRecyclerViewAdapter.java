@@ -1,16 +1,13 @@
 package org.qmsos.weathermo.widget;
 
 import org.qmsos.weathermo.R;
-import org.qmsos.weathermo.WeatherService;
 import org.qmsos.weathermo.util.City;
-import org.qmsos.weathermo.util.IpcConstants;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -21,30 +18,25 @@ import android.widget.TextView;
  */
 public class CityRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, ViewHolder> {
 
-	private Context mContext;
-	
-	public CityRecyclerViewAdapter(Context context) {
-		mContext = context;
-	}
-	
 	@Override
 	public void onBindViewHolder(ViewHolder holder, City data) {
 		final City dataCopy = data;
 		
+		String info = data.getCityName() + " " + data.getCountry();
+		
+		((RecyclerViewHolder) holder).mCandidateInfoView.setText(info);		
 		((RecyclerViewHolder) holder).mCandidateAddButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				Intent i = new Intent(mContext, WeatherService.class);
-				i.setAction(IpcConstants.ACTION_ADD_CITY);
-				i.putExtra(IpcConstants.EXTRA_ADD_CITY, dataCopy);
-				
-				mContext.startService(i);
+				Context context = v.getContext();
+				try {
+					((AddCityCallback) context).onAddCity(dataCopy);
+				} catch (ClassCastException e) {
+					throw new ClassCastException("context must implements AddCityCallback");
+				}
 			}
 		});
-		
-		String info = data.getCityName() + " " + data.getCountry();
-		((RecyclerViewHolder) holder).mCandidateInfoView.setText(info);		
 	}
 
 	@Override
@@ -65,6 +57,22 @@ public class CityRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, 
 			mCandidateAddButton = (Button) itemView.findViewById(R.id.candidate_add);
 		}
 	
+	}
+
+	/**
+	 * Interface for a callback to be invoked when the adding city button of ViewHolder 
+	 * class is called.
+	 * 
+	 *
+	 */
+	public interface AddCityCallback {
+		/**
+		 * Callback to add city.
+		 * 
+		 * @param city
+		 *            The city to add.
+		 */
+		void onAddCity(City city);
 	}
 
 }

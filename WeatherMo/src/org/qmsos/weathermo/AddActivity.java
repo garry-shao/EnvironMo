@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import org.qmsos.weathermo.util.City;
 import org.qmsos.weathermo.util.IpcConstants;
 import org.qmsos.weathermo.widget.CityRecyclerViewAdapter;
+import org.qmsos.weathermo.widget.CityRecyclerViewAdapter.AddCityCallback;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -27,7 +28,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
-public class AddActivity extends AppCompatActivity {
+public class AddActivity extends AppCompatActivity implements AddCityCallback {
 
 	private MessageReceiver mMessageReceiver;
 	private CityRecyclerViewAdapter mCandidateAdapter;
@@ -42,7 +43,7 @@ public class AddActivity extends AppCompatActivity {
 		
 		mMessageReceiver = new MessageReceiver();
 		
-		mCandidateAdapter = new CityRecyclerViewAdapter(this);
+		mCandidateAdapter = new CityRecyclerViewAdapter();
 		RecyclerView candidatesView = (RecyclerView) findViewById(R.id.city_candidates);
 		candidatesView.setLayoutManager(new LinearLayoutManager(this));
 		candidatesView.setAdapter(mCandidateAdapter);
@@ -104,6 +105,15 @@ public class AddActivity extends AppCompatActivity {
 		filter.addAction(IpcConstants.ACTION_QUERY_EXECUTED);
 		filter.addAction(IpcConstants.ACTION_ADD_EXECUTED);
 		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, filter);
+	}
+
+	@Override
+	public void onAddCity(City city) {
+		Intent i = new Intent(this, WeatherService.class);
+		i.setAction(IpcConstants.ACTION_ADD_CITY);
+		i.putExtra(IpcConstants.EXTRA_ADD_CITY, city);
+		
+		startService(i);
 	}
 
 	private void parseSearchResult(String result) {

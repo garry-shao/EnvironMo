@@ -1,13 +1,9 @@
 package org.qmsos.weathermo.widget;
 
-import org.qmsos.weathermo.AddActivity;
 import org.qmsos.weathermo.R;
 import org.qmsos.weathermo.WeatherProvider;
-import org.qmsos.weathermo.WeatherService;
-import org.qmsos.weathermo.util.IpcConstants;
 
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.SpannableString;
@@ -26,12 +22,8 @@ import android.widget.TextView;
  */
 public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<ViewHolder> {
 	
-	private Context mContext;
-
 	public CursorRecyclerViewAdapter(Context context, Cursor cursor) {
 		super(context, cursor);
-		
-		this.mContext = context;
 	}
 
 	@Override
@@ -57,10 +49,12 @@ public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<Vie
 			
 			@Override
 			public void onClick(View v) {
-				Intent i = new Intent(mContext, WeatherService.class);
-				i.setAction(IpcConstants.ACTION_DELETE_CITY);
-				i.putExtra(IpcConstants.EXTRA_CITY_ID, id);
-				mContext.startService(i);
+				Context context = v.getContext();
+				try {
+					((ManageCityCallback) context).onDeleteCity(id);
+				} catch (ClassCastException e) {
+					throw new ClassCastException("context must implements ManageCityCallback");
+				}
 			}
 		});
 	}
@@ -71,8 +65,12 @@ public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<Vie
 			
 			@Override
 			public void onClick(View v) {
-				Intent i = new Intent(mContext, AddActivity.class);
-				mContext.startActivity(i);
+				Context context = v.getContext();
+				try {
+					((ManageCityCallback) context).onInsertCity();
+				} catch (ClassCastException e) {
+					throw new ClassCastException("context must implements ManageCityCallback");
+				}
 			}
 		});
 	}
@@ -117,6 +115,26 @@ public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<Vie
 			mAddButton = (Button) itemView.findViewById(R.id.city_add);
 		}
 	
+	}
+
+	/**
+	 * Interface for a callback to be invoked when the buttons of ViewHolder 
+	 * class is called.
+	 * 
+	 *
+	 */
+	public interface ManageCityCallback {
+		/**
+		 * Callback to start inserting city.
+		 */
+		void onInsertCity();
+		/**
+		 * Callback to delete city.
+		 * 
+		 * @param cityId
+		 *            The id of the city to delete.
+		 */
+		void onDeleteCity(long cityId);
 	}
 
 }
