@@ -128,9 +128,9 @@ public class WeatherService extends IntentService {
 					long cityId = cursor.getLong(
 							cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CITY_ID));
 					
-					String query = assembleRequest(flag, cityId, null);
-					if (query != null) {
-						String result =  download(query);
+					String request = assembleRequest(flag, cityId, null);
+					if (request != null) {
+						String result =  download(request);
 						
 						updateWeather(flag, cityId, result);
 					}
@@ -229,7 +229,8 @@ public class WeatherService extends IntentService {
 		StringBuilder builder = new StringBuilder();
 	
 		try {
-			URL url = new URL(request);
+			// workaround: whitespace makes the url invalid, replace with URL-encode.
+			URL url = new URL(request.replace(" ", "%20"));
 			HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
 			try {
 				int responseCode = httpConnection.getResponseCode();

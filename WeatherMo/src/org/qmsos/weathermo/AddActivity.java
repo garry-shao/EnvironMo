@@ -18,8 +18,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.text.InputFilter;
-import android.text.Spanned;
 import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -48,22 +46,7 @@ public class AddActivity extends AppCompatActivity implements InsertCityCallback
 		candidatesView.setLayoutManager(new LinearLayoutManager(this));
 		candidatesView.setAdapter(mCandidateAdapter);
 		
-		InputFilter noWhitespaceFilter = new InputFilter() {
-
-			@Override
-			public CharSequence filter(
-					CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-				for (int i = start; i < end; i++) {
-					if (Character.isSpaceChar(source.charAt(i))) {
-						return "";
-					}
-				}
-				return null;
-			}
-		};
-		
 		EditText cityNameEditText = (EditText) findViewById(R.id.city_name);
-		cityNameEditText.setFilters(new InputFilter[] { noWhitespaceFilter });
 		cityNameEditText.setOnEditorActionListener(new OnEditorActionListener() {
 
 			@Override
