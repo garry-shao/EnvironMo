@@ -7,6 +7,7 @@ import org.qmsos.weathermo.WeatherProvider;
 import org.qmsos.weathermo.util.WeatherInfoAdapter;
 import org.qmsos.weathermo.util.WeatherParser;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -21,9 +22,24 @@ public class ForecastWeather extends Fragment {
 
 	private static final String TAG = ForecastWeather.class.getSimpleName();
 
+	private OnWeatherClickedListener mListener;
+	
+	@Override
+	public void onAttach(Context context) {
+		super.onAttach(context);
+		
+		try {
+			mListener = (OnWeatherClickedListener) context;
+		} catch (ClassCastException e) {
+			String listenerName = OnWeatherClickedListener.class.getSimpleName();
+			
+			throw new ClassCastException(context.toString() + " must implements " + listenerName);
+		}
+	}
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fragment_forecast, container, false);
+		View view = inflater.inflate(R.layout.fragment_forecast_weather, container, false);
 
 		return view;
 	}
@@ -37,11 +53,7 @@ public class ForecastWeather extends Fragment {
 
 			@Override
 			public void onClick(View v) {
-				try {
-					((OnWeatherClickListener) getContext()).onCurrentClick();
-				} catch (ClassCastException e) {
-					throw new ClassCastException("context must implement OnWeatherClickListener");
-				}
+				mListener.onCurrentClick();
 			}
 		});
 
@@ -53,11 +65,7 @@ public class ForecastWeather extends Fragment {
 
 				@Override
 				public void onClick(View v) {
-					try {
-						((OnWeatherClickListener) getContext()).onForecastClick(j);
-					} catch (ClassCastException e) {
-						throw new ClassCastException("context must implement OnWeatherClickListener");
-					}
+					mListener.onForecastClick(j);
 				}
 			});
 		}
@@ -144,7 +152,7 @@ public class ForecastWeather extends Fragment {
 		}
 	}
 
-	public interface OnWeatherClickListener {
+	public interface OnWeatherClickedListener {
 		
 		/**
 		 * When view of current weather is clicked.

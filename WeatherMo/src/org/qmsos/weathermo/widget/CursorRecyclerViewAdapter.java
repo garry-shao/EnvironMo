@@ -21,9 +21,19 @@ import android.widget.TextView;
  *
  */
 public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<ViewHolder> {
+
+	private OnViewHolderClickedListener mListener;
 	
 	public CursorRecyclerViewAdapter(Context context, Cursor cursor) {
 		super(context, cursor);
+		
+		try {
+			mListener = (OnViewHolderClickedListener) context;
+		} catch (ClassCastException e) {
+			String listenerName = OnViewHolderClickedListener.class.getSimpleName();
+			
+			throw new ClassCastException(context.toString() + " must implements " + listenerName);
+		}
 	}
 
 	@Override
@@ -49,12 +59,7 @@ public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<Vie
 			
 			@Override
 			public void onClick(View v) {
-				Context context = v.getContext();
-				try {
-					((ManageCityCallback) context).onDeleteCity(id);
-				} catch (ClassCastException e) {
-					throw new ClassCastException("context must implements ManageCityCallback");
-				}
+				mListener.onDeleteCity(id);
 			}
 		});
 	}
@@ -65,12 +70,7 @@ public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<Vie
 			
 			@Override
 			public void onClick(View v) {
-				Context context = v.getContext();
-				try {
-					((ManageCityCallback) context).onAddMoreCity();
-				} catch (ClassCastException e) {
-					throw new ClassCastException("context must implements ManageCityCallback");
-				}
+				mListener.onAddMoreCity();
 			}
 		});
 	}
@@ -123,7 +123,7 @@ public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<Vie
 	 * 
 	 *
 	 */
-	public interface ManageCityCallback {
+	public interface OnViewHolderClickedListener {
 		/**
 		 * Callback to start an inserting city workflow.
 		 */

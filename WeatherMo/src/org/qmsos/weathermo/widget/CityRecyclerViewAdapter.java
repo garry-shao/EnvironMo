@@ -18,6 +18,20 @@ import android.widget.TextView;
  */
 public class CityRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, ViewHolder> {
 
+	private OnInsertCityClickedListener mListener;
+
+	public CityRecyclerViewAdapter(Context context, City[] dataArray) {
+		super(context, dataArray);
+		
+		try {
+			mListener = (OnInsertCityClickedListener) context;
+		} catch (ClassCastException e) {
+			String listenerName = OnInsertCityClickedListener.class.getSimpleName();
+			
+			throw new ClassCastException(context.toString() + " must implements " + listenerName);
+		}
+	}
+
 	@Override
 	public void onBindViewHolder(ViewHolder holder, City data) {
 		final City dataCopy = data;
@@ -29,12 +43,7 @@ public class CityRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, 
 			
 			@Override
 			public void onClick(View v) {
-				Context context = v.getContext();
-				try {
-					((InsertCityCallback) context).onInsertCity(dataCopy);
-				} catch (ClassCastException e) {
-					throw new ClassCastException("context must implements InsertCityCallback");
-				}
+				mListener.onInsertCity(dataCopy);
 			}
 		});
 	}
@@ -65,7 +74,7 @@ public class CityRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, 
 	 * 
 	 *
 	 */
-	public interface InsertCityCallback {
+	public interface OnInsertCityClickedListener {
 		/**
 		 * Callback to insert city.
 		 * 

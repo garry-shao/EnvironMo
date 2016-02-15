@@ -33,10 +33,6 @@
             android:name=".MapActivity"
             android:label="@string/activity_weather_map" >
         </activity>
-        <activity
-            android:name=".AddActivity"
-            android:label="@string/activity_city_add" >
-        </activity>
 
         <service
             android:name=".WeatherService"

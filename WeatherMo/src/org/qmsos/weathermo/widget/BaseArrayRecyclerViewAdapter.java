@@ -1,5 +1,6 @@
 package org.qmsos.weathermo.widget;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 
@@ -14,7 +15,11 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
 public abstract class BaseArrayRecyclerViewAdapter<T, VH extends ViewHolder> extends Adapter<VH> {
 	
 	private T[] mDataArray;
-	
+
+	public BaseArrayRecyclerViewAdapter(Context context, T[] dataArray) {
+		this.mDataArray = dataArray;
+	}
+
 	@Override
 	public int getItemCount() {
 		return mDataArray == null ? 0 : mDataArray.length;

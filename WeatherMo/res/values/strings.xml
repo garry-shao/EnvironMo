@@ -4,7 +4,6 @@
     <string name="placeholder">null</string>
     <string name="weather_map">Map</string>
     <string name="activity_city_name">Cities</string>
-    <string name="activity_city_add">Add City</string>
     <string name="activity_weather_map">Weather Map</string>
     <string name="button_add_more">Add More</string>
     <string name="button_insert">Insert</string>

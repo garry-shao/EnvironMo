@@ -4,7 +4,7 @@ import java.util.regex.PatternSyntaxException;
 
 import org.qmsos.weathermo.fragment.CurrentWeather;
 import org.qmsos.weathermo.fragment.ForecastWeather;
-import org.qmsos.weathermo.fragment.ForecastWeather.OnWeatherClickListener;
+import org.qmsos.weathermo.fragment.ForecastWeather.OnWeatherClickedListener;
 import org.qmsos.weathermo.fragment.WeatherPagerAdapter;
 import org.qmsos.weathermo.util.IpcConstants;
 import org.qmsos.weathermo.util.WeatherInfoAdapter;
@@ -38,7 +38,7 @@ import android.widget.TextView;
  * 
  */
 public class MainActivity extends AppCompatActivity 
-implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWeatherClickListener {
+implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWeatherClickedListener {
 	
 	private static final String TAG = MainActivity.class.getSimpleName();
 
