@@ -247,6 +247,8 @@ public class WeatherInfoAdapter {
 			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_03, 0, 0);
 		} else if (804 == id) {
 			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_04, 0, 0);
+		} else {
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, 0, 0);
 		}
 	}
 
@@ -273,6 +275,8 @@ public class WeatherInfoAdapter {
 			v.setBackgroundResource(R.drawable.bg_03);
 		} else if (804 == id) {
 			v.setBackgroundResource(R.drawable.bg_04);
+		} else {
+			v.setBackgroundResource(0);
 		}
 	}
 
