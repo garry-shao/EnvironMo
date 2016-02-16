@@ -114,6 +114,11 @@ public class ForecastWeather extends Fragment {
 			} catch (NumberFormatException e) {
 				Log.e(TAG, "string cannot be parsed as an integer value");
 			}
+		} else {
+			TextView textView = (TextView) getView().findViewById(R.id.current);
+			
+			WeatherInfoAdapter.setIconOfForecastView(textView, 0);
+			textView.setText(R.string.placeholder);
 		}
 		
 		if (forecast != null) {
@@ -148,6 +153,15 @@ public class ForecastWeather extends Fragment {
 				Log.e(TAG, "the syntax of the supplied regular expression is not valid");
 			} catch (NumberFormatException e) {
 				Log.e(TAG, "string cannot be parsed as an integer value");
+			}
+		} else {
+			for (int i = 0; i < 3; i++) {
+				TextView v = (TextView) getView().findViewById(
+						getResources().getIdentifier(
+								"forecast_" + i, "id", getContext().getPackageName()));
+			
+				WeatherInfoAdapter.setIconOfForecastView(v, 0);
+				v.setText(R.string.placeholder);
 			}
 		}
 	}

@@ -188,14 +188,12 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 		if (fragment != null && fragment.isAdded()) {
 			ViewPager pager = (ViewPager) findViewById(R.id.view_pager);
 			if (pager != null) {
-				int position = pager.getCurrentItem();
-				long cityId = mPagerAdapter.getCityId(position);
-				if (cityId != 0) {
-					fragment.refresh(cityId);
+				long cityId = mPagerAdapter.getCityId(pager.getCurrentItem());
 					
-					updateBackground(cityId, 0, WeatherParser.FLAG_CURRENT);
-					updateCityName(cityId);
-				}
+				fragment.refresh(cityId);
+				
+				updateBackground(cityId, 0, WeatherParser.FLAG_CURRENT);
+				updateCityName(cityId);
 			}
 		}
 		
@@ -206,6 +204,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 	}
 
 	private void updateBackground(long cityId, int day, int flag) {
+		String current = null;
+		String forecast = null;
 		Cursor cursor = null;
 		try {
 			String[] projection = { WeatherProvider.KEY_CURRENT, WeatherProvider.KEY_FORECAST };
@@ -214,52 +214,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 			cursor = getContentResolver().query(
 					WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				switch (flag) {
-				case WeatherParser.FLAG_CURRENT:
-					String current = cursor.getString(
-							cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CURRENT));
-					if (current != null) {
-						try {
-							String[] elements = current.split("\\|");
-							if (elements.length == WeatherParser.COUNT_ELEMENTS_CURRENT) {
-								int weatherId = Integer.parseInt(elements[0]);
-								
-								View v = findViewById(R.id.swipe_refresh);
-								WeatherInfoAdapter.setBackgroundOfView(v, weatherId);
-							}
-						} catch (PatternSyntaxException e) {
-							Log.e(TAG, "the syntax of the supplied regular expression is not valid");
-						} catch (NumberFormatException e) {
-							Log.e(TAG, "string cannot be parsed as an integer value");
-						}
-					}
-					break;
-				case WeatherParser.FLAG_FORECAST:
-					String forecast = cursor.getString(
-							cursor.getColumnIndexOrThrow(WeatherProvider.KEY_FORECAST));
-					if (forecast != null) {
-						try {
-							String[] elements = forecast.split(";");
-							if (elements.length == 3) {
-								if (0 <= day && day < 3) {
-									String element = elements[day];
-									String[] values = element.split("\\|");
-									if (values.length == WeatherParser.COUNT_ELEMENTS_FORECAST) {
-										int weatherId = Integer.parseInt(values[0]);
-										
-										View v = findViewById(R.id.swipe_refresh);
-										WeatherInfoAdapter.setBackgroundOfView(v, weatherId);
-									}
-								}
-							}
-						} catch (PatternSyntaxException e) {
-							Log.e(TAG, "the syntax of the supplied regular expression is not valid");
-						} catch (NumberFormatException e) {
-							Log.e(TAG, "string cannot be parsed as an integer value");
-						}
-					}
-					break;
-				}
+				current = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CURRENT));
+				forecast = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_FORECAST));
 			}
 		} catch (IllegalArgumentException e) {
 			Log.e(TAG, "The column does not exist");
@@ -268,30 +224,58 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 				cursor.close();
 			}
 		}
+		
+		int weatherId = 0;
+		if (current != null && forecast != null) {
+			switch (flag) {
+			case WeatherParser.FLAG_CURRENT:
+				try {
+					String[] elements = current.split("\\|");
+					if (elements.length == WeatherParser.COUNT_ELEMENTS_CURRENT) {
+						weatherId = Integer.parseInt(elements[0]);
+					}
+				} catch (PatternSyntaxException e) {
+					Log.e(TAG, "the syntax of the supplied regular expression is not valid");
+				} catch (NumberFormatException e) {
+					Log.e(TAG, "string cannot be parsed as an integer value");
+				}
+				break;
+			case WeatherParser.FLAG_FORECAST:
+				try {
+					String[] elements = forecast.split(";");
+					if (elements.length == 3 && 0 <= day && day < 3) {
+						String[] values = elements[day].split("\\|");
+						if (values.length == WeatherParser.COUNT_ELEMENTS_FORECAST) {
+							weatherId = Integer.parseInt(values[0]);
+						}
+					}
+				} catch (PatternSyntaxException e) {
+					Log.e(TAG, "the syntax of the supplied regular expression is not valid");
+				} catch (NumberFormatException e) {
+					Log.e(TAG, "string cannot be parsed as an integer value");
+				}
+				break;
+			}
+		}
+		
+		View v = findViewById(R.id.swipe_refresh);
+		WeatherInfoAdapter.setBackgroundOfView(v, weatherId);
 	}
 	
 	private void updateCityName(long cityId) {
+		String name = null;
+		String country = null;
 		Cursor cursor = null;
 		try {
-			String[] projection = { WeatherProvider.KEY_CITY_ID, WeatherProvider.KEY_NAME, WeatherProvider.KEY_COUNTRY };
+			String[] projection = { 
+					WeatherProvider.KEY_CITY_ID, WeatherProvider.KEY_NAME, WeatherProvider.KEY_COUNTRY };
 			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
 			
 			cursor = getContentResolver().query(
 					WeatherProvider.CONTENT_URI_CITIES, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				String name = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_NAME));
-				String country = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_COUNTRY));
-				
-				String raw = name + " " +country;
-				
-				SpannableString spanned = new SpannableString(raw);
-				spanned.setSpan(new RelativeSizeSpan(0.5f), 
-						name.length() + 1, 
-						raw.length(), 
-						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-				
-				TextView textView = (TextView) findViewById(R.id.city_name);
-				textView.setText(spanned);
+				name = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_NAME));
+				country = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_COUNTRY));
 			}
 		} catch (IllegalArgumentException e) {
 			Log.e(TAG, "The column does not exist");
@@ -299,6 +283,19 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 			if (cursor != null & !cursor.isClosed()) {
 				cursor.close();
 			}
+		}
+		
+		TextView textView = (TextView) findViewById(R.id.city_name);
+		if (name != null && country != null) {
+			String raw = name + " " +country;
+			
+			SpannableString spanned = new SpannableString(raw);
+			spanned.setSpan(new RelativeSizeSpan(0.5f), 
+					name.length() + 1, raw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+			
+			textView.setText(spanned);
+		} else {
+			textView.setText(R.string.placeholder);
 		}
 	}
 
