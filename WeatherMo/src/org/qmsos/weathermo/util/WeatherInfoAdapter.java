@@ -67,7 +67,7 @@ public class WeatherInfoAdapter {
 		} else if (801 <= weatherId && weatherId <= 899) {
 			return "Clouds";
 		} else {
-			return null;
+			return "Null";
 		}
 	}
 

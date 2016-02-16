@@ -156,14 +156,14 @@ public class WeatherService extends IntentService {
 		String parsed = null;
 		switch (flag) {
 		case FLAG_CURRENT:
-			parsed = WeatherParser.parseRawToPattern(result, WeatherParser.FLAG_CURRENT);
+			parsed = WeatherParser.parseRawToCurrent(result);
 			if (parsed != null) {
 				values.put(WeatherProvider.KEY_CURRENT, parsed);
 			}
 			
 			break;
 		case FLAG_FORECAST:
-			parsed = WeatherParser.parseRawToPattern(result, WeatherParser.FLAG_FORECAST);
+			parsed = WeatherParser.parseRawToForecast(result);
 			if (parsed != null) {
 				values.put(WeatherProvider.KEY_FORECAST, parsed);
 			}
@@ -265,7 +265,7 @@ public class WeatherService extends IntentService {
 					+ "&units=" + "metric"
 					+ "&appid=" + API_KEY;
 		case FLAG_FORECAST:
-			int days = WeatherParser.COUNT_FORECAST_DAY + 1;
+			int days = WeatherParser.COUNT_FORECAST_DAYS + 1;
 			
 			return "http://api.openweathermap.org/data/2.5/" 
 					+ "forecast/daily?" + "id=" + String.valueOf(cityId) 

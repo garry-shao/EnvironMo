@@ -1,7 +1,5 @@
 package org.qmsos.weathermo.fragment;
 
-import java.util.regex.PatternSyntaxException;
-
 import org.qmsos.weathermo.R;
 import org.qmsos.weathermo.WeatherProvider;
 import org.qmsos.weathermo.util.WeatherInfoAdapter;
@@ -22,6 +20,8 @@ public class ForecastWeather extends Fragment {
 
 	private static final String TAG = ForecastWeather.class.getSimpleName();
 
+	private static final int COUNT_FORECAST_VIEWS = 3;
+	
 	private OnWeatherClickedListener mListener;
 	
 	@Override
@@ -53,11 +53,11 @@ public class ForecastWeather extends Fragment {
 
 			@Override
 			public void onClick(View v) {
-				mListener.onCurrentClick();
+				mListener.onCurrentWeatherClicked();
 			}
 		});
 
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < COUNT_FORECAST_VIEWS; i++) {
 			final int j = i;
 			textView = (TextView) getView().findViewById(
 					getResources().getIdentifier("forecast_" + j, "id", getContext().getPackageName()));
@@ -65,13 +65,13 @@ public class ForecastWeather extends Fragment {
 
 				@Override
 				public void onClick(View v) {
-					mListener.onForecastClick(j);
+					mListener.onForecastWeatherClick(j);
 				}
 			});
 		}
 	}
 
-	public void refresh(long cityId) {
+	public void showWeather(long cityId) {
 		String current = null;
 		String forecast = null;
 		Cursor cursor = null;
@@ -93,76 +93,33 @@ public class ForecastWeather extends Fragment {
 			}
 		}
 		
-		if (current != null) {
-			try {
-				String[] elements = current.split("\\|");
-				if (elements.length != WeatherParser.COUNT_ELEMENTS_CURRENT) {
-					return;
-				}
-				
-				int weatherId = Integer.parseInt(elements[0]);
-				int temperature = Integer.parseInt(elements[1]);
-				
-				TextView textView = (TextView) getView().findViewById(R.id.current);
-				
-				WeatherInfoAdapter.setIconOfForecastView(textView, weatherId);
-				
-				textView.setText("Now" + "\n" + temperature + "\u00B0" + "C");
-				
-			} catch (PatternSyntaxException e) {
-				Log.e(TAG, "the syntax of the supplied regular expression is not valid");
-			} catch (NumberFormatException e) {
-				Log.e(TAG, "string cannot be parsed as an integer value");
-			}
+		int currentWeatherId = WeatherParser.getCurrentWeatherId(current);
+		int currentTemperature = WeatherParser.getCurrentTemperature(current);
+		
+		TextView textView = (TextView) getView().findViewById(R.id.current);
+		if (currentTemperature != WeatherParser.TEMPERATURE_INVALID) {
+			textView.setText("Now" + "\n" + currentTemperature + "\u00B0" + "C");
 		} else {
-			TextView textView = (TextView) getView().findViewById(R.id.current);
-			
-			WeatherInfoAdapter.setIconOfForecastView(textView, 0);
 			textView.setText(R.string.placeholder);
 		}
+		WeatherInfoAdapter.setIconOfForecastView(textView, currentWeatherId);
 		
-		if (forecast != null) {
-			try {
-				String[] elements = forecast.split(";");
-				if (elements.length != WeatherParser.COUNT_FORECAST_DAY) {
-					return;
-				}
-				
-				for (int i = 0; i < elements.length; i++) {
-					String element = elements[i];
-					
-					String[] values = element.split("\\|");
-					if (values.length != WeatherParser.COUNT_ELEMENTS_FORECAST) {
-						return;
-					}
-					
-					int weatherId = Integer.parseInt(values[0]);
-					int temperatureMin = Integer.parseInt(values[1]);
-					int temperatureMax = Integer.parseInt(values[2]);
-					
-					TextView v = (TextView) getView().findViewById(
-							getResources().getIdentifier(
-									"forecast_" + i, "id", getContext().getPackageName()));
-					
-					WeatherInfoAdapter.setIconOfForecastView(v, weatherId);
-					
-					v.setText(WeatherInfoAdapter.getDayOfWeek(i + 1) + "\n" 
-							+ temperatureMin + "~" + temperatureMax + "\u00B0" + "C");
-				}
-			} catch (PatternSyntaxException e) {
-				Log.e(TAG, "the syntax of the supplied regular expression is not valid");
-			} catch (NumberFormatException e) {
-				Log.e(TAG, "string cannot be parsed as an integer value");
-			}
-		} else {
-			for (int i = 0; i < 3; i++) {
-				TextView v = (TextView) getView().findViewById(
-						getResources().getIdentifier(
-								"forecast_" + i, "id", getContext().getPackageName()));
+		for (int i = 0; i < COUNT_FORECAST_VIEWS; i++) {
+			int forecastWeatherId = WeatherParser.getForecastWeatherId(i, forecast);
+			int forecastTemperatureMin = WeatherParser.getForecastTemperatureMin(i, forecast);
+			int forecastTemperatureMax = WeatherParser.getForecastTemperatureMax(i, forecast);
 			
-				WeatherInfoAdapter.setIconOfForecastView(v, 0);
+			TextView v = (TextView) getView().findViewById(
+					getResources().getIdentifier("forecast_" + i, "id", getContext().getPackageName()));
+			if (forecastTemperatureMin != WeatherParser.TEMPERATURE_INVALID
+					|| forecastTemperatureMax != WeatherParser.TEMPERATURE_INVALID) {
+				
+				v.setText(WeatherInfoAdapter.getDayOfWeek(i + 1) + "\n" 
+						+ forecastTemperatureMin + "~" + forecastTemperatureMax + "\u00B0" + "C");
+			} else {
 				v.setText(R.string.placeholder);
 			}
+			WeatherInfoAdapter.setIconOfForecastView(v, forecastWeatherId);
 		}
 	}
 
@@ -171,7 +128,7 @@ public class ForecastWeather extends Fragment {
 		/**
 		 * When view of current weather is clicked.
 		 */
-		void onCurrentClick();
+		void onCurrentWeatherClicked();
 
 		/**
 		 * When view of forecast weather is clicked.
@@ -180,7 +137,7 @@ public class ForecastWeather extends Fragment {
 		 *            which day is clicked(0 means next 24h, 1 means 48h,
 		 *            etc...).
 		 */
-		void onForecastClick(int day);
+		void onForecastWeatherClick(int day);
 	}
 
 }

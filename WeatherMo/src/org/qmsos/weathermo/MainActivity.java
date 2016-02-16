@@ -1,7 +1,5 @@
 package org.qmsos.weathermo;
 
-import java.util.regex.PatternSyntaxException;
-
 import org.qmsos.weathermo.fragment.CurrentWeather;
 import org.qmsos.weathermo.fragment.ForecastWeather;
 import org.qmsos.weathermo.fragment.ForecastWeather.OnWeatherClickedListener;
@@ -104,7 +102,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 		mPagerAdapter.swapCursor(data);
 		
-		refreshGUI();
+		refreshGui();
 	}
 
 	@Override
@@ -122,77 +120,76 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 
 	@Override
 	public void onPageSelected(int arg0) {
-		refreshGUI();
+		refreshGui();
 	}
 	
 	@Override
 	public void onClick(View v) {
-		if (v != null) {
-			if (v.getId() == R.id.weather_map) {
-				ViewPager pager = (ViewPager) findViewById(R.id.view_pager);
-				if (pager != null) {
-					int position = pager.getCurrentItem();
-					long cityId = mPagerAdapter.getCityId(position);
-					if (cityId != 0) {
-						Intent i = new Intent(getBaseContext(), MapActivity.class);
-						i.putExtra(IpcConstants.EXTRA_CITY_ID, cityId);
-						startActivity(i);
-					}
+		if (v.getId() == R.id.weather_map) {
+			ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+			if (viewPager != null) {
+				long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
+				if (cityId != 0) {
+					Intent i = new Intent(this, MapActivity.class);
+					i.putExtra(IpcConstants.EXTRA_CITY_ID, cityId);
+					startActivity(i);
 				}
-			} else if (v.getId() == R.id.city_name) {
-				Intent i = new Intent(getBaseContext(), CityActivity.class);
-				startActivity(i);
+			}
+		} else if (v.getId() == R.id.city_name) {
+			Intent i = new Intent(this, CityActivity.class);
+			startActivity(i);
+		}
+	}
+
+	@Override
+	public void onCurrentWeatherClicked() {
+		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+		if (viewPager != null) {
+//			Workaround: FragmentStatePagerAdapter's instantiateItem() method will return 
+//			the reference of fragment instead of calling getItem() method to create a new 
+//			one if it exists already.
+			CurrentWeather fragment = (CurrentWeather) 
+					mPagerAdapter.instantiateItem(viewPager, viewPager.getCurrentItem());
+			if (fragment != null && fragment.isAdded()) {
+				fragment.showCurrentWeather();
+				
+				long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
+				
+				updateCurrentBackground(cityId);
+			}		
+		}
+	}
+
+	@Override
+	public void onForecastWeatherClick(int day) {
+		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+		if (viewPager != null) {
+//			Workaround: FragmentStatePagerAdapter's instantiateItem() method will return 
+//			the reference of fragment instead of calling getItem() method to create a new 
+//			one if it exists already.
+			CurrentWeather fragment = (CurrentWeather) 
+					mPagerAdapter.instantiateItem(viewPager, viewPager.getCurrentItem());
+			if (fragment != null && fragment.isAdded()) {
+				fragment.showForecastWeather(day);
+				
+				long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
+				
+				updateForecastBackground(cityId, day);
 			}
 		}
 	}
 
-	@Override
-	public void onCurrentClick() {
+	private void refreshGui() {
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
-		
-//		Workaround: FragmentStatePagerAdapter's instantiateItem() method will return 
-//		the reference of fragment instead of calling getItem() method to create a new 
-//		one if it exists already.
-		CurrentWeather fragment = (CurrentWeather) 
-				mPagerAdapter.instantiateItem(viewPager, viewPager.getCurrentItem());
-		if (fragment != null && fragment.isAdded()) {
-			fragment.showCurrent();
-			
-			long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
-
-			updateBackground(cityId, 0, WeatherParser.FLAG_CURRENT);
-		}		
-	}
-
-	@Override
-	public void onForecastClick(int day) {
-		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
-		
-//		Workaround: FragmentStatePagerAdapter's instantiateItem() method will return 
-//		the reference of fragment instead of calling getItem() method to create a new 
-//		one if it exists already.
-		CurrentWeather fragment = (CurrentWeather) 
-				mPagerAdapter.instantiateItem(viewPager, viewPager.getCurrentItem());
-		if (fragment != null && fragment.isAdded()) {
-			fragment.showForecast(day);
-			
-			long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
-
-			updateBackground(cityId, day, WeatherParser.FLAG_FORECAST);
-		}
-	}
-
-	private void refreshGUI() {
-		ForecastWeather fragment = (ForecastWeather) 
-				getSupportFragmentManager().findFragmentById(R.id.forecast_fragment);
-		if (fragment != null && fragment.isAdded()) {
-			ViewPager pager = (ViewPager) findViewById(R.id.view_pager);
-			if (pager != null) {
-				long cityId = mPagerAdapter.getCityId(pager.getCurrentItem());
-					
-				fragment.refresh(cityId);
+		if (viewPager != null) {
+			ForecastWeather fragment = (ForecastWeather) 
+					getSupportFragmentManager().findFragmentById(R.id.forecast_fragment);
+			if (fragment != null && fragment.isAdded()) {
+				long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
 				
-				updateBackground(cityId, 0, WeatherParser.FLAG_CURRENT);
+				fragment.showWeather(cityId);
+				
+				updateCurrentBackground(cityId);
 				updateCityName(cityId);
 			}
 		}
@@ -203,18 +200,42 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 		}
 	}
 
-	private void updateBackground(long cityId, int day, int flag) {
+	private void updateCurrentBackground(long cityId) {
 		String current = null;
-		String forecast = null;
 		Cursor cursor = null;
 		try {
-			String[] projection = { WeatherProvider.KEY_CURRENT, WeatherProvider.KEY_FORECAST };
+			String[] projection = { WeatherProvider.KEY_CURRENT };
 			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
 			
 			cursor = getContentResolver().query(
 					WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
 				current = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CURRENT));
+			}
+		} catch (IllegalArgumentException e) {
+			Log.e(TAG, "The column does not exist");
+		} finally {
+			if (cursor != null && !cursor.isClosed()) {
+				cursor.close();
+			}
+		}
+		
+		int weatherId = WeatherParser.getCurrentWeatherId(current);
+		
+		View v = findViewById(R.id.swipe_refresh);
+		WeatherInfoAdapter.setBackgroundOfView(v, weatherId);
+	}
+	
+	private void updateForecastBackground(long cityId, int day) {
+		String forecast = null;
+		Cursor cursor = null;
+		try {
+			String[] projection = { WeatherProvider.KEY_FORECAST };
+			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
+			
+			cursor = getContentResolver().query(
+					WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+			if (cursor != null && cursor.moveToFirst()) {
 				forecast = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_FORECAST));
 			}
 		} catch (IllegalArgumentException e) {
@@ -225,38 +246,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 			}
 		}
 		
-		int weatherId = 0;
-		if (current != null && forecast != null) {
-			switch (flag) {
-			case WeatherParser.FLAG_CURRENT:
-				try {
-					String[] elements = current.split("\\|");
-					if (elements.length == WeatherParser.COUNT_ELEMENTS_CURRENT) {
-						weatherId = Integer.parseInt(elements[0]);
-					}
-				} catch (PatternSyntaxException e) {
-					Log.e(TAG, "the syntax of the supplied regular expression is not valid");
-				} catch (NumberFormatException e) {
-					Log.e(TAG, "string cannot be parsed as an integer value");
-				}
-				break;
-			case WeatherParser.FLAG_FORECAST:
-				try {
-					String[] elements = forecast.split(";");
-					if (elements.length == 3 && 0 <= day && day < 3) {
-						String[] values = elements[day].split("\\|");
-						if (values.length == WeatherParser.COUNT_ELEMENTS_FORECAST) {
-							weatherId = Integer.parseInt(values[0]);
-						}
-					}
-				} catch (PatternSyntaxException e) {
-					Log.e(TAG, "the syntax of the supplied regular expression is not valid");
-				} catch (NumberFormatException e) {
-					Log.e(TAG, "string cannot be parsed as an integer value");
-				}
-				break;
-			}
-		}
+		int weatherId = WeatherParser.getForecastWeatherId(day, forecast);
 		
 		View v = findViewById(R.id.swipe_refresh);
 		WeatherInfoAdapter.setBackgroundOfView(v, weatherId);
