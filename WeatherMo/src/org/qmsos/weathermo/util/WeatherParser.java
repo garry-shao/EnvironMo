@@ -1,10 +1,14 @@
 package org.qmsos.weathermo.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.util.Log;
+import android.util.SparseIntArray;
 
 /**
  * Utility class for several useful methods.
@@ -20,6 +24,7 @@ public class WeatherParser {
 	private static final int COUNT_ELEMENTS_FORECAST = 3;
 	
 	public static final int COUNT_FORECAST_DAYS = 3;
+	public static final int COUNT_FORECAST_HOURS = 8;
 	public static final int TEMPERATURE_INVALID = -274;
 	public static final int WEATHER_ID_INVALID = 0;
 	
@@ -46,7 +51,7 @@ public class WeatherParser {
 		}
 	}
 	
-	public static String parseRawToForecast(String raw) {
+	public static String parseRawToForecastDaily(String raw) {
 		JSONArray list = null;
 		int length = 0;
 		try {
@@ -117,6 +122,83 @@ public class WeatherParser {
 			
 			return null;
 		}	
+	}
+	
+	public static String parseRawToForecastHourly(String raw) {
+		JSONArray list = null;
+		int length = 0;
+		try {
+			JSONObject reader = new JSONObject(raw);
+			list = reader.getJSONArray("list");
+			length = list.length();
+		} catch (JSONException e) {
+			Log.e(TAG, "Error parsing JSON string");
+			
+			return null;
+		}
+		
+		if (list == null || length < COUNT_FORECAST_DAYS * COUNT_FORECAST_HOURS) {
+			Log.e(TAG, "raw data does not have enough information");
+			
+			return null;
+		}
+		
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < COUNT_FORECAST_DAYS; i++) {
+			SparseIntArray tempWeatherIds = new SparseIntArray(); 
+			ArrayList<Double> tempTemperatures = new ArrayList<Double>();
+			for (int j = 0; j < COUNT_FORECAST_HOURS; j++) {
+				int weatherId;
+				double temperature;
+				try {
+					JSONObject forecast = list.getJSONObject(j + COUNT_FORECAST_HOURS * i);
+					JSONArray weather = forecast.getJSONArray("weather");
+					weatherId = weather.getJSONObject(0).getInt("id");
+					
+					JSONObject main = forecast.getJSONObject("main");
+					temperature = main.getInt("temp");
+				} catch (JSONException e) {
+					Log.e(TAG, "Error parsing JSON string");
+					
+					return null;
+				}
+				
+				int tempWeatherIdCounts = tempWeatherIds.get(weatherId);
+				if (tempWeatherIdCounts > 0) {
+					tempWeatherIdCounts++;
+					tempWeatherIds.put(weatherId, tempWeatherIdCounts);
+				} else {
+					tempWeatherIds.put(weatherId, 1);
+				}
+				tempTemperatures.add(temperature);
+			}
+			
+			int flagWeatherId = 0;
+			int flagCount = 0;
+			for (int k = 0; k < tempWeatherIds.size(); k++) {
+				int tempKey = tempWeatherIds.keyAt(k);
+				int tempCounts = tempWeatherIds.get(tempKey);
+				if (flagCount < tempCounts) {
+					flagWeatherId = tempKey;
+					flagCount = tempCounts;
+				}
+			}
+			
+			int weatherId = flagWeatherId;
+			int temperatureMin = (int) Math.floor(Collections.min(tempTemperatures));
+			int temperatureMax = (int) Math.ceil(Collections.max(tempTemperatures));
+			
+			builder.append(weatherId);
+			builder.append('|');
+			builder.append(temperatureMin);
+			builder.append('|');
+			builder.append(temperatureMax);
+			if (i < COUNT_FORECAST_DAYS - 1) {
+				builder.append(';');
+			}
+		}
+		
+		return builder.toString();
 	}
 	
 	public static int getCurrentWeatherId(String current) {

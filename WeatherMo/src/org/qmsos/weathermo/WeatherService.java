@@ -37,9 +37,10 @@ public class WeatherService extends IntentService {
 	 */
 	private static final String API_KEY = "054dcbb7bea48220bc5d30d5fc53932e";
 
-	private static final int FLAG_CURRENT = 1;
-	private static final int FLAG_FORECAST = 2;
-	private static final int FLAG_SEARCH = 3;
+	private static final int FLAG_CURRENT_WEATHER = 0x01;
+	private static final int FLAG_FORECAST_DAILY = 0x10;
+	private static final int FLAG_FORECAST_HOURLY = 0x11;
+	private static final int FLAG_SEARCH_CITY = 0x20;
 	
 	/**
 	 * Default empty constructor.
@@ -67,8 +68,9 @@ public class WeatherService extends IntentService {
 		
 		if (action.equals(IpcConstants.ACTION_REFRESH_WEATHER)) {
 			if (checkConnection()) {
-				executeRefreshWeather(FLAG_CURRENT);
-				executeRefreshWeather(FLAG_FORECAST);
+				executeRefreshWeather(FLAG_CURRENT_WEATHER);
+				executeRefreshWeather(FLAG_FORECAST_HOURLY);
+//				executeRefreshWeather(FLAG_FORECAST_DAILY);
 			}
 		} else if (action.equals(IpcConstants.ACTION_QUERY_CITY)) {
 			Intent localIntent = new Intent(IpcConstants.ACTION_QUERY_EXECUTED);
@@ -110,7 +112,7 @@ public class WeatherService extends IntentService {
 			return null;
 		}
 		
-		String request = assembleRequest(FLAG_SEARCH, 0, cityName);
+		String request = assembleRequest(FLAG_SEARCH_CITY, 0, cityName);
 		String result = download(request);
 		
 		return result;
@@ -146,30 +148,36 @@ public class WeatherService extends IntentService {
 	}
 	
 	private void updateWeather(int flag, long cityId, String result) {
-		if (result == null || cityId == 0 || !(flag == FLAG_CURRENT || flag == FLAG_FORECAST)) {
+		if (result == null || cityId == 0) {
 			return;
 		}
 		
-		String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
 		ContentValues values = new ContentValues();
-		
 		String parsed = null;
 		switch (flag) {
-		case FLAG_CURRENT:
+		case FLAG_CURRENT_WEATHER:
 			parsed = WeatherParser.parseRawToCurrent(result);
 			if (parsed != null) {
 				values.put(WeatherProvider.KEY_CURRENT, parsed);
 			}
-			
 			break;
-		case FLAG_FORECAST:
-			parsed = WeatherParser.parseRawToForecast(result);
+		case FLAG_FORECAST_DAILY:
+			parsed = WeatherParser.parseRawToForecastDaily(result);
 			if (parsed != null) {
 				values.put(WeatherProvider.KEY_FORECAST, parsed);
 			}
-			
 			break;
+		case FLAG_FORECAST_HOURLY:
+			parsed = WeatherParser.parseRawToForecastHourly(result);
+			if (parsed != null) {
+				values.put(WeatherProvider.KEY_FORECAST, parsed);
+			}
+			break;
+		default:
+			return;
 		}
+		
+		String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
 		getContentResolver().update(WeatherProvider.CONTENT_URI_WEATHER, values, where, null);
 	}
 
@@ -259,12 +267,12 @@ public class WeatherService extends IntentService {
 
 	private String assembleRequest(int flag, long cityId, String cityName) {
 		switch (flag) {
-		case FLAG_CURRENT:
+		case FLAG_CURRENT_WEATHER:
 			return "http://api.openweathermap.org/data/2.5/" 
 					+ "weather?" + "id=" + String.valueOf(cityId)
 					+ "&units=" + "metric"
 					+ "&appid=" + API_KEY;
-		case FLAG_FORECAST:
+		case FLAG_FORECAST_DAILY:
 			int days = WeatherParser.COUNT_FORECAST_DAYS + 1;
 			
 			return "http://api.openweathermap.org/data/2.5/" 
@@ -272,7 +280,15 @@ public class WeatherService extends IntentService {
 					+ "&cnt=" + days
 					+ "&units=" + "metric"
 					+ "&appid=" + API_KEY;
-		case FLAG_SEARCH:
+		case FLAG_FORECAST_HOURLY:
+			int count = WeatherParser.COUNT_FORECAST_DAYS * WeatherParser.COUNT_FORECAST_HOURS;
+			
+			return "http://api.openweathermap.org/data/2.5/" 
+					+ "forecast?" + "id=" + String.valueOf(cityId) 
+					+ "&cnt=" + count
+					+ "&units=" + "metric"
+					+ "&appid=" + API_KEY;
+		case FLAG_SEARCH_CITY:
 			return "http://api.openweathermap.org/data/2.5/"
 					+ "find?" + "q=" + cityName
 					+ "&type=" + "like"
