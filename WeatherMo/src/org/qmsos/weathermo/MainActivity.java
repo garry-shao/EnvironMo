@@ -4,7 +4,7 @@ import org.qmsos.weathermo.fragment.CurrentWeather;
 import org.qmsos.weathermo.fragment.ForecastWeather;
 import org.qmsos.weathermo.fragment.ForecastWeather.OnWeatherClickedListener;
 import org.qmsos.weathermo.fragment.WeatherPagerAdapter;
-import org.qmsos.weathermo.util.IpcConstants;
+import org.qmsos.weathermo.util.IntentConstants;
 import org.qmsos.weathermo.util.WeatherInfoAdapter;
 import org.qmsos.weathermo.util.WeatherParser;
 import org.qmsos.weathermo.widget.DotViewPagerIndicator;
@@ -59,7 +59,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 						refreshLayout.setRefreshing(false);
 
 						Intent intent = new Intent(getBaseContext(), WeatherService.class);
-						intent.setAction(IpcConstants.ACTION_REFRESH_WEATHER);
+						intent.setAction(IntentConstants.ACTION_REFRESH_WEATHER);
 						startService(intent);
 					}
 				}, 500);					
@@ -131,7 +131,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 				long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
 				if (cityId != 0) {
 					Intent i = new Intent(this, MapActivity.class);
-					i.putExtra(IpcConstants.EXTRA_CITY_ID, cityId);
+					i.putExtra(IntentConstants.EXTRA_CITY_ID, cityId);
 					startActivity(i);
 				}
 			}

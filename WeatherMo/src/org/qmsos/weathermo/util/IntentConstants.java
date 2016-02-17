@@ -1,6 +1,6 @@
 package org.qmsos.weathermo.util;
 
-public class IpcConstants {
+public class IntentConstants {
 
 	private static final String BASE_PACKAGE_NAME = "org.qmsos.weathermo" + ".";
 	

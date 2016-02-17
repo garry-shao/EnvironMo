@@ -4,7 +4,7 @@ import org.qmsos.weathermo.fragment.AddCity;
 import org.qmsos.weathermo.fragment.AddCity.OnInputDoneListener;
 import org.qmsos.weathermo.fragment.CityList;
 import org.qmsos.weathermo.util.City;
-import org.qmsos.weathermo.util.IpcConstants;
+import org.qmsos.weathermo.util.IntentConstants;
 import org.qmsos.weathermo.widget.CityRecyclerViewAdapter.OnInsertCityClickedListener;
 import org.qmsos.weathermo.widget.CursorRecyclerViewAdapter.OnViewHolderClickedListener;
 
@@ -71,8 +71,8 @@ implements OnViewHolderClickedListener, OnInputDoneListener, OnInsertCityClicked
 		super.onResume();
 		
 		IntentFilter filter = new IntentFilter();
-		filter.addAction(IpcConstants.ACTION_QUERY_EXECUTED);
-		filter.addAction(IpcConstants.ACTION_INSERT_EXECUTED);
+		filter.addAction(IntentConstants.ACTION_QUERY_EXECUTED);
+		filter.addAction(IntentConstants.ACTION_INSERT_EXECUTED);
 		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, filter);
 	}
 
@@ -104,8 +104,8 @@ implements OnViewHolderClickedListener, OnInputDoneListener, OnInsertCityClicked
 	@Override
 	public void onDeleteCity(long cityId) {
 		Intent i = new Intent(this, WeatherService.class);
-		i.setAction(IpcConstants.ACTION_DELETE_CITY);
-		i.putExtra(IpcConstants.EXTRA_CITY_ID, cityId);
+		i.setAction(IntentConstants.ACTION_DELETE_CITY);
+		i.putExtra(IntentConstants.EXTRA_CITY_ID, cityId);
 		
 		startService(i);
 	}
@@ -113,8 +113,8 @@ implements OnViewHolderClickedListener, OnInputDoneListener, OnInsertCityClicked
 	@Override
 	public void onInputDone(String text) {
 		Intent i = new Intent(getBaseContext(), WeatherService.class);
-		i.setAction(IpcConstants.ACTION_QUERY_CITY);
-		i.putExtra(IpcConstants.EXTRA_CITY_NAME, text);
+		i.setAction(IntentConstants.ACTION_QUERY_CITY);
+		i.putExtra(IntentConstants.EXTRA_CITY_NAME, text);
 		
 		startService(i);		
 	}
@@ -122,8 +122,8 @@ implements OnViewHolderClickedListener, OnInputDoneListener, OnInsertCityClicked
 	@Override
 	public void onInsertCity(City city) {
 		Intent i = new Intent(this, WeatherService.class);
-		i.setAction(IpcConstants.ACTION_INSERT_CITY);
-		i.putExtra(IpcConstants.EXTRA_INSERT_CITY, city);
+		i.setAction(IntentConstants.ACTION_INSERT_CITY);
+		i.putExtra(IntentConstants.EXTRA_INSERT_CITY, city);
 		
 		startService(i);		
 	}
@@ -147,15 +147,15 @@ implements OnViewHolderClickedListener, OnInputDoneListener, OnInsertCityClicked
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
 			if (action != null) {
-				if (action.equals(IpcConstants.ACTION_QUERY_EXECUTED)) {
-					boolean flag = intent.getBooleanExtra(IpcConstants.EXTRA_QUERY_EXECUTED, false);
+				if (action.equals(IntentConstants.ACTION_QUERY_EXECUTED)) {
+					boolean flag = intent.getBooleanExtra(IntentConstants.EXTRA_QUERY_EXECUTED, false);
 					if (flag) {
-						String result = intent.getStringExtra(IpcConstants.EXTRA_QUERY_RESULT);
+						String result = intent.getStringExtra(IntentConstants.EXTRA_QUERY_RESULT);
 						
 						onQueryResultReceived(result);
 					}
-				} else if (action.equals(IpcConstants.ACTION_INSERT_EXECUTED)) {
-					boolean flag = intent.getBooleanExtra(IpcConstants.EXTRA_INSERT_EXECUTED, false);
+				} else if (action.equals(IntentConstants.ACTION_INSERT_EXECUTED)) {
+					boolean flag = intent.getBooleanExtra(IntentConstants.EXTRA_INSERT_EXECUTED, false);
 					
 					onInsertExecuted(flag);
 				}

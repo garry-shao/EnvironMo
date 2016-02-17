@@ -11,7 +11,7 @@ import org.apache.cordova.CordovaWebViewImpl;
 import org.apache.cordova.engine.SystemWebView;
 import org.apache.cordova.engine.SystemWebViewEngine;
 import org.json.JSONException;
-import org.qmsos.weathermo.util.IpcConstants;
+import org.qmsos.weathermo.util.IntentConstants;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -59,7 +59,7 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
 		mCordovaWebView = new CordovaWebViewImpl(new SystemWebViewEngine(mSystemWebView));
 		mCordovaWebView.init(this, parser.getPluginEntries(), parser.getPreferences());
 
-		mCityId = getIntent().getLongExtra(IpcConstants.EXTRA_CITY_ID, -1);
+		mCityId = getIntent().getLongExtra(IntentConstants.EXTRA_CITY_ID, -1);
 		
 		mCordovaWebView.loadUrl(assembleStartUrl(null, mCityId));
 	}

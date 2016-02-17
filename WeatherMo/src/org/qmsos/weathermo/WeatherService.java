@@ -9,7 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.qmsos.weathermo.util.City;
-import org.qmsos.weathermo.util.IpcConstants;
+import org.qmsos.weathermo.util.IntentConstants;
 import org.qmsos.weathermo.util.WeatherParser;
 
 import android.app.IntentService;
@@ -66,41 +66,41 @@ public class WeatherService extends IntentService {
 			return;
 		}
 		
-		if (action.equals(IpcConstants.ACTION_REFRESH_WEATHER)) {
+		if (action.equals(IntentConstants.ACTION_REFRESH_WEATHER)) {
 			if (checkConnection()) {
 				executeRefreshWeather(FLAG_CURRENT_WEATHER);
 				executeRefreshWeather(FLAG_FORECAST_HOURLY);
 //				executeRefreshWeather(FLAG_FORECAST_DAILY);
 			}
-		} else if (action.equals(IpcConstants.ACTION_QUERY_CITY)) {
-			Intent localIntent = new Intent(IpcConstants.ACTION_QUERY_EXECUTED);
+		} else if (action.equals(IntentConstants.ACTION_QUERY_CITY)) {
+			Intent localIntent = new Intent(IntentConstants.ACTION_QUERY_EXECUTED);
 			if (checkConnection()) {
-				String cityname = intent.getStringExtra(IpcConstants.EXTRA_CITY_NAME);
+				String cityname = intent.getStringExtra(IntentConstants.EXTRA_CITY_NAME);
 				
 				String result = executeSearchCity(cityname);
 				if (result != null) {
-					localIntent.putExtra(IpcConstants.EXTRA_QUERY_EXECUTED, true);
-					localIntent.putExtra(IpcConstants.EXTRA_QUERY_RESULT, result);
+					localIntent.putExtra(IntentConstants.EXTRA_QUERY_EXECUTED, true);
+					localIntent.putExtra(IntentConstants.EXTRA_QUERY_RESULT, result);
 				} else {
-					localIntent.putExtra(IpcConstants.EXTRA_QUERY_EXECUTED, false);
+					localIntent.putExtra(IntentConstants.EXTRA_QUERY_EXECUTED, false);
 				}
 			} else {
-				localIntent.putExtra(IpcConstants.EXTRA_QUERY_EXECUTED, false);
+				localIntent.putExtra(IntentConstants.EXTRA_QUERY_EXECUTED, false);
 			}
 			
 			LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
-		} else if (action.equals(IpcConstants.ACTION_INSERT_CITY)) {
-			City city = intent.getParcelableExtra(IpcConstants.EXTRA_INSERT_CITY);
+		} else if (action.equals(IntentConstants.ACTION_INSERT_CITY)) {
+			City city = intent.getParcelableExtra(IntentConstants.EXTRA_INSERT_CITY);
 			if (city != null) {
 				boolean flag = insertCity(city);
 				
-				Intent localIntent = new Intent(IpcConstants.ACTION_INSERT_EXECUTED);
-				localIntent.putExtra(IpcConstants.EXTRA_INSERT_EXECUTED, flag);
+				Intent localIntent = new Intent(IntentConstants.ACTION_INSERT_EXECUTED);
+				localIntent.putExtra(IntentConstants.EXTRA_INSERT_EXECUTED, flag);
 				
 				LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
 			}
-		} else if (action.equals(IpcConstants.ACTION_DELETE_CITY)) {
-			long cityId = intent.getLongExtra(IpcConstants.EXTRA_CITY_ID, -1);
+		} else if (action.equals(IntentConstants.ACTION_DELETE_CITY)) {
+			long cityId = intent.getLongExtra(IntentConstants.EXTRA_CITY_ID, -1);
 			if (cityId != -1) {
 				deleteCity(cityId);
 			}
