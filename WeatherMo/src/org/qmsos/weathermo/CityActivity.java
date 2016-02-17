@@ -1,9 +1,9 @@
 package org.qmsos.weathermo;
 
+import org.qmsos.weathermo.datamodel.City;
 import org.qmsos.weathermo.fragment.AddCity;
 import org.qmsos.weathermo.fragment.AddCity.OnInputDoneListener;
 import org.qmsos.weathermo.fragment.CityList;
-import org.qmsos.weathermo.util.City;
 import org.qmsos.weathermo.util.IntentConstants;
 import org.qmsos.weathermo.widget.CityRecyclerViewAdapter.OnInsertCityClickedListener;
 import org.qmsos.weathermo.widget.CursorRecyclerViewAdapter.OnViewHolderClickedListener;

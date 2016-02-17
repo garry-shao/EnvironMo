@@ -1,7 +1,7 @@
 package org.qmsos.weathermo.widget;
 
 import org.qmsos.weathermo.R;
-import org.qmsos.weathermo.util.City;
+import org.qmsos.weathermo.datamodel.City;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView.ViewHolder;

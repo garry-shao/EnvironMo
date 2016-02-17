@@ -8,7 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.qmsos.weathermo.util.City;
+import org.qmsos.weathermo.datamodel.City;
 import org.qmsos.weathermo.util.IntentConstants;
 import org.qmsos.weathermo.util.WeatherParser;
 

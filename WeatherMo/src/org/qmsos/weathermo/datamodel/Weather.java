@@ -1,4 +1,4 @@
-package org.qmsos.weathermo.util;
+package org.qmsos.weathermo.datamodel;
 
 public class Weather {
 	
