@@ -5,7 +5,6 @@ import org.qmsos.weathermo.fragment.ForecastWeather;
 import org.qmsos.weathermo.fragment.ForecastWeather.OnWeatherClickedListener;
 import org.qmsos.weathermo.fragment.WeatherPagerAdapter;
 import org.qmsos.weathermo.util.IntentConstants;
-import org.qmsos.weathermo.util.WeatherInfoAdapter;
 import org.qmsos.weathermo.util.WeatherParser;
 import org.qmsos.weathermo.widget.DotViewPagerIndicator;
 
@@ -223,7 +222,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 		int weatherId = WeatherParser.getCurrentWeatherId(current);
 		
 		View v = findViewById(R.id.swipe_refresh);
-		WeatherInfoAdapter.setBackgroundOfView(v, weatherId);
+		BackgroundFactory.setBackgroundOfView(v, weatherId);
 	}
 	
 	private void updateForecastBackground(long cityId, int day) {
@@ -249,7 +248,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 		int weatherId = WeatherParser.getForecastWeatherId(day, forecast);
 		
 		View v = findViewById(R.id.swipe_refresh);
-		WeatherInfoAdapter.setBackgroundOfView(v, weatherId);
+		BackgroundFactory.setBackgroundOfView(v, weatherId);
 	}
 	
 	private void updateCityName(long cityId) {
@@ -287,6 +286,38 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 		} else {
 			textView.setText(R.string.placeholder);
 		}
+	}
+
+	private static class BackgroundFactory {
+		
+		static void setBackgroundOfView(View v, int id) {
+			if (200 <= id && id <= 299) {
+				v.setBackgroundResource(R.drawable.bg_11);
+			} else if (300 <= id && id <= 399) {
+				v.setBackgroundResource(R.drawable.bg_09);
+			} else if (500 <= id && id <= 504) {
+				v.setBackgroundResource(R.drawable.bg_10);
+			} else if (511 == id) {
+				v.setBackgroundResource(R.drawable.bg_13);
+			} else if (520 <= id && id <= 599) {
+				v.setBackgroundResource(R.drawable.bg_09);
+			} else if (600 <= id && id <= 699) {
+				v.setBackgroundResource(R.drawable.bg_13);
+			} else if (700 <= id && id <= 799) {
+				v.setBackgroundResource(R.drawable.bg_50);
+			} else if (800 == id) {
+				v.setBackgroundResource(R.drawable.bg_01);
+			} else if (801 == id) {
+				v.setBackgroundResource(R.drawable.bg_02);
+			} else if (802 == id || 803 == id) {
+				v.setBackgroundResource(R.drawable.bg_03);
+			} else if (804 == id) {
+				v.setBackgroundResource(R.drawable.bg_04);
+			} else {
+				v.setBackgroundResource(0);
+			}
+		}
+	
 	}
 
 }
