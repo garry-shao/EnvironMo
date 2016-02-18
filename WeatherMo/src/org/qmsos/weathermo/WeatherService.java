@@ -38,6 +38,7 @@ public class WeatherService extends IntentService {
 	private static final String API_KEY = "054dcbb7bea48220bc5d30d5fc53932e";
 
 	private static final int FLAG_CURRENT_WEATHER = 0x01;
+	private static final int FLAG_CURRENT_UV_INDEX = 0x02;
 	private static final int FLAG_FORECAST_DAILY = 0x10;
 	private static final int FLAG_FORECAST_HOURLY = 0x11;
 	private static final int FLAG_SEARCH_CITY = 0x20;
@@ -70,6 +71,7 @@ public class WeatherService extends IntentService {
 			if (checkConnection()) {
 				executeRefreshWeather(FLAG_CURRENT_WEATHER);
 				executeRefreshWeather(FLAG_FORECAST_HOURLY);
+				executeRefreshWeather(FLAG_CURRENT_UV_INDEX);
 //				executeRefreshWeather(FLAG_FORECAST_DAILY);
 			}
 		} else if (action.equals(IntentConstants.ACTION_QUERY_CITY)) {
@@ -146,7 +148,7 @@ public class WeatherService extends IntentService {
 			}
 		}
 	}
-	
+
 	private void updateWeather(int flag, long cityId, String result) {
 		if (result == null || cityId == 0) {
 			return;
@@ -159,6 +161,12 @@ public class WeatherService extends IntentService {
 			parsed = WeatherParser.parseRawToCurrent(result);
 			if (parsed != null) {
 				values.put(WeatherProvider.KEY_CURRENT, parsed);
+			}
+			break;
+		case FLAG_CURRENT_UV_INDEX:
+			double value = WeatherParser.parseRawToUvIndex(result);
+			if (value > 0) {
+				values.put(WeatherProvider.KEY_UV_INDEX, value);
 			}
 			break;
 		case FLAG_FORECAST_DAILY:
@@ -272,6 +280,15 @@ public class WeatherService extends IntentService {
 					+ "weather?" + "id=" + String.valueOf(cityId)
 					+ "&units=" + "metric"
 					+ "&appid=" + API_KEY;
+		case FLAG_CURRENT_UV_INDEX:
+			String geo = assembleRequestGeo(cityId);
+			if (geo != null) {
+				return "http://api.owm.io/air/1.0/uvi/"
+						+ "current?" + geo
+						+ "&appid=" + API_KEY;
+			} else {
+				return null;
+			}
 		case FLAG_FORECAST_DAILY:
 			int days = WeatherParser.COUNT_FORECAST_DAYS + 1;
 			
@@ -296,6 +313,35 @@ public class WeatherService extends IntentService {
 					+ "&appid=" + WeatherService.API_KEY;
 		default:
 			return null;
+		}
+	}
+	
+	private String assembleRequestGeo(long cityId) {
+		double latitude = 200.0f;
+		double longitude = 200.0f;
+		Cursor cursor = null;
+		try {
+			String[] projection = { WeatherProvider.KEY_CITY_ID, 
+					WeatherProvider.KEY_LATITUDE, WeatherProvider.KEY_LONGITUDE };
+			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
+			cursor = getContentResolver().query(
+					WeatherProvider.CONTENT_URI_CITIES, projection, where, null, null);
+			if (cursor != null && cursor.moveToFirst()) {
+				latitude = cursor.getDouble(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_LATITUDE));
+				longitude = cursor.getDouble(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_LONGITUDE));
+			}
+		} catch (IllegalArgumentException e) {
+			Log.e(TAG, "The column does not exist");
+		} finally {
+			if (cursor != null && !cursor.isClosed()) {
+				cursor.close();
+			}
+		}
+		
+		if (latitude > 90.0f || latitude < -90.0f || longitude > 180.0f || longitude < -180.0f) {
+			return null;
+		} else {
+			return "lat=" + latitude + "&lon=" + longitude;
 		}
 	}
 

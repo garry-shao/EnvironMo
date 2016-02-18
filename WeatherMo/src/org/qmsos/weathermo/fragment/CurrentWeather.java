@@ -55,16 +55,22 @@ public class CurrentWeather extends Fragment {
 	public void showCurrentWeather() {
 		long cityId = getArguments().getLong(KEY_CITY_ID);
 		
+		double uvIndex = WeatherParser.UV_INDEX_INVALID;
 		String current = null;
 		Cursor cursor = null;
 		try {
-			String[] projection = { WeatherProvider.KEY_CURRENT };
+			String[] projection = { WeatherProvider.KEY_CURRENT, WeatherProvider.KEY_UV_INDEX };
 			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
 			
 			cursor = getContext().getContentResolver().query(
 					WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
 				current = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CURRENT));
+				
+				int columnIndexUv = cursor.getColumnIndexOrThrow(WeatherProvider.KEY_UV_INDEX);
+				if (!cursor.isNull(columnIndexUv)) {
+					uvIndex = cursor.getDouble(columnIndexUv);
+				}
 			}
 		} catch (IllegalArgumentException e) {
 			Log.e(TAG, "the column does not exist");
@@ -88,7 +94,11 @@ public class CurrentWeather extends Fragment {
 		v.setText(InfoFactory.getCategoryFromWeatherId(currentWeatherId));
 		
 		v = (TextView) getView().findViewById(R.id.current_uv_index);
-		v.setText("TODO: UV Index");
+		if (Double.compare(uvIndex, WeatherParser.UV_INDEX_INVALID) != 0) {
+			v.setText("UV: " + uvIndex + " - " + InfoFactory.getCategoryFromUvIndex(uvIndex));
+		} else {
+			v.setText(R.string.placeholder);
+		}
 		
 		Calendar c = Calendar.getInstance();
 		SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd", Locale.US);
@@ -370,6 +380,22 @@ public class CurrentWeather extends Fragment {
 				return "hurricane";
 			default:
 				return "null";
+			}
+		}
+	
+		static String getCategoryFromUvIndex(double uvIndex) {
+			if (uvIndex < 0.0f) {
+				return "Null";
+			} else if (uvIndex < 3.0f) {
+				return "Low";
+			} else if (uvIndex < 6.0f) {
+				return "Moderate";
+			} else if (uvIndex < 8.0f) {
+				return "High";
+			} else if (uvIndex < 11.0f) {
+				return "Very high";
+			} else {
+				return "Extreme";
 			}
 		}
 	

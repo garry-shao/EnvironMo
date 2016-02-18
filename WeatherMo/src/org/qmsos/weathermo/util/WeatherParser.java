@@ -27,6 +27,7 @@ public class WeatherParser {
 	public static final int COUNT_FORECAST_HOURS = 8;
 	public static final int TEMPERATURE_INVALID = -274;
 	public static final int WEATHER_ID_INVALID = 0;
+	public static final double UV_INDEX_INVALID = -1.0f;
 	
 	public static String parseRawToCurrent(String raw) {
 		try {
@@ -199,6 +200,19 @@ public class WeatherParser {
 		}
 		
 		return builder.toString();
+	}
+
+	public static double parseRawToUvIndex(String raw) {
+		try {
+			JSONObject reader = new JSONObject(raw);
+			double value = reader.getDouble("value");
+			
+			return value;
+		} catch (JSONException e) {
+			Log.e(TAG, "Error parsing JSON string");
+			
+			return UV_INDEX_INVALID;
+		}
 	}
 	
 	public static int getCurrentWeatherId(String current) {

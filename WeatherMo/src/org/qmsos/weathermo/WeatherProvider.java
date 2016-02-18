@@ -35,6 +35,7 @@ public class WeatherProvider extends ContentProvider {
 	// weather columns
 	public static final String KEY_CURRENT = "current";
 	public static final String KEY_FORECAST = "forecast";
+	public static final String KEY_UV_INDEX = "uv_index";
 
 	private static final int CITIES = 1;
 	private static final int CITY_ID = 2;
@@ -286,7 +287,8 @@ public class WeatherProvider extends ContentProvider {
 						KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
 						KEY_CITY_ID + " INTEGER, " +
 						KEY_CURRENT + " TEXT, " +
-						KEY_FORECAST + " TEXT);";
+						KEY_FORECAST + " TEXT, " + 
+						KEY_UV_INDEX + " REAL);";
 		
 		public DatabaseHelper(Context context, String name, CursorFactory factory, int version) {
 			super(context, name, factory, version);
