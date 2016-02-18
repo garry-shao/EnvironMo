@@ -148,7 +148,7 @@ public class CurrentWeather extends Fragment {
 		}
 		
 		v = (TextView) getView().findViewById(R.id.current_main);
-		v.setText(null);
+		v.setText(InfoFactory.getCategoryFromWeatherId(forecastWeatherId));
 		
 		v = (TextView) getView().findViewById(R.id.current_uv_index);
 		v.setText(InfoFactory.getDescriptionFromWeatherId(forecastWeatherId));
