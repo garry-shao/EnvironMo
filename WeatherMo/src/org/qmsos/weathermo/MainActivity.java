@@ -35,10 +35,12 @@ import android.widget.TextView;
  * 
  */
 public class MainActivity extends AppCompatActivity 
-implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWeatherClickedListener {
+implements LoaderCallbacks<Cursor>, OnPageChangeListener, 
+		OnRefreshListener, OnClickListener, OnWeatherClickedListener {
 	
 	private static final String TAG = MainActivity.class.getSimpleName();
 
+	private SwipeRefreshLayout mRefreshLayout;
 	private WeatherPagerAdapter mPagerAdapter;
 
 	@Override
@@ -46,24 +48,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		final SwipeRefreshLayout refreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
-		refreshLayout.setOnRefreshListener(new OnRefreshListener() {
-
-			@Override
-			public void onRefresh() {
-				new Handler().postDelayed(new Runnable() {
-
-					@Override
-					public void run() {
-						refreshLayout.setRefreshing(false);
-
-						Intent intent = new Intent(getBaseContext(), WeatherService.class);
-						intent.setAction(IntentConstants.ACTION_REFRESH_WEATHER);
-						startService(intent);
-					}
-				}, 500);					
-			}
-		});
+		mRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
+		mRefreshLayout.setOnRefreshListener(this);
 
 		TextView cityName = (TextView) findViewById(R.id.city_name);
 		cityName.setOnClickListener(this);
@@ -122,6 +108,24 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnClickListener, OnWea
 		refreshGui();
 	}
 	
+	@Override
+	public void onRefresh() {
+		final Intent intent = new Intent(this, WeatherService.class);
+		intent.setAction(IntentConstants.ACTION_REFRESH_WEATHER);
+		
+		// make animation here 
+		int animationTimeInMillis = 1000;
+		new Handler().postDelayed(new Runnable() {
+
+			@Override
+			public void run() {
+				mRefreshLayout.setRefreshing(false);
+
+				startService(intent);
+			}
+		}, animationTimeInMillis);
+	}
+
 	@Override
 	public void onClick(View v) {
 		if (v.getId() == R.id.weather_map) {
