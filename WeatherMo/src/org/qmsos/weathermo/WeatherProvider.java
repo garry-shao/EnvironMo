@@ -1,5 +1,8 @@
 package org.qmsos.weathermo;
 
+import org.qmsos.weathermo.provider.WeatherContract.CityEntity;
+import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
+
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -17,39 +20,15 @@ import android.util.Log;
 
 public class WeatherProvider extends ContentProvider {
 
-	public static final Uri CONTENT_URI_CITIES = 
-			Uri.parse("content://org.qmsos.weathermo.weatherprovider/cities");
-	public static final Uri CONTENT_URI_WEATHER = 
-			Uri.parse("content://org.qmsos.weathermo.weatherprovider/weather");
-	
-	// base columns of database
-	
-	// cities columns
-	public static final String KEY_ID = "_id";
-	public static final String KEY_CITY_ID = "city_id";
-	public static final String KEY_NAME = "name";
-	public static final String KEY_COUNTRY = "country";
-	public static final String KEY_LONGITUDE = "longitude";
-	public static final String KEY_LATITUDE = "latitude";
-	
-	// weather columns
-	public static final String KEY_CURRENT = "current";
-	public static final String KEY_FORECAST = "forecast";
-	public static final String KEY_UV_INDEX = "uv_index";
-
 	private static final int CITIES = 1;
-	private static final int CITY_ID = 2;
-	private static final int WEATHER = 3;
-	private static final int WEATHER_ID = 4;
+	private static final int WEATHER = 2;
 	
 	private static final UriMatcher URI_MATCHER;
 	static {
 		URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
 		
 		URI_MATCHER.addURI("org.qmsos.weathermo.weatherprovider", "cities", CITIES);
-		URI_MATCHER.addURI("org.qmsos.weathermo.weatherprovider", "cities/#", CITY_ID);
 		URI_MATCHER.addURI("org.qmsos.weathermo.weatherprovider", "weather", WEATHER);
-		URI_MATCHER.addURI("org.qmsos.weathermo.weatherprovider", "weather/#", WEATHER_ID);
 	}
 
 	private DatabaseHelper mDatabaseHelper;
@@ -72,18 +51,12 @@ public class WeatherProvider extends ContentProvider {
 		
 		switch (URI_MATCHER.match(uri)) {
 		case CITIES:
-		case CITY_ID:
 			queryBuilder.setTables(DatabaseHelper.TABLE_CITIES);
-			if (uri.getPathSegments().size() > 1) {
-				queryBuilder.appendWhere(KEY_ID + " = " + uri.getPathSegments().get(1));
-			}
+			
 			break;
 		case WEATHER:
-		case WEATHER_ID:
 			queryBuilder.setTables(DatabaseHelper.TABLE_WEATHER);
-			if (uri.getPathSegments().size() > 1) {
-				queryBuilder.appendWhere(KEY_ID + " = " + uri.getPathSegments().get(1));
-			}
+
 			break;
 		default:
 			throw new IllegalArgumentException("Unsupported URI: " + uri);
@@ -91,7 +64,7 @@ public class WeatherProvider extends ContentProvider {
 		
 		String orderBy;
 		if (TextUtils.isEmpty(sortOrder)) {
-			orderBy = KEY_CITY_ID;
+			orderBy = CityEntity.CITY_ID;
 		} else {
 			orderBy = sortOrder;
 		}
@@ -109,9 +82,6 @@ public class WeatherProvider extends ContentProvider {
 		case CITIES:
 		case WEATHER:
 			return "vnd.android.cursor.dir/vnd.org.qmsos.weathermo";
-		case CITY_ID:
-		case WEATHER_ID:
-			return "vnd.android.cursor.item/vnd.org.qmsos.weathermo";
 		default:
 			throw new IllegalArgumentException("Unsupported URI: " + uri);
 		}
@@ -123,20 +93,18 @@ public class WeatherProvider extends ContentProvider {
 		
 		switch (URI_MATCHER.match(uri)) {
 		case CITIES:
-		case CITY_ID:
-			long rowID = database.insert(DatabaseHelper.TABLE_CITIES, "city", values);
-			if (rowID > 0) {
-				Uri resultUri = ContentUris.withAppendedId(CONTENT_URI_CITIES, rowID);
+			long rowId = database.insert(DatabaseHelper.TABLE_CITIES, "city", values);
+			if (rowId > 0) {
+				Uri resultUri = ContentUris.withAppendedId(CityEntity.CONTENT_URI, rowId);
 				
 				getContext().getContentResolver().notifyChange(resultUri, null);
 				
 				return resultUri;
 			}
 		case WEATHER:
-		case WEATHER_ID:
-			rowID = database.insert(DatabaseHelper.TABLE_WEATHER, "weather", values);
-			if (rowID > 0) {
-				Uri resultUri = ContentUris.withAppendedId(CONTENT_URI_WEATHER, rowID);
+			rowId = database.insert(DatabaseHelper.TABLE_WEATHER, "weather", values);
+			if (rowId > 0) {
+				Uri resultUri = ContentUris.withAppendedId(WeatherEntity.CONTENT_URI, rowId);
 				
 				getContext().getContentResolver().notifyChange(resultUri, null);
 				
@@ -153,12 +121,11 @@ public class WeatherProvider extends ContentProvider {
 		
 		switch (URI_MATCHER.match(uri)) {
 		case CITIES:
-		case CITY_ID:
 			database.beginTransaction();
 			try {
 				for (ContentValues value : values) {
-					long rowID = database.insert(DatabaseHelper.TABLE_CITIES, "city", value);
-					if (rowID < 0) {
+					long rowId = database.insert(DatabaseHelper.TABLE_CITIES, "city", value);
+					if (rowId < 0) {
 						return 0;
 					}
 				}
@@ -171,12 +138,11 @@ public class WeatherProvider extends ContentProvider {
 			
 			return values.length;
 		case WEATHER:
-		case WEATHER_ID:
 			database.beginTransaction();
 			try {
 				for (ContentValues value : values) {
-					long rowID = database.insert(DatabaseHelper.TABLE_WEATHER, "weather", value);
-					if (rowID < 0) {
+					long rowId = database.insert(DatabaseHelper.TABLE_WEATHER, "weather", value);
+					if (rowId < 0) {
 						return 0;
 					}
 				}
@@ -203,21 +169,9 @@ public class WeatherProvider extends ContentProvider {
 			count = database.delete(DatabaseHelper.TABLE_CITIES, selection, selectionArgs);
 			
 			break;
-		case CITY_ID:
-			String where = KEY_ID + " = " + uri.getPathSegments().get(1) + 
-					(!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : "");
-			count = database.delete(DatabaseHelper.TABLE_CITIES, where, selectionArgs);
-			
-			break;
 		case WEATHER:
 			count = database.delete(DatabaseHelper.TABLE_WEATHER, selection, selectionArgs);
 			
-			break;
-		case WEATHER_ID:
-			where = KEY_ID + " = " + uri.getPathSegments().get(1) + 
-					(!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : "");
-			count = database.delete(DatabaseHelper.TABLE_WEATHER, where, selectionArgs);
-	
 			break;
 		default:
 			throw new IllegalArgumentException("Unsupported URI: " + uri);
@@ -238,21 +192,9 @@ public class WeatherProvider extends ContentProvider {
 			count = database.update(DatabaseHelper.TABLE_CITIES, values, selection, selectionArgs);
 			
 			break;
-		case CITY_ID:
-			String where = KEY_ID + " = " + uri.getPathSegments().get(1) + 
-					(!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : "");
-			count = database.update(DatabaseHelper.TABLE_CITIES, values, where, selectionArgs);
-			
-			break;
 		case WEATHER:
 			count = database.update(DatabaseHelper.TABLE_WEATHER, values, selection, selectionArgs);
 			
-			break;
-		case WEATHER_ID:
-			where = KEY_ID + " = " + uri.getPathSegments().get(1) + 
-					(!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : "");
-			count = database.update(DatabaseHelper.TABLE_WEATHER, values, where, selectionArgs);
-
 			break;
 		default:
 			throw new IllegalArgumentException("Unsupported URI: " + uri);
@@ -265,7 +207,7 @@ public class WeatherProvider extends ContentProvider {
 
 	private static class DatabaseHelper extends SQLiteOpenHelper {
 
-		private static final String TAG = WeatherProvider.class.getSimpleName();
+		private static final String TAG = DatabaseHelper.class.getSimpleName();
 		
 		private static final String DATABASE_NAME = "weathers.db";
 		private static final int DATABASE_VERSION = 1;
@@ -275,20 +217,19 @@ public class WeatherProvider extends ContentProvider {
 		
 		private static final String CREATE_TABLE_CITIES = 
 				"CREATE TABLE " + TABLE_CITIES + " (" + 
-						KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-						KEY_CITY_ID + " INTEGER, " +
-						KEY_NAME + " TEXT, " + 
-						KEY_COUNTRY + " TEXT, " + 
-						KEY_LONGITUDE + " REAL, " +
-						KEY_LATITUDE + " REAL);"; 
+						CityEntity.INDEX + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+						CityEntity.CITY_ID + " INTEGER, " +
+						CityEntity.CITY_NAME + " TEXT, " + 
+						CityEntity.COUNTRY + " TEXT, " + 
+						CityEntity.LONGITUDE + " REAL, " +
+						CityEntity.LATITUDE + " REAL);"; 
 		
 		private static final String CREATE_TABLE_WEATHER = 
 				"CREATE TABLE " + TABLE_WEATHER + " (" + 
-						KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-						KEY_CITY_ID + " INTEGER, " +
-						KEY_CURRENT + " TEXT, " +
-						KEY_FORECAST + " TEXT, " + 
-						KEY_UV_INDEX + " REAL);";
+						WeatherEntity.CITY_ID + " INTEGER, " +
+						WeatherEntity.CURRENT + " TEXT, " +
+						WeatherEntity.FORECAST + " TEXT, " + 
+						WeatherEntity.UV_INDEX + " REAL);";
 		
 		public DatabaseHelper(Context context, String name, CursorFactory factory, int version) {
 			super(context, name, factory, version);

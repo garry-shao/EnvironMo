@@ -1,7 +1,7 @@
 package org.qmsos.weathermo.fragment;
 
 import org.qmsos.weathermo.R;
-import org.qmsos.weathermo.WeatherProvider;
+import org.qmsos.weathermo.provider.WeatherContract.CityEntity;
 import org.qmsos.weathermo.widget.CursorRecyclerViewAdapter;
 
 import android.database.Cursor;
@@ -82,10 +82,7 @@ public class CityList extends Fragment implements LoaderCallbacks<Cursor> {
 
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String where = WeatherProvider.KEY_CITY_ID;
-		
-		return new CursorLoader(
-				getContext(), WeatherProvider.CONTENT_URI_CITIES, null, where, null, null);
+		return new CursorLoader(getContext(), CityEntity.CONTENT_URI, null, null, null, null);
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 package org.qmsos.weathermo.fragment;
 
-import org.qmsos.weathermo.WeatherProvider;
+import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -44,7 +44,7 @@ public class WeatherPagerAdapter extends FragmentStatePagerAdapter {
 
 	public Fragment getItem(Context context, Cursor cursor, int position) {
 		if (cursor.moveToPosition(position)) {
-			long cityId = cursor.getLong(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CITY_ID));
+			long cityId = cursor.getLong(cursor.getColumnIndexOrThrow(WeatherEntity.CITY_ID));
 			CurrentWeather fragment = CurrentWeather.newInstance(context, cityId);
 			
 			return fragment;
@@ -78,7 +78,7 @@ public class WeatherPagerAdapter extends FragmentStatePagerAdapter {
 	@Override
 	public Object instantiateItem(ViewGroup container, int position) {
 		if (mCursor.moveToPosition(position)) {
-			long cityId = mCursor.getLong(mCursor.getColumnIndexOrThrow(WeatherProvider.KEY_CITY_ID));
+			long cityId = mCursor.getLong(mCursor.getColumnIndexOrThrow(WeatherEntity.CITY_ID));
 			mCityIds.append(position, cityId);
 		}
 		

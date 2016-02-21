@@ -11,6 +11,7 @@ import org.apache.cordova.CordovaWebViewImpl;
 import org.apache.cordova.engine.SystemWebView;
 import org.apache.cordova.engine.SystemWebViewEngine;
 import org.json.JSONException;
+import org.qmsos.weathermo.provider.WeatherContract.CityEntity;
 import org.qmsos.weathermo.util.IntentConstants;
 
 import android.app.Activity;
@@ -212,16 +213,16 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
 		
 		Cursor cursor = null;
 		try {
-			String[] projection = { WeatherProvider.KEY_LONGITUDE, WeatherProvider.KEY_LATITUDE };
-			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
+			String[] projection = { CityEntity.LONGITUDE, CityEntity.LATITUDE };
+			String where = CityEntity.CITY_ID + " = " + cityId;
 			
 			cursor = getContentResolver().query(
-					WeatherProvider.CONTENT_URI_CITIES, projection, where, null, null);
+					CityEntity.CONTENT_URI, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
 				long longitude = cursor.getLong(
-						cursor.getColumnIndexOrThrow(WeatherProvider.KEY_LONGITUDE));
+						cursor.getColumnIndexOrThrow(CityEntity.LONGITUDE));
 				long latitude = cursor.getLong(
-						cursor.getColumnIndexOrThrow(WeatherProvider.KEY_LATITUDE));
+						cursor.getColumnIndexOrThrow(CityEntity.LATITUDE));
 				
 				int zoomlevel = 4;
 				

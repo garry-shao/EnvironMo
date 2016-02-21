@@ -9,6 +9,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.qmsos.weathermo.datamodel.City;
+import org.qmsos.weathermo.provider.WeatherContract.CityEntity;
+import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
 import org.qmsos.weathermo.util.IntentConstants;
 import org.qmsos.weathermo.util.WeatherParser;
 
@@ -123,14 +125,14 @@ public class WeatherService extends IntentService {
 	private void executeRefreshWeather(int flag) {
 		Cursor cursor = null;
 		try {
-			String[] projection = { WeatherProvider.KEY_CITY_ID };
-			String where = WeatherProvider.KEY_CITY_ID;
+			String[] projection = { WeatherEntity.CITY_ID };
+			String where = WeatherEntity.CITY_ID;
 			cursor = getContentResolver().query(
-					WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+					WeatherEntity.CONTENT_URI, projection, where, null, null);
 			if (cursor != null) {
 				while (cursor.moveToNext()) {
 					long cityId = cursor.getLong(
-							cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CITY_ID));
+							cursor.getColumnIndexOrThrow(WeatherEntity.CITY_ID));
 					
 					String request = assembleRequest(flag, cityId, null);
 					if (request != null) {
@@ -160,33 +162,33 @@ public class WeatherService extends IntentService {
 		case FLAG_CURRENT_WEATHER:
 			parsed = WeatherParser.parseRawToCurrent(result);
 			if (parsed != null) {
-				values.put(WeatherProvider.KEY_CURRENT, parsed);
+				values.put(WeatherEntity.CURRENT, parsed);
 			}
 			break;
 		case FLAG_CURRENT_UV_INDEX:
 			double value = WeatherParser.parseRawToUvIndex(result);
 			if (value > 0) {
-				values.put(WeatherProvider.KEY_UV_INDEX, value);
+				values.put(WeatherEntity.UV_INDEX, value);
 			}
 			break;
 		case FLAG_FORECAST_DAILY:
 			parsed = WeatherParser.parseRawToForecastDaily(result);
 			if (parsed != null) {
-				values.put(WeatherProvider.KEY_FORECAST, parsed);
+				values.put(WeatherEntity.FORECAST, parsed);
 			}
 			break;
 		case FLAG_FORECAST_HOURLY:
 			parsed = WeatherParser.parseRawToForecastHourly(result);
 			if (parsed != null) {
-				values.put(WeatherProvider.KEY_FORECAST, parsed);
+				values.put(WeatherEntity.FORECAST, parsed);
 			}
 			break;
 		default:
 			return;
 		}
 		
-		String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
-		getContentResolver().update(WeatherProvider.CONTENT_URI_WEATHER, values, where, null);
+		String where = WeatherEntity.CITY_ID + " = " + cityId;
+		getContentResolver().update(WeatherEntity.CONTENT_URI, values, where, null);
 	}
 
 	private boolean insertCity(City city) {
@@ -199,19 +201,19 @@ public class WeatherService extends IntentService {
 		Cursor cursor = null;
 		try {
 			ContentResolver resolver = getContentResolver();
-			String where = WeatherProvider.KEY_CITY_ID + " = " + city.getCityId();
-			cursor = resolver.query(WeatherProvider.CONTENT_URI_CITIES, null, where, null, null);
+			String where = CityEntity.CITY_ID + " = " + city.getCityId();
+			cursor = resolver.query(CityEntity.CONTENT_URI, null, where, null, null);
 			if (cursor != null && !cursor.moveToNext()) {
 				ContentValues values = new ContentValues();
-				values.put(WeatherProvider.KEY_CITY_ID, city.getCityId());
+				values.put(CityEntity.CITY_ID, city.getCityId());
 				
-				resolver.insert(WeatherProvider.CONTENT_URI_WEATHER, values);
+				resolver.insert(WeatherEntity.CONTENT_URI, values);
 				
-				values.put(WeatherProvider.KEY_NAME, city.getCityName());
-				values.put(WeatherProvider.KEY_COUNTRY, city.getCountry());
-				values.put(WeatherProvider.KEY_LONGITUDE, city.getLongitude());
-				values.put(WeatherProvider.KEY_LATITUDE, city.getLatitude());
-				resolver.insert(WeatherProvider.CONTENT_URI_CITIES, values);
+				values.put(CityEntity.CITY_NAME, city.getCityName());
+				values.put(CityEntity.COUNTRY, city.getCountry());
+				values.put(CityEntity.LONGITUDE, city.getLongitude());
+				values.put(CityEntity.LATITUDE, city.getLatitude());
+				resolver.insert(CityEntity.CONTENT_URI, values);
 				
 				flag = true;
 			}
@@ -227,9 +229,9 @@ public class WeatherService extends IntentService {
 	}
 
 	private boolean deleteCity(long cityId) {
-		String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
-		int rows1 = getContentResolver().delete(WeatherProvider.CONTENT_URI_CITIES, where, null);
-		int rows2 = getContentResolver().delete(WeatherProvider.CONTENT_URI_WEATHER, where, null);
+		String where = CityEntity.CITY_ID + " = " + cityId;
+		int rows1 = getContentResolver().delete(CityEntity.CONTENT_URI, where, null);
+		int rows2 = getContentResolver().delete(WeatherEntity.CONTENT_URI, where, null);
 		
 		return (rows1 > 0 && rows2 > 0) ? true : false;
 	}
@@ -321,14 +323,13 @@ public class WeatherService extends IntentService {
 		double longitude = 200.0f;
 		Cursor cursor = null;
 		try {
-			String[] projection = { WeatherProvider.KEY_CITY_ID, 
-					WeatherProvider.KEY_LATITUDE, WeatherProvider.KEY_LONGITUDE };
-			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
+			String[] projection = { CityEntity.CITY_ID, CityEntity.LATITUDE,  CityEntity.LONGITUDE };
+			String where =  CityEntity.CITY_ID + " = " + cityId;
 			cursor = getContentResolver().query(
-					WeatherProvider.CONTENT_URI_CITIES, projection, where, null, null);
+					 CityEntity.CONTENT_URI, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				latitude = cursor.getDouble(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_LATITUDE));
-				longitude = cursor.getDouble(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_LONGITUDE));
+				latitude = cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LATITUDE));
+				longitude = cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LONGITUDE));
 			}
 		} catch (IllegalArgumentException e) {
 			Log.e(TAG, "The column does not exist");

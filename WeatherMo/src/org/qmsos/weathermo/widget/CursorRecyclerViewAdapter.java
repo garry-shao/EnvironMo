@@ -1,7 +1,7 @@
 package org.qmsos.weathermo.widget;
 
 import org.qmsos.weathermo.R;
-import org.qmsos.weathermo.WeatherProvider;
+import org.qmsos.weathermo.provider.WeatherContract.CityEntity;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -38,11 +38,11 @@ public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<Vie
 
 	@Override
 	public void onBindViewHolderCursor(ViewHolder holder, Cursor cursor) {
-		final long id = cursor.getLong(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CITY_ID));
-		String name = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_NAME));
-		String country = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_COUNTRY));
-		double longitude = cursor.getDouble(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_LONGITUDE));
-		double latitude = cursor.getDouble(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_LATITUDE));
+		final long cityId = cursor.getLong(cursor.getColumnIndexOrThrow(CityEntity.CITY_ID));
+		String name = cursor.getString(cursor.getColumnIndexOrThrow(CityEntity.CITY_NAME));
+		String country = cursor.getString(cursor.getColumnIndexOrThrow(CityEntity.COUNTRY));
+		double longitude = cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LONGITUDE));
+		double latitude = cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LATITUDE));
 		
 		String nameRaw = name + " " +country;
 		
@@ -59,7 +59,7 @@ public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<Vie
 			
 			@Override
 			public void onClick(View v) {
-				mListener.onDeleteCity(id);
+				mListener.onDeleteCity(cityId);
 			}
 		});
 	}

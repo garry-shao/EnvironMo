@@ -5,7 +5,7 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import org.qmsos.weathermo.R;
-import org.qmsos.weathermo.WeatherProvider;
+import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
 import org.qmsos.weathermo.util.WeatherParser;
 
 import android.content.Context;
@@ -59,15 +59,15 @@ public class CurrentWeather extends Fragment {
 		String current = null;
 		Cursor cursor = null;
 		try {
-			String[] projection = { WeatherProvider.KEY_CURRENT, WeatherProvider.KEY_UV_INDEX };
-			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
+			String[] projection = { WeatherEntity.CURRENT, WeatherEntity.UV_INDEX };
+			String where = WeatherEntity.CITY_ID + " = " + cityId;
 			
 			cursor = getContext().getContentResolver().query(
-					WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+					WeatherEntity.CONTENT_URI, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				current = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CURRENT));
+				current = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.CURRENT));
 				
-				int columnIndexUv = cursor.getColumnIndexOrThrow(WeatherProvider.KEY_UV_INDEX);
+				int columnIndexUv = cursor.getColumnIndexOrThrow(WeatherEntity.UV_INDEX);
 				if (!cursor.isNull(columnIndexUv)) {
 					uvIndex = cursor.getDouble(columnIndexUv);
 				}
@@ -114,13 +114,13 @@ public class CurrentWeather extends Fragment {
 		String forecast = null;	
 		Cursor cursor = null;
 		try {
-			String[] projection = { WeatherProvider.KEY_FORECAST };
-			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
+			String[] projection = { WeatherEntity.FORECAST };
+			String where = WeatherEntity.CITY_ID + " = " + cityId;
 				
 			cursor = getContext().getContentResolver().query(
-					WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+					WeatherEntity.CONTENT_URI, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				forecast = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_FORECAST));
+				forecast = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.FORECAST));
 			}
 		} catch (IllegalArgumentException e) {
 			Log.e(TAG, "the column does not exist");

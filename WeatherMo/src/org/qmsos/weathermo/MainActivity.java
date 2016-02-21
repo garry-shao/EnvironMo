@@ -4,6 +4,8 @@ import org.qmsos.weathermo.fragment.CurrentWeather;
 import org.qmsos.weathermo.fragment.ForecastWeather;
 import org.qmsos.weathermo.fragment.ForecastWeather.OnWeatherClickedListener;
 import org.qmsos.weathermo.fragment.WeatherPagerAdapter;
+import org.qmsos.weathermo.provider.WeatherContract.CityEntity;
+import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
 import org.qmsos.weathermo.util.IntentConstants;
 import org.qmsos.weathermo.util.WeatherParser;
 import org.qmsos.weathermo.widget.DotViewPagerIndicator;
@@ -77,10 +79,9 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		String[] projection = { WeatherProvider.KEY_CITY_ID };
-		String where = WeatherProvider.KEY_CITY_ID;
+		String[] projection = { WeatherEntity.CITY_ID };
 
-		return new CursorLoader(this, WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+		return new CursorLoader(this, WeatherEntity.CONTENT_URI, projection, null, null, null);
 	}
 
 	@Override
@@ -207,13 +208,13 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 		String current = null;
 		Cursor cursor = null;
 		try {
-			String[] projection = { WeatherProvider.KEY_CURRENT };
-			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
+			String[] projection = { WeatherEntity.CURRENT };
+			String where = WeatherEntity.CITY_ID + " = " + cityId;
 			
 			cursor = getContentResolver().query(
-					WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+					WeatherEntity.CONTENT_URI, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				current = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CURRENT));
+				current = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.CURRENT));
 			}
 		} catch (IllegalArgumentException e) {
 			Log.e(TAG, "The column does not exist");
@@ -233,13 +234,13 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 		String forecast = null;
 		Cursor cursor = null;
 		try {
-			String[] projection = { WeatherProvider.KEY_FORECAST };
-			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
+			String[] projection = { WeatherEntity.FORECAST };
+			String where = WeatherEntity.CITY_ID + " = " + cityId;
 			
 			cursor = getContentResolver().query(
-					WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+					WeatherEntity.CONTENT_URI, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				forecast = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_FORECAST));
+				forecast = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.FORECAST));
 			}
 		} catch (IllegalArgumentException e) {
 			Log.e(TAG, "The column does not exist");
@@ -260,15 +261,14 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 		String country = null;
 		Cursor cursor = null;
 		try {
-			String[] projection = { 
-					WeatherProvider.KEY_CITY_ID, WeatherProvider.KEY_NAME, WeatherProvider.KEY_COUNTRY };
-			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
+			String[] projection = { CityEntity.CITY_ID, CityEntity.CITY_NAME, CityEntity.COUNTRY };
+			String where = CityEntity.CITY_ID + " = " + cityId;
 			
 			cursor = getContentResolver().query(
-					WeatherProvider.CONTENT_URI_CITIES, projection, where, null, null);
+					CityEntity.CONTENT_URI, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				name = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_NAME));
-				country = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_COUNTRY));
+				name = cursor.getString(cursor.getColumnIndexOrThrow(CityEntity.CITY_NAME));
+				country = cursor.getString(cursor.getColumnIndexOrThrow(CityEntity.COUNTRY));
 			}
 		} catch (IllegalArgumentException e) {
 			Log.e(TAG, "The column does not exist");

@@ -3,7 +3,7 @@ package org.qmsos.weathermo.fragment;
 import java.util.Calendar;
 
 import org.qmsos.weathermo.R;
-import org.qmsos.weathermo.WeatherProvider;
+import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
 import org.qmsos.weathermo.util.WeatherParser;
 
 import android.content.Context;
@@ -77,14 +77,14 @@ public class ForecastWeather extends Fragment {
 		String forecast = null;
 		Cursor cursor = null;
 		try {
-			String[] projection = { WeatherProvider.KEY_CURRENT, WeatherProvider.KEY_FORECAST };
-			String where = WeatherProvider.KEY_CITY_ID + " = " + cityId;
+			String[] projection = { WeatherEntity.CURRENT, WeatherEntity.FORECAST };
+			String where = WeatherEntity.CITY_ID + " = " + cityId;
 
 			cursor = getContext().getContentResolver().query(
-					WeatherProvider.CONTENT_URI_WEATHER, projection, where, null, null);
+					WeatherEntity.CONTENT_URI, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				current = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_CURRENT));
-				forecast = cursor.getString(cursor.getColumnIndexOrThrow(WeatherProvider.KEY_FORECAST));
+				current = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.CURRENT));
+				forecast = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.FORECAST));
 			}
 		} catch (IllegalArgumentException e) {
 			Log.e(TAG, "The column does not exist");
