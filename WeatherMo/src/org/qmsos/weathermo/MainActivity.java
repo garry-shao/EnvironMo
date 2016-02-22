@@ -188,17 +188,21 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 
 	private void updateBackground(long cityId, int day) {
 		String current = null;
-		String forecast = null;
+		String[] forecasts = new String[WeatherParser.COUNT_FORECAST_DAYS];
 		Cursor cursor = null;
 		try {
-			String[] projection = { WeatherEntity.CURRENT, WeatherEntity.FORECAST };
+			String[] projection = { WeatherEntity.CURRENT, WeatherEntity.FORECAST1, 
+					WeatherEntity.FORECAST2, WeatherEntity.FORECAST3 };
 			String where = WeatherEntity.CITY_ID + " = " + cityId;
 			
 			cursor = getContentResolver().query(
 					WeatherEntity.CONTENT_URI, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
 				current = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.CURRENT));
-				forecast = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.FORECAST));
+				
+				forecasts[0] = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.FORECAST1));
+				forecasts[1] = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.FORECAST2));
+				forecasts[2] = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.FORECAST3));
 			}
 		} catch (IllegalArgumentException e) {
 			Log.e(TAG, "The column does not exist");
@@ -212,7 +216,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 		if (day == 0) {
 			weatherId = WeatherParser.getCurrentWeatherId(current);
 		} else {
-			weatherId = WeatherParser.getForecastWeatherId(day, forecast);
+			weatherId = WeatherParser.getForecastWeatherId(forecasts[day - 1]);
 		}
 		
 		View v = findViewById(R.id.swipe_refresh);

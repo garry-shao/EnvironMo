@@ -28,8 +28,10 @@ public final class WeatherContract {
 	
 	protected interface WeatherColunms {
 		public static final String CURRENT = "current";
-		public static final String FORECAST = "forecast";
 		public static final String UV_INDEX = "uvIndex";
+		public static final String FORECAST1 = "forecast1";
+		public static final String FORECAST2 = "forecast2";
+		public static final String FORECAST3 = "forecast3";
 	}
 
 }

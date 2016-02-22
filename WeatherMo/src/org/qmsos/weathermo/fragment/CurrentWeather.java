@@ -12,9 +12,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager.LoaderCallbacks;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.RelativeSizeSpan;
@@ -24,7 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-public class CurrentWeather extends Fragment implements LoaderCallbacks<Cursor> {
+public class CurrentWeather extends Fragment {
 	
 	private static final String TAG = CurrentWeather.class.getSimpleName();
 	
@@ -52,55 +49,31 @@ public class CurrentWeather extends Fragment implements LoaderCallbacks<Cursor> 
 		super.onActivityCreated(savedInstanceState);
 		
 		showWeather(0);
-//		getLoaderManager().initLoader(0, null, this);
 	}
 
-	@Override
-	public void onDestroyView() {
-//		getLoaderManager().destroyLoader(0);
-		
-		super.onDestroyView();
-	}
-
-	@Override
-	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		long cityId = getArguments().getLong(KEY_CITY_ID);
-		
-		String[] projection = { WeatherEntity.CURRENT, WeatherEntity.UV_INDEX };
-		String where = WeatherEntity.CITY_ID + " = " + cityId;
-		
-		return new CursorLoader(getContext(), WeatherEntity.CONTENT_URI, projection, where, null, null);
-	}
-
-	@Override
-	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onLoaderReset(Loader<Cursor> loader) {
-		// TODO Auto-generated method stub
-		
-	}
-
+	// TODO: using loader will making the view flicker, guessing updating will be
+	//      some gap between valid data flows back. so still use synchronous data
+	//		query, making adjust later??
 	public void showWeather(int day) {
 		long cityId = getArguments().getLong(KEY_CITY_ID);
 		
 		double uvIndex = WeatherParser.UV_INDEX_INVALID;
 		String current = null;
-		String forecast = null;
+		String[] forecasts = null;
 		Cursor cursor = null;
 		try {
-			String[] projection = { 
-					WeatherEntity.CURRENT, WeatherEntity.FORECAST, WeatherEntity.UV_INDEX };
+			String[] projection = { WeatherEntity.CURRENT, WeatherEntity.UV_INDEX, 
+					WeatherEntity.FORECAST1, WeatherEntity.FORECAST2, WeatherEntity.FORECAST3 };
 			String where = WeatherEntity.CITY_ID + " = " + cityId;
 			
 			cursor = getContext().getContentResolver().query(
 					WeatherEntity.CONTENT_URI, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
 				current = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.CURRENT));
-				forecast = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.FORECAST));
+				String forecast1 = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.FORECAST1));
+				String forecast2 = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.FORECAST2));
+				String forecast3 = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.FORECAST3));
+				forecasts = new String[] { forecast1, forecast2, forecast3 };
 				
 				int columnIndexUv = cursor.getColumnIndexOrThrow(WeatherEntity.UV_INDEX);
 				if (!cursor.isNull(columnIndexUv)) {
@@ -135,17 +108,10 @@ public class CurrentWeather extends Fragment implements LoaderCallbacks<Cursor> 
 			} else {
 				v.setText(R.string.placeholder);
 			}
-			
-			Calendar c = Calendar.getInstance();
-			SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd", Locale.US);
-			String date = dateFormat.format(c.getTime());
-			
-			v = (TextView) getView().findViewById(R.id.current_date);
-			v.setText(date + " " + CalendarFactory.getDayOfWeek(0));
 		} else {
-			int forecastWeatherId = WeatherParser.getForecastWeatherId(day, forecast);
-			int forecastTemperatureMin = WeatherParser.getForecastTemperatureMin(day, forecast);
-			int forecastTemperatureMax = WeatherParser.getForecastTemperatureMax(day, forecast);
+			int forecastWeatherId = WeatherParser.getForecastWeatherId(forecasts[day - 1]);
+			int forecastTemperatureMin = WeatherParser.getForecastTemperatureMin(forecasts[day - 1]);
+			int forecastTemperatureMax = WeatherParser.getForecastTemperatureMax(forecasts[day - 1]);
 			
 			TextView v = (TextView) getView().findViewById(R.id.current_temperature);
 			if (forecastTemperatureMin != WeatherParser.TEMPERATURE_INVALID
@@ -153,7 +119,8 @@ public class CurrentWeather extends Fragment implements LoaderCallbacks<Cursor> 
 				
 				String raw = forecastTemperatureMin + "~" + forecastTemperatureMax + "\u00B0";
 				SpannableString spanned = new SpannableString(raw);
-				spanned.setSpan(new RelativeSizeSpan(0.6f), 0, raw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+				spanned.setSpan(
+						new RelativeSizeSpan(0.6f), 0, raw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 				
 				v.setText(spanned);
 			} else {
@@ -165,15 +132,15 @@ public class CurrentWeather extends Fragment implements LoaderCallbacks<Cursor> 
 			
 			v = (TextView) getView().findViewById(R.id.current_uv_index);
 			v.setText(InfoFactory.getDescriptionFromWeatherId(forecastWeatherId));
-			
-			Calendar c = Calendar.getInstance();
-			c.add(Calendar.DAY_OF_YEAR, day + 1);
-			SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd", Locale.US);
-			String date = dateFormat.format(c.getTime());
-			
-			v = (TextView) getView().findViewById(R.id.current_date);
-			v.setText(date + " " + CalendarFactory.getDayOfWeek(day + 1));
 		}
+		
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.DAY_OF_YEAR, day);
+		SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd", Locale.US);
+		String date = dateFormat.format(c.getTime());
+		
+		TextView v = (TextView) getView().findViewById(R.id.current_date);
+		v.setText(date + " " + CalendarFactory.getDayOfWeek(day));
 	}
 
 	private static class CalendarFactory {

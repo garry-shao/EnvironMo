@@ -22,12 +22,7 @@ import android.widget.TextView;
 
 public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor> {
 
-	private static final int COUNT_FORECAST_VIEWS = 3;
-	
 	private OnForecastClickedListener mListener;
-	
-	private String mCurrent;
-	private String mForecast;
 	
 	@Override
 	public void onAttach(Context context) {
@@ -62,7 +57,7 @@ public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor>
 			}
 		});
 
-		for (int i = 1; i <= COUNT_FORECAST_VIEWS; i++) {
+		for (int i = 1; i <= WeatherParser.COUNT_FORECAST_DAYS; i++) {
 			final int j = i;
 			textView = (TextView) getView().findViewById(
 					getResources().getIdentifier("forecast_" + j, "id", getContext().getPackageName()));
@@ -94,7 +89,8 @@ public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor>
 			cityId = 0L;
 		}
 		
-		String[] projection = { WeatherEntity.CURRENT, WeatherEntity.FORECAST };
+		String[] projection = { WeatherEntity.CURRENT, WeatherEntity.FORECAST1, 
+				WeatherEntity.FORECAST2, WeatherEntity.FORECAST3 };
 		String where = WeatherEntity.CITY_ID + " = " + cityId;
 		
 		return new CursorLoader(getContext(), WeatherEntity.CONTENT_URI, projection, where, null, null);
@@ -102,13 +98,18 @@ public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor>
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+		String current = null;
+		String[] forecasts = new String[WeatherParser.COUNT_FORECAST_DAYS];
 		if (data != null && data.moveToFirst()) {
-			mCurrent = data.getString(data.getColumnIndexOrThrow(WeatherEntity.CURRENT));
-			mForecast = data.getString(data.getColumnIndexOrThrow(WeatherEntity.FORECAST));
+			current = data.getString(data.getColumnIndexOrThrow(WeatherEntity.CURRENT));
+			
+			forecasts[0] = data.getString(data.getColumnIndexOrThrow(WeatherEntity.FORECAST1));
+			forecasts[1] = data.getString(data.getColumnIndexOrThrow(WeatherEntity.FORECAST2));
+			forecasts[2] = data.getString(data.getColumnIndexOrThrow(WeatherEntity.FORECAST3));
 		}
 		
-		int currentWeatherId = WeatherParser.getCurrentWeatherId(mCurrent);
-		int currentTemperature = WeatherParser.getCurrentTemperature(mCurrent);
+		int currentWeatherId = WeatherParser.getCurrentWeatherId(current);
+		int currentTemperature = WeatherParser.getCurrentTemperature(current);
 		
 		TextView textView = (TextView) getView().findViewById(R.id.current);
 		if (currentTemperature != WeatherParser.TEMPERATURE_INVALID) {
@@ -118,10 +119,10 @@ public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor>
 		}
 		IconFactory.setIconOfForecastView(textView, currentWeatherId);
 		
-		for (int i = 1; i <= COUNT_FORECAST_VIEWS; i++) {
-			int forecastWeatherId = WeatherParser.getForecastWeatherId(i, mForecast);
-			int forecastTemperatureMin = WeatherParser.getForecastTemperatureMin(i, mForecast);
-			int forecastTemperatureMax = WeatherParser.getForecastTemperatureMax(i, mForecast);
+		for (int i = 1; i <= WeatherParser.COUNT_FORECAST_DAYS; i++) {
+			int forecastWeatherId = WeatherParser.getForecastWeatherId(forecasts[i - 1]);
+			int forecastTemperatureMin = WeatherParser.getForecastTemperatureMin(forecasts[i - 1]);
+			int forecastTemperatureMax = WeatherParser.getForecastTemperatureMax(forecasts[i - 1]);
 			
 			TextView v = (TextView) getView().findViewById(
 					getResources().getIdentifier("forecast_" + i, "id", getContext().getPackageName()));
@@ -139,8 +140,6 @@ public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor>
 
 	@Override
 	public void onLoaderReset(Loader<Cursor> loader) {
-		mCurrent = null;
-		mForecast = null;
 	}
 
 	public interface OnForecastClickedListener {

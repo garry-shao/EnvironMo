@@ -157,12 +157,11 @@ public class WeatherService extends IntentService {
 		}
 		
 		ContentValues values = new ContentValues();
-		String parsed = null;
 		switch (flag) {
 		case FLAG_CURRENT_WEATHER:
-			parsed = WeatherParser.parseRawToCurrent(result);
-			if (parsed != null) {
-				values.put(WeatherEntity.CURRENT, parsed);
+			String parsedCurrent = WeatherParser.parseRawToCurrent(result);
+			if (parsedCurrent != null) {
+				values.put(WeatherEntity.CURRENT, parsedCurrent);
 			}
 			break;
 		case FLAG_CURRENT_UV_INDEX:
@@ -172,15 +171,19 @@ public class WeatherService extends IntentService {
 			}
 			break;
 		case FLAG_FORECAST_DAILY:
-			parsed = WeatherParser.parseRawToForecastDaily(result);
-			if (parsed != null) {
-				values.put(WeatherEntity.FORECAST, parsed);
+			String[] parsedForecastDaily = WeatherParser.parseRawToForecastsDaily(result);
+			if (parsedForecastDaily != null) {
+				values.put(WeatherEntity.FORECAST1, parsedForecastDaily[0]);
+				values.put(WeatherEntity.FORECAST2, parsedForecastDaily[1]);
+				values.put(WeatherEntity.FORECAST3, parsedForecastDaily[2]);
 			}
 			break;
 		case FLAG_FORECAST_HOURLY:
-			parsed = WeatherParser.parseRawToForecastHourly(result);
-			if (parsed != null) {
-				values.put(WeatherEntity.FORECAST, parsed);
+			String[] parsedForecastHourly = WeatherParser.parseRawToForecastsHourly(result);
+			if (parsedForecastHourly != null) {
+				values.put(WeatherEntity.FORECAST1, parsedForecastHourly[0]);
+				values.put(WeatherEntity.FORECAST2, parsedForecastHourly[1]);
+				values.put(WeatherEntity.FORECAST3, parsedForecastHourly[2]);
 			}
 			break;
 		default:

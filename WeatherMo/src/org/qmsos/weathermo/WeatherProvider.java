@@ -227,9 +227,11 @@ public class WeatherProvider extends ContentProvider {
 		private static final String CREATE_TABLE_WEATHER = 
 				"CREATE TABLE " + TABLE_WEATHER + " (" + 
 						WeatherEntity.CITY_ID + " INTEGER, " +
-						WeatherEntity.CURRENT + " TEXT, " +
-						WeatherEntity.FORECAST + " TEXT, " + 
-						WeatherEntity.UV_INDEX + " REAL);";
+						WeatherEntity.CURRENT + " TEXT, " + 
+						WeatherEntity.UV_INDEX + " REAL, " + 
+						WeatherEntity.FORECAST1 + " TEXT, " + 
+						WeatherEntity.FORECAST2 + " TEXT, " + 
+						WeatherEntity.FORECAST3 + " TEXT);"; 
 		
 		public DatabaseHelper(Context context, String name, CursorFactory factory, int version) {
 			super(context, name, factory, version);
