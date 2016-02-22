@@ -4,35 +4,39 @@ import java.util.Calendar;
 
 import org.qmsos.weathermo.R;
 import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
+import org.qmsos.weathermo.util.IntentConstants;
 import org.qmsos.weathermo.util.WeatherParser;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-public class ForecastWeather extends Fragment {
-
-	private static final String TAG = ForecastWeather.class.getSimpleName();
+public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor> {
 
 	private static final int COUNT_FORECAST_VIEWS = 3;
 	
-	private OnWeatherClickedListener mListener;
+	private OnForecastClickedListener mListener;
+	
+	private String mCurrent;
+	private String mForecast;
 	
 	@Override
 	public void onAttach(Context context) {
 		super.onAttach(context);
 		
 		try {
-			mListener = (OnWeatherClickedListener) context;
+			mListener = (OnForecastClickedListener) context;
 		} catch (ClassCastException e) {
-			String listenerName = OnWeatherClickedListener.class.getSimpleName();
+			String listenerName = OnForecastClickedListener.class.getSimpleName();
 			
 			throw new ClassCastException(context.toString() + " must implements " + listenerName);
 		}
@@ -54,11 +58,11 @@ public class ForecastWeather extends Fragment {
 
 			@Override
 			public void onClick(View v) {
-				mListener.onCurrentWeatherClicked();
+				mListener.onForecastClicked(0);
 			}
 		});
 
-		for (int i = 0; i < COUNT_FORECAST_VIEWS; i++) {
+		for (int i = 1; i <= COUNT_FORECAST_VIEWS; i++) {
 			final int j = i;
 			textView = (TextView) getView().findViewById(
 					getResources().getIdentifier("forecast_" + j, "id", getContext().getPackageName()));
@@ -66,36 +70,45 @@ public class ForecastWeather extends Fragment {
 
 				@Override
 				public void onClick(View v) {
-					mListener.onForecastWeatherClick(j);
+					mListener.onForecastClicked(j);
 				}
 			});
 		}
+		
+		getLoaderManager().initLoader(0, null, this);
 	}
 
-	public void showWeather(long cityId) {
-		String current = null;
-		String forecast = null;
-		Cursor cursor = null;
-		try {
-			String[] projection = { WeatherEntity.CURRENT, WeatherEntity.FORECAST };
-			String where = WeatherEntity.CITY_ID + " = " + cityId;
+	@Override
+	public void onDestroyView() {
+		getLoaderManager().destroyLoader(0);
+		
+		super.onDestroyView();
+	}
 
-			cursor = getContext().getContentResolver().query(
-					WeatherEntity.CONTENT_URI, projection, where, null, null);
-			if (cursor != null && cursor.moveToFirst()) {
-				current = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.CURRENT));
-				forecast = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.FORECAST));
-			}
-		} catch (IllegalArgumentException e) {
-			Log.e(TAG, "The column does not exist");
-		} finally {
-			if (cursor != null && !cursor.isClosed()) {
-				cursor.close();
-			}
+	@Override
+	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+		long cityId;
+		if (args != null) {
+			cityId = args.getLong(IntentConstants.KEY_CITY_ID);
+		} else {
+			cityId = 0L;
 		}
 		
-		int currentWeatherId = WeatherParser.getCurrentWeatherId(current);
-		int currentTemperature = WeatherParser.getCurrentTemperature(current);
+		String[] projection = { WeatherEntity.CURRENT, WeatherEntity.FORECAST };
+		String where = WeatherEntity.CITY_ID + " = " + cityId;
+		
+		return new CursorLoader(getContext(), WeatherEntity.CONTENT_URI, projection, where, null, null);
+	}
+
+	@Override
+	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+		if (data != null && data.moveToFirst()) {
+			mCurrent = data.getString(data.getColumnIndexOrThrow(WeatherEntity.CURRENT));
+			mForecast = data.getString(data.getColumnIndexOrThrow(WeatherEntity.FORECAST));
+		}
+		
+		int currentWeatherId = WeatherParser.getCurrentWeatherId(mCurrent);
+		int currentTemperature = WeatherParser.getCurrentTemperature(mCurrent);
 		
 		TextView textView = (TextView) getView().findViewById(R.id.current);
 		if (currentTemperature != WeatherParser.TEMPERATURE_INVALID) {
@@ -105,17 +118,17 @@ public class ForecastWeather extends Fragment {
 		}
 		IconFactory.setIconOfForecastView(textView, currentWeatherId);
 		
-		for (int i = 0; i < COUNT_FORECAST_VIEWS; i++) {
-			int forecastWeatherId = WeatherParser.getForecastWeatherId(i, forecast);
-			int forecastTemperatureMin = WeatherParser.getForecastTemperatureMin(i, forecast);
-			int forecastTemperatureMax = WeatherParser.getForecastTemperatureMax(i, forecast);
+		for (int i = 1; i <= COUNT_FORECAST_VIEWS; i++) {
+			int forecastWeatherId = WeatherParser.getForecastWeatherId(i, mForecast);
+			int forecastTemperatureMin = WeatherParser.getForecastTemperatureMin(i, mForecast);
+			int forecastTemperatureMax = WeatherParser.getForecastTemperatureMax(i, mForecast);
 			
 			TextView v = (TextView) getView().findViewById(
 					getResources().getIdentifier("forecast_" + i, "id", getContext().getPackageName()));
 			if (forecastTemperatureMin != WeatherParser.TEMPERATURE_INVALID
 					|| forecastTemperatureMax != WeatherParser.TEMPERATURE_INVALID) {
 				
-				v.setText(CalendarFactory.getDayOfWeek(i + 1) + "\n" 
+				v.setText(CalendarFactory.getDayOfWeek(i) + "\n" 
 						+ forecastTemperatureMin + "~" + forecastTemperatureMax + "\u00B0" + "C");
 			} else {
 				v.setText(R.string.placeholder);
@@ -124,21 +137,22 @@ public class ForecastWeather extends Fragment {
 		}
 	}
 
-	public interface OnWeatherClickedListener {
-		
-		/**
-		 * When view of current weather is clicked.
-		 */
-		void onCurrentWeatherClicked();
+	@Override
+	public void onLoaderReset(Loader<Cursor> loader) {
+		mCurrent = null;
+		mForecast = null;
+	}
+
+	public interface OnForecastClickedListener {
 
 		/**
-		 * When view of forecast weather is clicked.
+		 * When views of forecast weather are clicked.
 		 * 
 		 * @param day
-		 *            which day is clicked(0 means next 24h, 1 means 48h,
+		 *            which day is clicked(0 means current, 1 means next 24h,
 		 *            etc...).
 		 */
-		void onForecastWeatherClick(int day);
+		void onForecastClicked(int day);
 	}
 
 	private static class CalendarFactory {

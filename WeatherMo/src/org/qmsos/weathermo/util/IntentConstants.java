@@ -21,5 +21,8 @@ public class IntentConstants {
 
 	public static final String ACTION_INSERT_EXECUTED = BASE_PACKAGE_NAME + "ACTION_INSERT_EXECUTED";
 	public static final String EXTRA_INSERT_EXECUTED = BASE_PACKAGE_NAME + "EXTRA_INSERT_EXECUTED";
+	
+	// Key used in bundle.
+	public static final String KEY_CITY_ID = BASE_PACKAGE_NAME + "KEY_CITY_ID";
 
 }

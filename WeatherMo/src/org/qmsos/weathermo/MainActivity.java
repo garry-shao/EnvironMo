@@ -2,7 +2,7 @@ package org.qmsos.weathermo;
 
 import org.qmsos.weathermo.fragment.CurrentWeather;
 import org.qmsos.weathermo.fragment.ForecastWeather;
-import org.qmsos.weathermo.fragment.ForecastWeather.OnWeatherClickedListener;
+import org.qmsos.weathermo.fragment.ForecastWeather.OnForecastClickedListener;
 import org.qmsos.weathermo.fragment.WeatherPagerAdapter;
 import org.qmsos.weathermo.provider.WeatherContract.CityEntity;
 import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
@@ -38,7 +38,7 @@ import android.widget.TextView;
  */
 public class MainActivity extends AppCompatActivity 
 implements LoaderCallbacks<Cursor>, OnPageChangeListener, 
-		OnRefreshListener, OnClickListener, OnWeatherClickedListener {
+		OnRefreshListener, OnClickListener, OnForecastClickedListener {
 	
 	private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -146,7 +146,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 	}
 
 	@Override
-	public void onCurrentWeatherClicked() {
+	public void onForecastClicked(int day) {
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
 		if (viewPager != null) {
 //			Workaround: FragmentStatePagerAdapter's instantiateItem() method will return 
@@ -155,32 +155,12 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 			CurrentWeather fragment = (CurrentWeather) 
 					mPagerAdapter.instantiateItem(viewPager, viewPager.getCurrentItem());
 			if (fragment != null && fragment.isAdded()) {
-				fragment.showCurrentWeather();
+				fragment.showWeather(day);
 				
 				long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
-				
-				updateCurrentBackground(cityId);
+				updateBackground(cityId, day);
 			}		
-		}
-	}
-
-	@Override
-	public void onForecastWeatherClick(int day) {
-		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
-		if (viewPager != null) {
-//			Workaround: FragmentStatePagerAdapter's instantiateItem() method will return 
-//			the reference of fragment instead of calling getItem() method to create a new 
-//			one if it exists already.
-			CurrentWeather fragment = (CurrentWeather) 
-					mPagerAdapter.instantiateItem(viewPager, viewPager.getCurrentItem());
-			if (fragment != null && fragment.isAdded()) {
-				fragment.showForecastWeather(day);
-				
-				long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
-				
-				updateForecastBackground(cityId, day);
-			}
-		}
+		}		
 	}
 
 	private void refreshGui() {
@@ -191,9 +171,11 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 			if (fragment != null && fragment.isAdded()) {
 				long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
 				
-				fragment.showWeather(cityId);
+				Bundle args = new Bundle();
+				args.putLong(IntentConstants.KEY_CITY_ID, cityId);
+				fragment.getLoaderManager().restartLoader(0, args, fragment);
 				
-				updateCurrentBackground(cityId);
+				updateBackground(cityId, 0);
 				updateCityName(cityId);
 			}
 		}
@@ -204,42 +186,18 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 		}
 	}
 
-	private void updateCurrentBackground(long cityId) {
+	private void updateBackground(long cityId, int day) {
 		String current = null;
+		String forecast = null;
 		Cursor cursor = null;
 		try {
-			String[] projection = { WeatherEntity.CURRENT };
+			String[] projection = { WeatherEntity.CURRENT, WeatherEntity.FORECAST };
 			String where = WeatherEntity.CITY_ID + " = " + cityId;
 			
 			cursor = getContentResolver().query(
 					WeatherEntity.CONTENT_URI, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
 				current = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.CURRENT));
-			}
-		} catch (IllegalArgumentException e) {
-			Log.e(TAG, "The column does not exist");
-		} finally {
-			if (cursor != null && !cursor.isClosed()) {
-				cursor.close();
-			}
-		}
-		
-		int weatherId = WeatherParser.getCurrentWeatherId(current);
-		
-		View v = findViewById(R.id.swipe_refresh);
-		BackgroundFactory.setBackgroundOfView(v, weatherId);
-	}
-	
-	private void updateForecastBackground(long cityId, int day) {
-		String forecast = null;
-		Cursor cursor = null;
-		try {
-			String[] projection = { WeatherEntity.FORECAST };
-			String where = WeatherEntity.CITY_ID + " = " + cityId;
-			
-			cursor = getContentResolver().query(
-					WeatherEntity.CONTENT_URI, projection, where, null, null);
-			if (cursor != null && cursor.moveToFirst()) {
 				forecast = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.FORECAST));
 			}
 		} catch (IllegalArgumentException e) {
@@ -250,7 +208,12 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 			}
 		}
 		
-		int weatherId = WeatherParser.getForecastWeatherId(day, forecast);
+		int weatherId;
+		if (day == 0) {
+			weatherId = WeatherParser.getCurrentWeatherId(current);
+		} else {
+			weatherId = WeatherParser.getForecastWeatherId(day, forecast);
+		}
 		
 		View v = findViewById(R.id.swipe_refresh);
 		BackgroundFactory.setBackgroundOfView(v, weatherId);

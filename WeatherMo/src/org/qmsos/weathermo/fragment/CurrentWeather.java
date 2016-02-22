@@ -12,6 +12,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.RelativeSizeSpan;
@@ -21,7 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-public class CurrentWeather extends Fragment {
+public class CurrentWeather extends Fragment implements LoaderCallbacks<Cursor> {
 	
 	private static final String TAG = CurrentWeather.class.getSimpleName();
 	
@@ -44,28 +47,60 @@ public class CurrentWeather extends Fragment {
 		return view;
 	}
 
-
 	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
 		
-		showCurrentWeather();
+		showWeather(0);
+//		getLoaderManager().initLoader(0, null, this);
 	}
 
-	public void showCurrentWeather() {
+	@Override
+	public void onDestroyView() {
+//		getLoaderManager().destroyLoader(0);
+		
+		super.onDestroyView();
+	}
+
+	@Override
+	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+		long cityId = getArguments().getLong(KEY_CITY_ID);
+		
+		String[] projection = { WeatherEntity.CURRENT, WeatherEntity.UV_INDEX };
+		String where = WeatherEntity.CITY_ID + " = " + cityId;
+		
+		return new CursorLoader(getContext(), WeatherEntity.CONTENT_URI, projection, where, null, null);
+	}
+
+	@Override
+	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onLoaderReset(Loader<Cursor> loader) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void showWeather(int day) {
 		long cityId = getArguments().getLong(KEY_CITY_ID);
 		
 		double uvIndex = WeatherParser.UV_INDEX_INVALID;
 		String current = null;
+		String forecast = null;
 		Cursor cursor = null;
 		try {
-			String[] projection = { WeatherEntity.CURRENT, WeatherEntity.UV_INDEX };
+			String[] projection = { 
+					WeatherEntity.CURRENT, WeatherEntity.FORECAST, WeatherEntity.UV_INDEX };
 			String where = WeatherEntity.CITY_ID + " = " + cityId;
 			
 			cursor = getContext().getContentResolver().query(
 					WeatherEntity.CONTENT_URI, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
 				current = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.CURRENT));
+				forecast = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.FORECAST));
 				
 				int columnIndexUv = cursor.getColumnIndexOrThrow(WeatherEntity.UV_INDEX);
 				if (!cursor.isNull(columnIndexUv)) {
@@ -80,88 +115,67 @@ public class CurrentWeather extends Fragment {
 			}
 		}
 		
-		int currentWeatherId = WeatherParser.getCurrentWeatherId(current);
-		int currentTemperature = WeatherParser.getCurrentTemperature(current);
-		
-		TextView v = (TextView) getView().findViewById(R.id.current_temperature);
-		if (currentTemperature != WeatherParser.TEMPERATURE_INVALID) {
-			v.setText(String.valueOf(currentTemperature) + "\u00B0");
+		if (day == 0) {
+			int currentWeatherId = WeatherParser.getCurrentWeatherId(current);
+			int currentTemperature = WeatherParser.getCurrentTemperature(current);
+			
+			TextView v = (TextView) getView().findViewById(R.id.current_temperature);
+			if (currentTemperature != WeatherParser.TEMPERATURE_INVALID) {
+				v.setText(String.valueOf(currentTemperature) + "\u00B0");
+			} else {
+				v.setText(R.string.placeholder);
+			}
+			
+			v = (TextView) getView().findViewById(R.id.current_main);
+			v.setText(InfoFactory.getCategoryFromWeatherId(currentWeatherId));
+			
+			v = (TextView) getView().findViewById(R.id.current_uv_index);
+			if (Double.compare(uvIndex, WeatherParser.UV_INDEX_INVALID) != 0) {
+				v.setText("UV: " + uvIndex + " - " + InfoFactory.getCategoryFromUvIndex(uvIndex));
+			} else {
+				v.setText(R.string.placeholder);
+			}
+			
+			Calendar c = Calendar.getInstance();
+			SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd", Locale.US);
+			String date = dateFormat.format(c.getTime());
+			
+			v = (TextView) getView().findViewById(R.id.current_date);
+			v.setText(date + " " + CalendarFactory.getDayOfWeek(0));
 		} else {
-			v.setText(R.string.placeholder);
-		}
-		
-		v = (TextView) getView().findViewById(R.id.current_main);
-		v.setText(InfoFactory.getCategoryFromWeatherId(currentWeatherId));
-		
-		v = (TextView) getView().findViewById(R.id.current_uv_index);
-		if (Double.compare(uvIndex, WeatherParser.UV_INDEX_INVALID) != 0) {
-			v.setText("UV: " + uvIndex + " - " + InfoFactory.getCategoryFromUvIndex(uvIndex));
-		} else {
-			v.setText(R.string.placeholder);
-		}
-		
-		Calendar c = Calendar.getInstance();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd", Locale.US);
-		String date = dateFormat.format(c.getTime());
-		
-		v = (TextView) getView().findViewById(R.id.current_date);
-		v.setText(date + " " + CalendarFactory.getDayOfWeek(0));
-	}
-	
-	public void showForecastWeather(int day) {
-		long cityId = getArguments().getLong(KEY_CITY_ID);
-		
-		String forecast = null;	
-		Cursor cursor = null;
-		try {
-			String[] projection = { WeatherEntity.FORECAST };
-			String where = WeatherEntity.CITY_ID + " = " + cityId;
+			int forecastWeatherId = WeatherParser.getForecastWeatherId(day, forecast);
+			int forecastTemperatureMin = WeatherParser.getForecastTemperatureMin(day, forecast);
+			int forecastTemperatureMax = WeatherParser.getForecastTemperatureMax(day, forecast);
+			
+			TextView v = (TextView) getView().findViewById(R.id.current_temperature);
+			if (forecastTemperatureMin != WeatherParser.TEMPERATURE_INVALID
+					|| forecastTemperatureMax != WeatherParser.TEMPERATURE_INVALID) {
 				
-			cursor = getContext().getContentResolver().query(
-					WeatherEntity.CONTENT_URI, projection, where, null, null);
-			if (cursor != null && cursor.moveToFirst()) {
-				forecast = cursor.getString(cursor.getColumnIndexOrThrow(WeatherEntity.FORECAST));
+				String raw = forecastTemperatureMin + "~" + forecastTemperatureMax + "\u00B0";
+				SpannableString spanned = new SpannableString(raw);
+				spanned.setSpan(new RelativeSizeSpan(0.6f), 0, raw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+				
+				v.setText(spanned);
+			} else {
+				v.setText(R.string.placeholder);
 			}
-		} catch (IllegalArgumentException e) {
-			Log.e(TAG, "the column does not exist");
-		} finally {
-			if (cursor != null && !cursor.isClosed()) {
-				cursor.close();
-			}
-		}
-		
-		int forecastWeatherId = WeatherParser.getForecastWeatherId(day, forecast);
-		int forecastTemperatureMin = WeatherParser.getForecastTemperatureMin(day, forecast);
-		int forecastTemperatureMax = WeatherParser.getForecastTemperatureMax(day, forecast);
-		
-		TextView v = (TextView) getView().findViewById(R.id.current_temperature);
-		if (forecastTemperatureMin != WeatherParser.TEMPERATURE_INVALID
-				|| forecastTemperatureMax != WeatherParser.TEMPERATURE_INVALID) {
 			
-			String raw = forecastTemperatureMin + "~" + forecastTemperatureMax + "\u00B0";
-			SpannableString spanned = new SpannableString(raw);
-			spanned.setSpan(new RelativeSizeSpan(0.6f), 0, raw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+			v = (TextView) getView().findViewById(R.id.current_main);
+			v.setText(InfoFactory.getCategoryFromWeatherId(forecastWeatherId));
 			
-			v.setText(spanned);
-		} else {
-			v.setText(R.string.placeholder);
+			v = (TextView) getView().findViewById(R.id.current_uv_index);
+			v.setText(InfoFactory.getDescriptionFromWeatherId(forecastWeatherId));
+			
+			Calendar c = Calendar.getInstance();
+			c.add(Calendar.DAY_OF_YEAR, day + 1);
+			SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd", Locale.US);
+			String date = dateFormat.format(c.getTime());
+			
+			v = (TextView) getView().findViewById(R.id.current_date);
+			v.setText(date + " " + CalendarFactory.getDayOfWeek(day + 1));
 		}
-		
-		v = (TextView) getView().findViewById(R.id.current_main);
-		v.setText(InfoFactory.getCategoryFromWeatherId(forecastWeatherId));
-		
-		v = (TextView) getView().findViewById(R.id.current_uv_index);
-		v.setText(InfoFactory.getDescriptionFromWeatherId(forecastWeatherId));
-		
-		Calendar c = Calendar.getInstance();
-		c.add(Calendar.DAY_OF_YEAR, day + 1);
-		SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd", Locale.US);
-		String date = dateFormat.format(c.getTime());
-		
-		v = (TextView) getView().findViewById(R.id.current_date);
-		v.setText(date + " " + CalendarFactory.getDayOfWeek(day + 1));
 	}
-	
+
 	private static class CalendarFactory {
 		
 		static String getDayOfWeek(int day) {

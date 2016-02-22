@@ -242,13 +242,13 @@ public class WeatherParser {
 	}
 
 	public static int getForecastWeatherId(int day, String forecast) {
-		if ((forecast == null) || (day < 0) || (day >= COUNT_FORECAST_DAYS)) {
+		if ((forecast == null) || (day < 1) || (day > COUNT_FORECAST_DAYS)) {
 			return WEATHER_ID_INVALID;
 		}
 		
 		String[] elements = forecast.split(";");
 		if (elements != null && (elements.length == COUNT_FORECAST_DAYS)) {
-			String[] values = elements[day].split("\\|");
+			String[] values = elements[day - 1].split("\\|");
 			if (values.length == COUNT_ELEMENTS_FORECAST) {
 				return Integer.parseInt(values[0]);
 			} else {
@@ -260,13 +260,13 @@ public class WeatherParser {
 	}
 
 	public static int getForecastTemperatureMin(int day, String forecast) {
-		if ((forecast == null) || (day < 0) || (day >= COUNT_FORECAST_DAYS)) {
+		if ((forecast == null) || (day < 1) || (day > COUNT_FORECAST_DAYS)) {
 			return TEMPERATURE_INVALID;
 		}
 		
 		String[] elements = forecast.split(";");
 		if (elements.length == COUNT_FORECAST_DAYS) {
-			String[] values = elements[day].split("\\|");
+			String[] values = elements[day - 1].split("\\|");
 			if (values.length == COUNT_ELEMENTS_FORECAST) {
 				return Integer.parseInt(values[1]);
 			} else {
@@ -278,13 +278,13 @@ public class WeatherParser {
 	}
 	
 	public static int getForecastTemperatureMax(int day, String forecast) {
-		if ((forecast == null) || (day < 0) || (day >= COUNT_FORECAST_DAYS)) {
+		if ((forecast == null) || (day < 1) || (day > COUNT_FORECAST_DAYS)) {
 			return TEMPERATURE_INVALID;
 		}
 		
 		String[] elements = forecast.split(";");
 		if (elements.length == COUNT_FORECAST_DAYS) {
-			String[] values = elements[day].split("\\|");
+			String[] values = elements[day - 1].split("\\|");
 			if (values.length == COUNT_ELEMENTS_FORECAST) {
 				return Integer.parseInt(values[2]);
 			} else {
