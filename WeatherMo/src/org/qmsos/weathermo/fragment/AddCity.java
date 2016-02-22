@@ -93,60 +93,9 @@ public class AddCity extends Fragment {
 	}
 
 	public void swapData(String result) {
-		mCandidateCities = parseResult(result);
+		mCandidateCities = ParseFactory.parseResult(result);
 		
 		mCityCandidateAdapter.swapData(mCandidateCities);
-	}
-
-	private City[] parseResult(String result) {
-		if (result == null) {
-			return null;
-		}
-
-		JSONArray list = null;
-		int length = 0;
-		try {
-			JSONObject reader = new JSONObject(result);
-			list = reader.getJSONArray("list");
-			length = list.length();
-		} catch (JSONException e) {
-			return null;
-		}
-		
-		if (length == 0) {
-			return null;
-		}
-
-		City[] candidates = new City[length];
-		for (int i = 0; i < length; i++) {
-			try {
-				JSONObject instance = list.getJSONObject(i);
-
-				long cityId = instance.getLong("id");
-				String name = instance.getString("name");
-
-				JSONObject coord = instance.getJSONObject("coord");
-				double longitude = coord.getDouble("lon");
-				double latitude = coord.getDouble("lat");
-
-				JSONObject sys = instance.getJSONObject("sys");
-				String country = sys.getString("country");
-
-				longitude = longitude * 100;
-				longitude = Math.round(longitude);
-				longitude = longitude / 100;
-
-				latitude = latitude * 100;
-				latitude = Math.round(latitude);
-				latitude = latitude / 100;
-
-				candidates[i] = new City(cityId, name, country, longitude, latitude);
-			} catch (JSONException e) {
-				return null;
-			}
-		}
-		
-		return candidates;
 	}
 
 	/**
@@ -162,6 +111,61 @@ public class AddCity extends Fragment {
 		 *            The input string.
 		 */
 		void onInputDone(String text);
+	}
+
+	private static class ParseFactory {
+		
+		static City[] parseResult(String result) {
+			if (result == null) {
+				return null;
+			}
+
+			JSONArray list = null;
+			int length = 0;
+			try {
+				JSONObject reader = new JSONObject(result);
+				list = reader.getJSONArray("list");
+				length = list.length();
+			} catch (JSONException e) {
+				return null;
+			}
+			
+			if (length == 0) {
+				return null;
+			}
+
+			City[] candidates = new City[length];
+			for (int i = 0; i < length; i++) {
+				try {
+					JSONObject instance = list.getJSONObject(i);
+
+					long cityId = instance.getLong("id");
+					String name = instance.getString("name");
+
+					JSONObject coord = instance.getJSONObject("coord");
+					double longitude = coord.getDouble("lon");
+					double latitude = coord.getDouble("lat");
+
+					JSONObject sys = instance.getJSONObject("sys");
+					String country = sys.getString("country");
+
+					longitude = longitude * 100;
+					longitude = Math.round(longitude);
+					longitude = longitude / 100;
+
+					latitude = latitude * 100;
+					latitude = Math.round(latitude);
+					latitude = latitude / 100;
+
+					candidates[i] = new City(cityId, name, country, longitude, latitude);
+				} catch (JSONException e) {
+					return null;
+				}
+			}
+			
+			return candidates;
+		}
+		
 	}
 
 }
