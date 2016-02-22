@@ -164,7 +164,7 @@ public class CurrentWeather extends Fragment {
 	
 	private static class CalendarFactory {
 		
-		public static String getDayOfWeek(int day) {
+		static String getDayOfWeek(int day) {
 			Calendar c = Calendar.getInstance();
 			c.add(Calendar.DAY_OF_YEAR, day);
 			int i = c.get(Calendar.DAY_OF_WEEK);
