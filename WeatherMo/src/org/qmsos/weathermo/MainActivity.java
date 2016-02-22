@@ -148,7 +148,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 	@Override
 	public void onForecastClicked(int day) {
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
-		if (viewPager != null) {
+		if ((viewPager != null) && (mPagerAdapter.getCount() > 0)) {
 //			Workaround: FragmentStatePagerAdapter's instantiateItem() method will return 
 //			the reference of fragment instead of calling getItem() method to create a new 
 //			one if it exists already.
