@@ -7,23 +7,31 @@
     android:paddingStart="?android:attr/listPreferredItemPaddingStart" >
 
     <TextView
-        android:id="@+id/city_info"
-        android:layout_centerVertical="true"
+        android:id="@+id/city_main"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="2dp"
         android:singleLine="true"
         android:ellipsize="end"
         android:textAppearance="?android:attr/textAppearanceListItem" />
 
+    <TextView
+        android:id="@+id/city_sub"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@id/city_main"
+        android:layout_below="@id/city_main"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textSize="14sp" />
+
     <Button
-        android:id="@+id/city_insert"
+        android:id="@+id/city_button"
         android:layout_centerVertical="true"
         android:layout_alignParentEnd="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/button_insert"
         android:textColor="?android:attr/textColorPrimary"
         android:textSize="14sp" />
 

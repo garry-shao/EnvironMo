@@ -5,6 +5,9 @@ import org.qmsos.weathermo.datamodel.City;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView.ViewHolder;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.RelativeSizeSpan;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -36,9 +39,26 @@ public class CityRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, 
 	public void onBindViewHolder(ViewHolder holder, City data) {
 		final City dataCopy = data;
 		
-		String info = data.getCityName() + " " + data.getCountry();
+		final int MAX_LENGTH = 15;
+		String cityName = data.getCityName();
+		if (cityName.length() > MAX_LENGTH) {
+			cityName = cityName.substring(0, MAX_LENGTH) + "...";
+		}
+		String country = data.getCountry();
+		String raw = cityName + " " + country;
 		
-		((RecyclerViewHolder) holder).mCityInfoView.setText(info);		
+		SpannableString spanned = new SpannableString(raw);
+		spanned.setSpan(new RelativeSizeSpan(0.5f), 
+				cityName.length() + 1, raw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+		
+		double longitude = data.getLongitude();
+		double latitude = data.getLatitude();
+		String lon = longitude > 0 ? Math.abs(longitude) + "\u00b0E" : Math.abs(longitude) + "\u00b0W";
+		String lat = latitude > 0 ? Math.abs(latitude) + "\u00b0N" : Math.abs(latitude) + "\u00b0S";
+		
+		((RecyclerViewHolder) holder).mCityInfoView.setText(spanned);
+		((RecyclerViewHolder) holder).mCityGeoView.setText(lon + " " + lat);
+		((RecyclerViewHolder) holder).mInsertButton.setText(R.string.button_insert);
 		((RecyclerViewHolder) holder).mInsertButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -50,20 +70,22 @@ public class CityRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, 
 
 	@Override
 	public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-		View view = View.inflate(parent.getContext(), R.layout.view_holder_insert, null);
+		View view = View.inflate(parent.getContext(), R.layout.view_holder_city, null);
 		
 		return new RecyclerViewHolder(view);
 	}
 
 	static class RecyclerViewHolder extends ViewHolder {
 		TextView mCityInfoView;
+		TextView mCityGeoView;
 		Button mInsertButton;
 		
 		public RecyclerViewHolder(View itemView) {
 			super(itemView);
 			
-			mCityInfoView = (TextView) itemView.findViewById(R.id.city_info);
-			mInsertButton = (Button) itemView.findViewById(R.id.city_insert);
+			mCityInfoView = (TextView) itemView.findViewById(R.id.city_main);
+			mCityGeoView = (TextView) itemView.findViewById(R.id.city_sub);
+			mInsertButton = (Button) itemView.findViewById(R.id.city_button);
 		}
 	
 	}

@@ -39,22 +39,27 @@ public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<Vie
 	@Override
 	public void onBindViewHolderCursor(ViewHolder holder, Cursor cursor) {
 		final long cityId = cursor.getLong(cursor.getColumnIndexOrThrow(CityEntity.CITY_ID));
-		String name = cursor.getString(cursor.getColumnIndexOrThrow(CityEntity.CITY_NAME));
+		String cityName = cursor.getString(cursor.getColumnIndexOrThrow(CityEntity.CITY_NAME));
 		String country = cursor.getString(cursor.getColumnIndexOrThrow(CityEntity.COUNTRY));
 		double longitude = cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LONGITUDE));
 		double latitude = cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LATITUDE));
 		
-		String nameRaw = name + " " +country;
+		final int MAX_LENGTH = 15;
+		if (cityName.length() > MAX_LENGTH) {
+			cityName = cityName.substring(0, MAX_LENGTH) + "...";
+		}
+		String nameRaw = cityName + " " + country;
 		
 		SpannableString spanned = new SpannableString(nameRaw);
 		spanned.setSpan(new RelativeSizeSpan(0.5f), 
-				name.length() + 1, nameRaw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+				cityName.length() + 1, nameRaw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 		
 		String lon = longitude > 0 ? Math.abs(longitude) + "\u00b0E" : Math.abs(longitude) + "\u00b0W";
 		String lat = latitude > 0 ? Math.abs(latitude) + "\u00b0N" : Math.abs(latitude) + "\u00b0S";
 		
 		((CursorViewHolder) holder).mCityInfoView.setText(spanned);
 		((CursorViewHolder) holder).mCityGeoView.setText(lon + " " + lat);
+		((CursorViewHolder) holder).mDeleteButton.setText(R.string.button_delete);
 		((CursorViewHolder) holder).mDeleteButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -79,7 +84,7 @@ public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<Vie
 	public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 		switch (viewType) {
 		case VIEW_TYPE_CURSOR:
-			View view = View.inflate(parent.getContext(), R.layout.view_holder_cursor, null);
+			View view = View.inflate(parent.getContext(), R.layout.view_holder_city, null);
 			
 			return new CursorViewHolder(view);
 		case VIEW_TYPE_OTHER:
@@ -99,9 +104,9 @@ public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<Vie
 		public CursorViewHolder(View itemView) {
 			super(itemView);
 
-			mCityInfoView = (TextView) itemView.findViewById(R.id.city_info);
-			mCityGeoView = (TextView) itemView.findViewById(R.id.city_geo);
-			mDeleteButton = (Button) itemView.findViewById(R.id.city_delete);
+			mCityInfoView = (TextView) itemView.findViewById(R.id.city_main);
+			mCityGeoView = (TextView) itemView.findViewById(R.id.city_sub);
+			mDeleteButton = (Button) itemView.findViewById(R.id.city_button);
 		}
 	
 	}
