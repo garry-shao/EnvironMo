@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Following section used in the custom DotViewPagerIndicator class -->
     <declare-styleable name="DotViewPagerIndicator">
         <attr name="selectedColor" format="color" />
         <attr name="unselectedColor" format="color" />
@@ -13,5 +14,6 @@
 
     <dimen name="default_radius">4dp</dimen>
     <dimen name="default_padding">7dp</dimen>
+    <!-- End of section -->
 
 </resources>

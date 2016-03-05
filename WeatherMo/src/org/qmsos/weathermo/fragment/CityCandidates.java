@@ -5,7 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.qmsos.weathermo.R;
 import org.qmsos.weathermo.datamodel.City;
-import org.qmsos.weathermo.widget.CityRecyclerViewAdapter;
+import org.qmsos.weathermo.widget.CityCandidatesRecyclerViewAdapter;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -22,23 +22,23 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
-public class AddCity extends Fragment {
+public class CityCandidates extends Fragment {
 
-	private static final String KEY_CANDIDATE_CITIES = "KEY_CANDIDATE_CITIES";
+	private static final String KEY_CITY_CANDIDATES = "KEY_CITY_CANDIDATES";
 
-	private CityRecyclerViewAdapter mCityCandidateAdapter;
-	private OnInputDoneListener mListener;
+	private CityCandidatesRecyclerViewAdapter mCityCandidatesAdapter;
+	private OnStartQueryListener mListener;
 
-	private City[] mCandidateCities = null;
+	private City[] mCityCandidates = null;
 
 	@Override
 	public void onAttach(Context context) {
 		super.onAttach(context);
 		
 		try {
-			mListener = (OnInputDoneListener) context;
+			mListener = (OnStartQueryListener) context;
 		} catch (ClassCastException e) {
-			String listenerName = OnInputDoneListener.class.getSimpleName();
+			String listenerName = OnStartQueryListener.class.getSimpleName();
 			
 			throw new ClassCastException(context.toString() + " must implements " + listenerName);
 		}
@@ -46,7 +46,7 @@ public class AddCity extends Fragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view =  inflater.inflate(R.layout.fragment_add_city, container, false);
+		View view =  inflater.inflate(R.layout.fragment_city_candidates, container, false);
 		
 		return view;
 	}
@@ -56,13 +56,13 @@ public class AddCity extends Fragment {
 		super.onViewCreated(view, savedInstanceState);
 		
 		if (savedInstanceState != null) {
-			mCandidateCities = (City[]) savedInstanceState.getParcelableArray(KEY_CANDIDATE_CITIES);
+			mCityCandidates = (City[]) savedInstanceState.getParcelableArray(KEY_CITY_CANDIDATES);
 		}
 		
-		mCityCandidateAdapter = new CityRecyclerViewAdapter(getContext(), mCandidateCities);
+		mCityCandidatesAdapter = new CityCandidatesRecyclerViewAdapter(getContext(), mCityCandidates);
 		RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.city_candidates);
 		recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-		recyclerView.setAdapter(mCityCandidateAdapter);
+		recyclerView.setAdapter(mCityCandidatesAdapter);
 		
 		EditText cityNameEditText = (EditText) view.findViewById(R.id.city_name);
 		cityNameEditText.setOnEditorActionListener(new OnEditorActionListener() {
@@ -71,7 +71,7 @@ public class AddCity extends Fragment {
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				if (actionId == EditorInfo.IME_ACTION_DONE) {
 					String cityName = v.getText().toString();
-					mListener.onInputDone(cityName);
+					mListener.onStartQuery(cityName);
 					
 					InputMethodManager manager = (InputMethodManager) getContext().getSystemService(
 							Context.INPUT_METHOD_SERVICE);
@@ -87,34 +87,43 @@ public class AddCity extends Fragment {
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		outState.putParcelableArray(KEY_CANDIDATE_CITIES, mCandidateCities);
+		outState.putParcelableArray(KEY_CITY_CANDIDATES, mCityCandidates);
 		
 		super.onSaveInstanceState(outState);
 	}
 
 	public void swapData(String result) {
-		mCandidateCities = ParseFactory.parseResult(result);
+		mCityCandidates = ParseFactory.parseResult(result);
 		
-		mCityCandidateAdapter.swapData(mCandidateCities);
+		mCityCandidatesAdapter.swapData(mCityCandidates);
 	}
 
 	/**
-	 * Interface for a callback to be invoked when the input is done. 
-	 * 
-	 *
+	 * Interface for a callback to be invoked when the input is done, user 
+	 * should implements the query feature(Sync or Async).
 	 */
-	public interface OnInputDoneListener {
+	public interface OnStartQueryListener {
 		/**
-		 * Callback when input is done.
+		 * Callback when input is done, should implements query feature.
 		 * 
-		 * @param text
-		 *            The input string.
+		 * @param cityName
+		 *            The city name that to be queried.
 		 */
-		void onInputDone(String text);
+		void onStartQuery(String cityName);
 	}
 
+	/**
+	 * Factory class that used to parse response from city name query.
+	 */
 	private static class ParseFactory {
 		
+		/**
+		 * Parse response of city-name query to a formatted array of city candidates. 
+		 * 
+		 * @param result
+		 *            The raw response of query action.
+		 * @return The parsed array of candidates.
+		 */
 		static City[] parseResult(String result) {
 			if (result == null) {
 				return null;

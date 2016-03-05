@@ -9,18 +9,26 @@ import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 
 /**
- * This is basically a mock up of CursorAdapter class with minimum feature, implements 
- * to show another view type on tail of cursor views. 
+ * This is basically a mock up of CursorAdapter class with minimum feature, containing 
+ * two type of ViewHolders, the implementation should be one sub type that shows at 
+ * tails of another one(main type). 
  *
  * @param <VH>
  *            subclass of ViewHolder.
  */
-public abstract class BaseCursorRecyclerViewAdapter<VH extends ViewHolder> extends Adapter<VH> {
+public abstract class BaseDualRecyclerViewAdapter<VH extends ViewHolder> extends Adapter<VH> {
 
 	public static final int FLAG_REGISTER_CONTENT_OBSERVER = 0x02;
 	
-	protected static final int VIEW_TYPE_CURSOR = 0x00;
-	protected static final int VIEW_TYPE_OTHER = 0x02;
+	/**
+	 * Main type of ViewHolder.
+	 */
+	protected static final int VIEW_TYPE_MAIN = 0x00;
+	
+	/**
+	 * Sub type of ViewHolder.
+	 */
+	protected static final int VIEW_TYPE_SUB = 0x02;
 
 	protected Cursor mCursor;
 	protected Context mContext;
@@ -29,11 +37,11 @@ public abstract class BaseCursorRecyclerViewAdapter<VH extends ViewHolder> exten
 	protected ChangeObserver mChangeObserver;
 	protected DataSetObserver mDataSetObserver;
 
-	public BaseCursorRecyclerViewAdapter(Context context, Cursor c, int flags) {
+	public BaseDualRecyclerViewAdapter(Context context, Cursor c, int flags) {
 		init(context, c, flags);
 	}
 
-	public BaseCursorRecyclerViewAdapter(Context context, Cursor c) {
+	public BaseDualRecyclerViewAdapter(Context context, Cursor c) {
 		this(context, c, FLAG_REGISTER_CONTENT_OBSERVER);
 	}
 
@@ -86,9 +94,9 @@ public abstract class BaseCursorRecyclerViewAdapter<VH extends ViewHolder> exten
 	@Override
 	public int getItemViewType(int position) {
 		if (mDataValid && mCursor != null && (position < mCursor.getCount())) {
-			return VIEW_TYPE_CURSOR;
+			return VIEW_TYPE_MAIN;
 		} else {
-			return VIEW_TYPE_OTHER;
+			return VIEW_TYPE_SUB;
 		}
 	}
 
@@ -100,18 +108,18 @@ public abstract class BaseCursorRecyclerViewAdapter<VH extends ViewHolder> exten
 
 		if (position < mCursor.getCount()) {
 			if (mCursor.moveToPosition(position)) {
-				onBindViewHolderCursor(holder, mCursor);
+				onBindViewHolderMain(holder, mCursor);
 			} else {
 				throw new IllegalStateException("moving cursor to position " + position + " failed.");
 			}
 		} else {
-			onBindViewHolderOther(holder);
+			onBindViewHolderSub(holder);
 		}
 	}
 
-	public abstract void onBindViewHolderCursor(VH holder, Cursor cursor);
+	public abstract void onBindViewHolderMain(VH holder, Cursor cursor);
 
-	public abstract void onBindViewHolderOther(VH holder);
+	public abstract void onBindViewHolderSub(VH holder);
 
 	public void changeCursor(Cursor cursor) {
 		Cursor old = swapCursor(cursor);

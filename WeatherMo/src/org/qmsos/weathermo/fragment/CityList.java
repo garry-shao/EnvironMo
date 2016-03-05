@@ -2,7 +2,7 @@ package org.qmsos.weathermo.fragment;
 
 import org.qmsos.weathermo.R;
 import org.qmsos.weathermo.provider.WeatherContract.CityEntity;
-import org.qmsos.weathermo.widget.CursorRecyclerViewAdapter;
+import org.qmsos.weathermo.widget.CityListRecyclerViewAdapter;
 
 import android.database.Cursor;
 import android.os.Bundle;
@@ -22,7 +22,7 @@ public class CityList extends Fragment implements LoaderCallbacks<Cursor> {
 
 	private static final String KEY_RECYCLER_VIEW_STATE = "KEY_RECYCLER_VIEW_STATE";
 
-	private CursorRecyclerViewAdapter mCursorAdapter;
+	private CityListRecyclerViewAdapter mCityListAdapter;
 	private RecyclerView mRecyclerView;
 	
 	@Override
@@ -36,11 +36,11 @@ public class CityList extends Fragment implements LoaderCallbacks<Cursor> {
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		
-		mCursorAdapter = new CursorRecyclerViewAdapter(getContext(), null);
+		mCityListAdapter = new CityListRecyclerViewAdapter(getContext(), null);
 		
 		mRecyclerView = (RecyclerView) view.findViewById(R.id.city_list);
 		mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-		mRecyclerView.setAdapter(mCursorAdapter);
+		mRecyclerView.setAdapter(mCityListAdapter);
 	}
 
 	@Override
@@ -87,12 +87,12 @@ public class CityList extends Fragment implements LoaderCallbacks<Cursor> {
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-		mCursorAdapter.swapCursor(data);		
+		mCityListAdapter.swapCursor(data);		
 	}
 
 	@Override
 	public void onLoaderReset(Loader<Cursor> loader) {
-		mCursorAdapter.swapCursor(null);		
+		mCityListAdapter.swapCursor(null);		
 	}
 
 }

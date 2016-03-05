@@ -16,66 +16,64 @@ import android.widget.Button;
 import android.widget.TextView;
 
 /**
- * This is a customized Adapter class used on RecyclerView, can show another view 
- * on tail of the regular cursor views.
- *
+ * Implementation that shows city list and a type at tails of this list.
  */
-public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<ViewHolder> {
+public class CityListRecyclerViewAdapter extends BaseDualRecyclerViewAdapter<ViewHolder> {
 
-	private OnViewHolderClickedListener mListener;
+	private OnDeleteCityClickedListener mListener;
 	
-	public CursorRecyclerViewAdapter(Context context, Cursor cursor) {
+	public CityListRecyclerViewAdapter(Context context, Cursor cursor) {
 		super(context, cursor);
 		
 		try {
-			mListener = (OnViewHolderClickedListener) context;
+			mListener = (OnDeleteCityClickedListener) context;
 		} catch (ClassCastException e) {
-			String listenerName = OnViewHolderClickedListener.class.getSimpleName();
+			String listenerName = OnDeleteCityClickedListener.class.getSimpleName();
 			
 			throw new ClassCastException(context.toString() + " must implements " + listenerName);
 		}
 	}
 
 	@Override
-	public void onBindViewHolderCursor(ViewHolder holder, Cursor cursor) {
+	public void onBindViewHolderMain(ViewHolder holder, Cursor cursor) {
 		final long cityId = cursor.getLong(cursor.getColumnIndexOrThrow(CityEntity.CITY_ID));
 		String cityName = cursor.getString(cursor.getColumnIndexOrThrow(CityEntity.CITY_NAME));
 		String country = cursor.getString(cursor.getColumnIndexOrThrow(CityEntity.COUNTRY));
 		double longitude = cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LONGITUDE));
 		double latitude = cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LATITUDE));
 		
-		final int MAX_LENGTH = 15;
-		if (cityName.length() > MAX_LENGTH) {
-			cityName = cityName.substring(0, MAX_LENGTH) + "...";
+		int maxLengthOfCityName = 15;
+		if (cityName.length() > maxLengthOfCityName) {
+			cityName = cityName.substring(0, maxLengthOfCityName) + "...";
 		}
-		String nameRaw = cityName + " " + country;
+		String raw = cityName + " " + country;
 		
-		SpannableString spanned = new SpannableString(nameRaw);
+		SpannableString spanned = new SpannableString(raw);
 		spanned.setSpan(new RelativeSizeSpan(0.5f), 
-				cityName.length() + 1, nameRaw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+				cityName.length() + 1, raw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 		
 		String lon = longitude > 0 ? Math.abs(longitude) + "\u00b0E" : Math.abs(longitude) + "\u00b0W";
 		String lat = latitude > 0 ? Math.abs(latitude) + "\u00b0N" : Math.abs(latitude) + "\u00b0S";
 		
-		((CursorViewHolder) holder).mCityInfoView.setText(spanned);
-		((CursorViewHolder) holder).mCityGeoView.setText(lon + " " + lat);
-		((CursorViewHolder) holder).mDeleteButton.setText(R.string.button_delete);
-		((CursorViewHolder) holder).mDeleteButton.setOnClickListener(new OnClickListener() {
+		((MainViewHolder) holder).mCityInfoView.setText(spanned);
+		((MainViewHolder) holder).mCityGeoView.setText(lon + " " + lat);
+		((MainViewHolder) holder).mDeleteButton.setText(R.string.button_delete);
+		((MainViewHolder) holder).mDeleteButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				mListener.onDeleteCity(cityId);
+				mListener.onDeleteCityClicked(cityId);
 			}
 		});
 	}
 
 	@Override
-	public void onBindViewHolderOther(ViewHolder holder) {
-		((AddMoreViewHolder) holder).mAddMoreButton.setOnClickListener(new OnClickListener() {
+	public void onBindViewHolderSub(ViewHolder holder) {
+		((SubViewHolder) holder).mMoreButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				mListener.onAddMoreCity();
+				mListener.onSubViewButtonClicked();
 			}
 		});
 	}
@@ -83,25 +81,28 @@ public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<Vie
 	@Override
 	public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 		switch (viewType) {
-		case VIEW_TYPE_CURSOR:
+		case VIEW_TYPE_MAIN:
 			View view = View.inflate(parent.getContext(), R.layout.view_holder_city, null);
 			
-			return new CursorViewHolder(view);
-		case VIEW_TYPE_OTHER:
-			View addView = View.inflate(parent.getContext(), R.layout.view_holder_add_more, null);
+			return new MainViewHolder(view);
+		case VIEW_TYPE_SUB:
+			View addView = View.inflate(parent.getContext(), R.layout.view_holder_extra, null);
 			
-			return new AddMoreViewHolder(addView);
+			return new SubViewHolder(addView);
 		default:
 			return null;
 		}
 	}
 
-	static class CursorViewHolder extends ViewHolder {
+	/**
+	 * Implementation of ViewHolder that will be displayed on the main.
+	 */
+	static class MainViewHolder extends ViewHolder {
 		TextView mCityInfoView;
 		TextView mCityGeoView;
 		Button mDeleteButton;
 
-		public CursorViewHolder(View itemView) {
+		public MainViewHolder(View itemView) {
 			super(itemView);
 
 			mCityInfoView = (TextView) itemView.findViewById(R.id.city_main);
@@ -111,35 +112,36 @@ public class CursorRecyclerViewAdapter extends BaseCursorRecyclerViewAdapter<Vie
 	
 	}
 	
-	static class AddMoreViewHolder extends ViewHolder {
-		Button mAddMoreButton;
+	/**
+	 * Implementation of ViewHolder that will be displayed at the tail.
+	 */
+	static class SubViewHolder extends ViewHolder {
+		Button mMoreButton;
 		
-		public AddMoreViewHolder(View itemView) {
+		public SubViewHolder(View itemView) {
 			super(itemView);
 			
-			mAddMoreButton = (Button) itemView.findViewById(R.id.city_add_more);
+			mMoreButton = (Button) itemView.findViewById(R.id.city_more);
 		}
 	
 	}
 
 	/**
-	 * Interface for a callback to be invoked when the buttons of ViewHolder 
-	 * class is called.
-	 * 
-	 *
+	 * Interface of the callback to be invoked when the buttons that inside 
+	 * of ViewHolder are clicked.
 	 */
-	public interface OnViewHolderClickedListener {
+	public interface OnDeleteCityClickedListener {
 		/**
-		 * Callback to start an inserting city workflow.
+		 * Callback when to button at the tail of view is clicked.
 		 */
-		void onAddMoreCity();
+		void onSubViewButtonClicked();
 		/**
 		 * Callback to delete city.
 		 * 
 		 * @param cityId
 		 *            The id of the city to delete.
 		 */
-		void onDeleteCity(long cityId);
+		void onDeleteCityClicked(long cityId);
 	}
 
 }

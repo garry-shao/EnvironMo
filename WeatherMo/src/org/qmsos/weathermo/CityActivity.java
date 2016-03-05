@@ -1,12 +1,12 @@
 package org.qmsos.weathermo;
 
 import org.qmsos.weathermo.datamodel.City;
-import org.qmsos.weathermo.fragment.AddCity;
-import org.qmsos.weathermo.fragment.AddCity.OnInputDoneListener;
+import org.qmsos.weathermo.fragment.CityCandidates;
+import org.qmsos.weathermo.fragment.CityCandidates.OnStartQueryListener;
 import org.qmsos.weathermo.fragment.CityList;
 import org.qmsos.weathermo.util.IntentConstants;
-import org.qmsos.weathermo.widget.CityRecyclerViewAdapter.OnInsertCityClickedListener;
-import org.qmsos.weathermo.widget.CursorRecyclerViewAdapter.OnViewHolderClickedListener;
+import org.qmsos.weathermo.widget.CityCandidatesRecyclerViewAdapter.OnInsertCityClickedListener;
+import org.qmsos.weathermo.widget.CityListRecyclerViewAdapter.OnDeleteCityClickedListener;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -22,10 +22,10 @@ import android.support.v7.widget.Toolbar;
 import android.widget.Toast;
 
 public class CityActivity extends AppCompatActivity 
-implements OnViewHolderClickedListener, OnInputDoneListener, OnInsertCityClickedListener {
+implements OnDeleteCityClickedListener, OnStartQueryListener, OnInsertCityClickedListener {
 
 	private static final String FRAGMENT_TAG_CITY_LIST = "FRAGMENT_TAG_CITY_LIST";
-	private static final String FRAGMENT_TAG_ADD_CITY = "FRAGMENT_TAG_ADD_CITY";
+	private static final String FRAGMENT_TAG_CITY_CANDIDATES = "FRAGMENT_TAG_CITY_CANDIDATES";
 
 	private MessageReceiver mMessageReceiver;
 
@@ -53,13 +53,13 @@ implements OnViewHolderClickedListener, OnInputDoneListener, OnInsertCityClicked
 			transaction.commit();
 		}
 		
-		AddCity addCity = null;
-		Fragment fragmentAddCity = manager.findFragmentByTag(FRAGMENT_TAG_ADD_CITY);
-		if (fragmentAddCity != null) {
-			addCity = (AddCity) fragmentAddCity;
+		CityCandidates cityCandidates = null;
+		Fragment fragmentCityCandidates = manager.findFragmentByTag(FRAGMENT_TAG_CITY_CANDIDATES);
+		if (fragmentCityCandidates != null) {
+			cityCandidates = (CityCandidates) fragmentCityCandidates;
 		}
 		
-		if (cityList != null && addCity != null) {
+		if (cityList != null && cityCandidates != null) {
 			FragmentTransaction transaction = manager.beginTransaction();
 			transaction.hide(cityList);
 			transaction.commit();
@@ -84,25 +84,25 @@ implements OnViewHolderClickedListener, OnInputDoneListener, OnInsertCityClicked
 	}
 
 	@Override
-	public void onAddMoreCity() {
+	public void onSubViewButtonClicked() {
 		FragmentManager manager = getSupportFragmentManager();
 		
 		Fragment fragmentCityList = manager.findFragmentByTag(FRAGMENT_TAG_CITY_LIST);
-		Fragment fragmentAddCity = manager.findFragmentByTag(FRAGMENT_TAG_ADD_CITY);
+		Fragment fragmentAddCity = manager.findFragmentByTag(FRAGMENT_TAG_CITY_CANDIDATES);
 		if (fragmentCityList != null && fragmentAddCity == null) {
 			CityList cityList = (CityList) fragmentCityList;
-			AddCity addCity = new AddCity();
+			CityCandidates cityCandidates = new CityCandidates();
 			
 			FragmentTransaction transaction = manager.beginTransaction();
 			transaction.hide(cityList);
-			transaction.add(R.id.fragment_container, addCity, FRAGMENT_TAG_ADD_CITY);
+			transaction.add(R.id.fragment_container, cityCandidates, FRAGMENT_TAG_CITY_CANDIDATES);
 			transaction.addToBackStack(null);
 			transaction.commit();
 		}
 	}
 
 	@Override
-	public void onDeleteCity(long cityId) {
+	public void onDeleteCityClicked(long cityId) {
 		Intent i = new Intent(this, WeatherService.class);
 		i.setAction(IntentConstants.ACTION_DELETE_CITY);
 		i.putExtra(IntentConstants.EXTRA_CITY_ID, cityId);
@@ -111,16 +111,7 @@ implements OnViewHolderClickedListener, OnInputDoneListener, OnInsertCityClicked
 	}
 
 	@Override
-	public void onInputDone(String text) {
-		Intent i = new Intent(getBaseContext(), WeatherService.class);
-		i.setAction(IntentConstants.ACTION_QUERY_CITY);
-		i.putExtra(IntentConstants.EXTRA_CITY_NAME, text);
-		
-		startService(i);		
-	}
-
-	@Override
-	public void onInsertCity(City city) {
+	public void onInsertCityClicked(City city) {
 		Intent i = new Intent(this, WeatherService.class);
 		i.setAction(IntentConstants.ACTION_INSERT_CITY);
 		i.putExtra(IntentConstants.EXTRA_INSERT_CITY, city);
@@ -128,11 +119,20 @@ implements OnViewHolderClickedListener, OnInputDoneListener, OnInsertCityClicked
 		startService(i);		
 	}
 
+	@Override
+	public void onStartQuery(String cityName) {
+		Intent i = new Intent(getBaseContext(), WeatherService.class);
+		i.setAction(IntentConstants.ACTION_QUERY_CITY);
+		i.putExtra(IntentConstants.EXTRA_CITY_NAME, cityName);
+		
+		startService(i);		
+	}
+
 	private void onQueryResultReceived(String result) {
 		FragmentManager manager = getSupportFragmentManager();
-		Fragment fragmentAddCity = manager.findFragmentByTag(FRAGMENT_TAG_ADD_CITY);
-		if (fragmentAddCity != null) {
-			((AddCity) fragmentAddCity).swapData(result);
+		Fragment fragmentCityCandidates = manager.findFragmentByTag(FRAGMENT_TAG_CITY_CANDIDATES);
+		if (fragmentCityCandidates != null) {
+			((CityCandidates) fragmentCityCandidates).swapData(result);
 		}
 	}
 
@@ -141,6 +141,9 @@ implements OnViewHolderClickedListener, OnInputDoneListener, OnInsertCityClicked
 		Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
 	}
 
+	/**
+	 * Private Receiver used when receiving local broadcast from Service thread.
+	 */
 	private class MessageReceiver extends BroadcastReceiver {
 
 		@Override

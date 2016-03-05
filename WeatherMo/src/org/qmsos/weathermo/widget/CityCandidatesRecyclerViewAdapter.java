@@ -15,15 +15,13 @@ import android.widget.Button;
 import android.widget.TextView;
 
 /**
- * Adapter that shows data of cities.
- * 
- *
+ * Implementation that shows a list of candidate cities from data that passed.
  */
-public class CityRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, ViewHolder> {
+public class CityCandidatesRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, ViewHolder> {
 
 	private OnInsertCityClickedListener mListener;
 
-	public CityRecyclerViewAdapter(Context context, City[] dataArray) {
+	public CityCandidatesRecyclerViewAdapter(Context context, City[] dataArray) {
 		super(context, dataArray);
 		
 		try {
@@ -37,12 +35,12 @@ public class CityRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, 
 
 	@Override
 	public void onBindViewHolder(ViewHolder holder, City data) {
-		final City dataCopy = data;
+		final City fData = data;
 		
-		final int MAX_LENGTH = 15;
+		int maxLengthOfCityName = 15;
 		String cityName = data.getCityName();
-		if (cityName.length() > MAX_LENGTH) {
-			cityName = cityName.substring(0, MAX_LENGTH) + "...";
+		if (cityName.length() > maxLengthOfCityName) {
+			cityName = cityName.substring(0, maxLengthOfCityName) + "...";
 		}
 		String country = data.getCountry();
 		String raw = cityName + " " + country;
@@ -63,7 +61,7 @@ public class CityRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, 
 			
 			@Override
 			public void onClick(View v) {
-				mListener.onInsertCity(dataCopy);
+				mListener.onInsertCityClicked(fData);
 			}
 		});
 	}
@@ -75,6 +73,9 @@ public class CityRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, 
 		return new RecyclerViewHolder(view);
 	}
 
+	/**
+	 * Implementation of ViewHolder that will be displayed. 
+	 */
 	static class RecyclerViewHolder extends ViewHolder {
 		TextView mCityInfoView;
 		TextView mCityGeoView;
@@ -91,10 +92,8 @@ public class CityRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, 
 	}
 
 	/**
-	 * Interface for a callback to be invoked when the adding city button of ViewHolder 
-	 * class is called.
-	 * 
-	 *
+	 * Interface of the callback to be invoked when the button of adding city
+	 * that inside of ViewHolder is clicked.
 	 */
 	public interface OnInsertCityClickedListener {
 		/**
@@ -103,7 +102,7 @@ public class CityRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, 
 		 * @param city
 		 *            The city to insert.
 		 */
-		void onInsertCity(City city);
+		void onInsertCityClicked(City city);
 	}
 
 }
