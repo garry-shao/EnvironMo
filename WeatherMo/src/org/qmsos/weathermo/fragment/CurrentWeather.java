@@ -9,6 +9,7 @@ import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
 import org.qmsos.weathermo.util.WeatherParser;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -100,11 +101,12 @@ public class CurrentWeather extends Fragment {
 			}
 			
 			v = (TextView) getView().findViewById(R.id.current_main);
-			v.setText(InfoFactory.getCategoryFromWeatherId(currentWeatherId));
+			v.setText(InfoFactory.getCategoryFromWeatherId(getContext(), currentWeatherId));
 			
 			v = (TextView) getView().findViewById(R.id.current_uv_index);
 			if (Double.compare(uvIndex, WeatherParser.UV_INDEX_INVALID) != 0) {
-				v.setText("UV: " + uvIndex + " - " + InfoFactory.getCategoryFromUvIndex(uvIndex));
+				String uvIndexDescription = InfoFactory.getCategoryFromUvIndex(getContext(), uvIndex);
+				v.setText("UV: " + uvIndex + " - " + uvIndexDescription);
 			} else {
 				v.setText(R.string.placeholder);
 			}
@@ -128,10 +130,10 @@ public class CurrentWeather extends Fragment {
 			}
 			
 			v = (TextView) getView().findViewById(R.id.current_main);
-			v.setText(InfoFactory.getCategoryFromWeatherId(forecastWeatherId));
+			v.setText(InfoFactory.getCategoryFromWeatherId(getContext(), forecastWeatherId));
 			
 			v = (TextView) getView().findViewById(R.id.current_uv_index);
-			v.setText(InfoFactory.getDescriptionFromWeatherId(forecastWeatherId));
+			v.setText(InfoFactory.getDescriptionFromWeatherId(getContext(), forecastWeatherId));
 		}
 		
 		Calendar c = Calendar.getInstance();
@@ -140,30 +142,32 @@ public class CurrentWeather extends Fragment {
 		String date = dateFormat.format(c.getTime());
 		
 		TextView v = (TextView) getView().findViewById(R.id.current_date);
-		v.setText(date + " " + CalendarFactory.getDayOfWeek(day));
+		v.setText(date + " " + CalendarFactory.getDayOfWeek(getContext(), day));
 	}
 
 	private static class CalendarFactory {
 		
-		static String getDayOfWeek(int day) {
+		static String getDayOfWeek(Context context, int day) {
+			Resources resources = context.getResources();
+			
 			Calendar c = Calendar.getInstance();
 			c.add(Calendar.DAY_OF_YEAR, day);
 			int i = c.get(Calendar.DAY_OF_WEEK);
 			switch (i) {
 			case 1:
-				return "Sun";
+				return resources.getString(R.string.abbrev_sunday);
 			case 2:
-				return "Mon";
+				return resources.getString(R.string.abbrev_monday);
 			case 3:
-				return "Tues";
+				return resources.getString(R.string.abbrev_tuesday);
 			case 4:
-				return "Wed";
+				return resources.getString(R.string.abbrev_wednesday);
 			case 5:
-				return "Thur";
+				return resources.getString(R.string.abbrev_thursday);
 			case 6:
-				return "Fri";
+				return resources.getString(R.string.abbrev_friday);
 			case 7:
-				return "Sat";
+				return resources.getString(R.string.abbrev_saturday);
 			default:
 				return null;
 			}
@@ -173,210 +177,216 @@ public class CurrentWeather extends Fragment {
 	
 	private static class InfoFactory {
 		
-		static String getCategoryFromWeatherId(int weatherId) {
+		static String getCategoryFromWeatherId(Context context, int weatherId) {
+			Resources resources = context.getResources();
+			
 			if (200 <= weatherId && weatherId <= 299) {
-				return "Thunderstorm";
+				return resources.getString(R.string.cat_thunderstorm);
 			} else if (300 <= weatherId && weatherId <= 399) {
-				return "Drizzle";
+				return resources.getString(R.string.cat_drizzle);
 			} else if (500 <= weatherId && weatherId <= 599) {
-				return "Rain";
+				return resources.getString(R.string.cat_rain);
 			} else if (600 <= weatherId && weatherId <= 699) {
-				return "Snow";
+				return resources.getString(R.string.cat_snow);
 			} else if (701 == weatherId) {
-				return "Mist";
+				return resources.getString(R.string.cat_mist);
 			} else if (711 == weatherId) {
-				return "Smoke";
+				return resources.getString(R.string.cat_smoke);
 			} else if (721 == weatherId) {
-				return "Haze";
+				return resources.getString(R.string.cat_haze);
 			} else if (731 == weatherId) {
-				return "Sand";
+				return resources.getString(R.string.cat_sand);
 			} else if (741 == weatherId) {
-				return "Fog";
+				return resources.getString(R.string.cat_fog);
 			} else if (751 == weatherId) {
-				return "Sand";
+				return resources.getString(R.string.cat_sand);
 			} else if (761 == weatherId) {
-				return "Dust";
+				return resources.getString(R.string.cat_dust);
 			} else if (762 == weatherId) {
-				return "Volcanic Ash";
+				return resources.getString(R.string.cat_volcanic_ash);
 			} else if (771 == weatherId) {
-				return "Squalls";
+				return resources.getString(R.string.cat_squalls);
 			} else if (781 == weatherId) {
-				return "Tornado";
+				return resources.getString(R.string.cat_tornado);
 			} else if (800 == weatherId) {
-				return "Clear";
+				return resources.getString(R.string.cat_clear);
 			} else if (801 <= weatherId && weatherId <= 899) {
-				return "Clouds";
+				return resources.getString(R.string.cat_clouds);
 			} else {
-				return "Null";
+				return resources.getString(R.string.cat_invalid);
 			}
 		}
 
-		static String getDescriptionFromWeatherId(int weatherId) {
+		static String getDescriptionFromWeatherId(Context context, int weatherId) {
+			Resources resources = context.getResources();
+			
 			switch (weatherId) {
 			case 200:
-				return "thunderstorm with light rain";
+				return resources.getString(R.string.desc_thunderstorm_rain_light);
 			case 201:
-				return "thunderstorm with rain";
+				return resources.getString(R.string.desc_thunderstorm_rain);
 			case 202:
-				return "thunderstorm with heavy rain";
+				return resources.getString(R.string.desc_thunderstorm_rain_heavy);
 			case 210:
-				return "light thunderstorm";
+				return resources.getString(R.string.desc_thunderstorm_light);
 			case 211:
-				return "thunderstorm";
+				return resources.getString(R.string.desc_thunderstorm);
 			case 212:
-				return "heavy thunderstorm";
+				return resources.getString(R.string.desc_thunderstorm_heavy);
 			case 221:
-				return "ragged thunderstorm";
+				return resources.getString(R.string.desc_thunderstorm_ragged);
 			case 230:
-				return "thunderstorm with light drizzle";
+				return resources.getString(R.string.desc_thunderstorm_drizzle_light);
 			case 231:
-				return "thunderstorm with drizzle";
+				return resources.getString(R.string.desc_thunderstorm_drizzle);
 			case 232:
-				return "thunderstorm with heavy drizzle";
+				return resources.getString(R.string.desc_thunderstorm_drizzle_heavy);
 			case 300:
-				return "light intensity drizzle";
+				return resources.getString(R.string.desc_drizzle_light);
 			case 301:
-				return "drizzle";
+				return resources.getString(R.string.desc_drizzle);
 			case 302:
-				return "heavy intensity drizzle";
+				return resources.getString(R.string.desc_drizzle_heavy);
 			case 310:
-				return "light intensity drizzle rain";
+				return resources.getString(R.string.desc_drizzle_rain_light);
 			case 311:
-				return "drizzle rain";
+				return resources.getString(R.string.desc_drizzle_rain);
 			case 312:
-				return "heavy intensity drizzle rain";
+				return resources.getString(R.string.desc_drizzle_rain_heavy);
 			case 313:
-				return "shower rain and drizzle";
+				return resources.getString(R.string.desc_drizzle_shower_rain);
 			case 314:
-				return "heavy shower rain and drizzle";
+				return resources.getString(R.string.desc_drizzle_shower_heavy);
 			case 321:
-				return "shower drizzle";
+				return resources.getString(R.string.desc_drizzle_shower);
 			case 500:
-				return "light rain";
+				return resources.getString(R.string.desc_rain_light);
 			case 501:
-				return "moderate rain";
+				return resources.getString(R.string.desc_rain_moderate);
 			case 502:
-				return "heavy intensity rain";
+				return resources.getString(R.string.desc_rain_heavy);
 			case 503:
-				return "very heavy rain";
+				return resources.getString(R.string.desc_rain_very_heavy);
 			case 504:
-				return "extreme rain";
+				return resources.getString(R.string.desc_rain_extreme);
 			case 511:
-				return "freezing rain";
+				return resources.getString(R.string.desc_rain_freezing);
 			case 520:
-				return "light intensity shower rain";
+				return resources.getString(R.string.desc_rain_shower_light);
 			case 521:
-				return "shower rain";
+				return resources.getString(R.string.desc_rain_shower);
 			case 522:
-				return "heavy intensity shower rain";
+				return resources.getString(R.string.desc_rain_shower_heavy);
 			case 531:
-				return "ragged shower rain";
+				return resources.getString(R.string.desc_rain_shower_ragged);
 			case 600:
-				return "light snow";
+				return resources.getString(R.string.desc_snow_light);
 			case 601:
-				return "snow";
+				return resources.getString(R.string.desc_snow);
 			case 602:
-				return "heavy snow";
+				return resources.getString(R.string.desc_snow_heavy);
 			case 611:
-				return "sleet";
+				return resources.getString(R.string.desc_sleet);
 			case 612:
-				return "shower sleet";
+				return resources.getString(R.string.desc_sleet_shower);
 			case 615:
-				return "light rain and snow";
+				return resources.getString(R.string.desc_snow_rain_light);
 			case 616:
-				return "rain and snow";
+				return resources.getString(R.string.desc_snow_rain);
 			case 620:
-				return "light shower snow";
+				return resources.getString(R.string.desc_snow_shower_light);
 			case 621:
-				return "shower snow";
+				return resources.getString(R.string.desc_snow_shower);
 			case 622:
-				return "heavy shower snow";
+				return resources.getString(R.string.desc_snow_shower_heavy);
 			case 701:
-				return "mist";
+				return resources.getString(R.string.desc_mist);
 			case 711:
-				return "smoke";
+				return resources.getString(R.string.desc_smoke);
 			case 721:
-				return "haze";
+				return resources.getString(R.string.desc_haze);
 			case 731:
-				return "sand, dust whirls";
+				return resources.getString(R.string.desc_sand_dust);
 			case 741:
-				return "fog";
+				return resources.getString(R.string.desc_fog);
 			case 751:
-				return "sand";
+				return resources.getString(R.string.desc_sand);
 			case 761: 	
-				return "dust";
+				return resources.getString(R.string.desc_dust);
 			case 762:
-				return "volcanic ash";
+				return resources.getString(R.string.desc_volcanic_ash);
 			case 771:
-				return "squalls";
+				return resources.getString(R.string.desc_squalls);
 			case 781:
-				return "tornado";
+				return resources.getString(R.string.desc_tornado);
 			case 800:
-				return "clear sky";
+				return resources.getString(R.string.desc_sky_clear);
 			case 801:
-				return "few clouds";
+				return resources.getString(R.string.desc_clouds_few);
 			case 802:
-				return "scattered clouds";
+				return resources.getString(R.string.desc_clouds_scattered);
 			case 803:
-				return "broken clouds";
+				return resources.getString(R.string.desc_clouds_broken);
 			case 804:
-				return "overcast clouds";
+				return resources.getString(R.string.desc_clouds_overcast);
 			case 900:
-				return "tornado";
+				return resources.getString(R.string.desc_tornado);
 			case 901:
-				return "tropical storm";
+				return resources.getString(R.string.desc_storm_tropical);
 			case 902:
-				return "hurricane";
+				return resources.getString(R.string.desc_hurricane);
 			case 903:
-				return "cold";
+				return resources.getString(R.string.desc_cold);
 			case 904:
-				return "hot";
+				return resources.getString(R.string.desc_hot);
 			case 905:
-				return "windy";
+				return resources.getString(R.string.desc_windy);
 			case 906:
-				return "hail";
+				return resources.getString(R.string.desc_hail);
 			case 951:
-				return "calm";
+				return resources.getString(R.string.desc_calm);
 			case 952:
-				return "light breeze";
+				return resources.getString(R.string.desc_breeze_light);
 			case 953:
-				return "gentle breeze";
+				return resources.getString(R.string.desc_breeze_gentle);
 			case 954:
-				return "moderate breeze";
+				return resources.getString(R.string.desc_breeze_moderate);
 			case 955:
-				return "fresh breeze";
+				return resources.getString(R.string.desc_breeze_fresh);
 			case 956: 	
-				return "strong breeze";
+				return resources.getString(R.string.desc_breeze_strong);
 			case 957: 	
-				return "high wind, near gale";
+				return resources.getString(R.string.desc_gale_near);
 			case 958: 	
-				return "gale";
+				return resources.getString(R.string.desc_gale);
 			case 959: 	
-				return "severe gale";
+				return resources.getString(R.string.desc_gale_severe);
 			case 960: 	
-				return "storm";
+				return resources.getString(R.string.desc_storm);
 			case 961: 	
-				return "violent storm";
+				return resources.getString(R.string.desc_storm_violent);
 			case 962: 	
-				return "hurricane";
+				return resources.getString(R.string.desc_hurricane);
 			default:
-				return "null";
+				return resources.getString(R.string.desc_invalid);
 			}
 		}
 	
-		static String getCategoryFromUvIndex(double uvIndex) {
+		static String getCategoryFromUvIndex(Context context, double uvIndex) {
+			Resources resources = context.getResources();
+			
 			if (uvIndex < 0.0f) {
-				return "Null";
+				return resources.getString(R.string.uv_invalid);
 			} else if (uvIndex < 3.0f) {
-				return "Low";
+				return resources.getString(R.string.uv_low);
 			} else if (uvIndex < 6.0f) {
-				return "Moderate";
+				return resources.getString(R.string.uv_moderate);
 			} else if (uvIndex < 8.0f) {
-				return "High";
+				return resources.getString(R.string.uv_high);
 			} else if (uvIndex < 11.0f) {
-				return "Very high";
+				return resources.getString(R.string.uv_very_high);
 			} else {
-				return "Extreme";
+				return resources.getString(R.string.uv_extreme);
 			}
 		}
 	

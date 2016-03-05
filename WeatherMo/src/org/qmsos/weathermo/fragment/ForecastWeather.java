@@ -8,6 +8,7 @@ import org.qmsos.weathermo.util.IntentConstants;
 import org.qmsos.weathermo.util.WeatherParser;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -129,7 +130,7 @@ public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor>
 			if (forecastTemperatureMin != WeatherParser.TEMPERATURE_INVALID
 					|| forecastTemperatureMax != WeatherParser.TEMPERATURE_INVALID) {
 				
-				v.setText(CalendarFactory.getDayOfWeek(i) + "\n" 
+				v.setText(CalendarFactory.getDayOfWeek(getContext(), i) + "\n" 
 						+ forecastTemperatureMin + "~" + forecastTemperatureMax + "\u00B0" + "C");
 			} else {
 				v.setText(R.string.placeholder);
@@ -156,25 +157,27 @@ public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor>
 
 	private static class CalendarFactory {
 		
-		static String getDayOfWeek(int day) {
+		static String getDayOfWeek(Context context, int day) {
+			Resources resources = context.getResources();
+			
 			Calendar c = Calendar.getInstance();
 			c.add(Calendar.DAY_OF_YEAR, day);
 			int i = c.get(Calendar.DAY_OF_WEEK);
 			switch (i) {
 			case 1:
-				return "Sun";
+				return resources.getString(R.string.abbrev_sunday);
 			case 2:
-				return "Mon";
+				return resources.getString(R.string.abbrev_monday);
 			case 3:
-				return "Tues";
+				return resources.getString(R.string.abbrev_tuesday);
 			case 4:
-				return "Wed";
+				return resources.getString(R.string.abbrev_wednesday);
 			case 5:
-				return "Thur";
+				return resources.getString(R.string.abbrev_thursday);
 			case 6:
-				return "Fri";
+				return resources.getString(R.string.abbrev_friday);
 			case 7:
-				return "Sat";
+				return resources.getString(R.string.abbrev_saturday);
 			default:
 				return null;
 			}
@@ -185,31 +188,34 @@ public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor>
 	private static class IconFactory {
 		
 		static void setIconOfForecastView(TextView v, int id) {
+			int resId;
 			if (200 <= id && id <= 299) {
-				v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_11, 0, 0);
+				resId = R.drawable.ic_11;
 			} else if (300 <= id && id <= 399) {
-				v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_09, 0, 0);
+				resId = R.drawable.ic_09;
 			} else if (500 <= id && id <= 504) {
-				v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_10, 0, 0);
+				resId = R.drawable.ic_10;
 			} else if (511 == id) {
-				v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_13, 0, 0);
+				resId = R.drawable.ic_13;
 			} else if (520 <= id && id <= 599) {
-				v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_09, 0, 0);
+				resId = R.drawable.ic_09;
 			} else if (600 <= id && id <= 699) {
-				v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_13, 0, 0);
+				resId = R.drawable.ic_13;
 			} else if (700 <= id && id <= 799) {
-				v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_50, 0, 0);
+				resId = R.drawable.ic_50;
 			} else if (800 == id) {
-				v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_01, 0, 0);
+				resId = R.drawable.ic_01;
 			} else if (801 == id) {
-				v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_02, 0, 0);
+				resId = R.drawable.ic_02;
 			} else if (802 == id || 803 == id) {
-				v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_03, 0, 0);
+				resId = R.drawable.ic_03;
 			} else if (804 == id) {
-				v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, R.drawable.ic_04, 0, 0);
+				resId = R.drawable.ic_04;
 			} else {
-				v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, 0, 0);
+				resId = 0;
 			}
+			
+			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, resId, 0, 0);
 		}
 		
 	}

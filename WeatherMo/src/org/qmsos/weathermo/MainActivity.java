@@ -261,32 +261,35 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 
 	private static class BackgroundFactory {
 		
-		static void setBackgroundOfView(View v, int id) {
-			if (200 <= id && id <= 299) {
-				v.setBackgroundResource(R.drawable.bg_11);
-			} else if (300 <= id && id <= 399) {
-				v.setBackgroundResource(R.drawable.bg_09);
-			} else if (500 <= id && id <= 504) {
-				v.setBackgroundResource(R.drawable.bg_10);
-			} else if (511 == id) {
-				v.setBackgroundResource(R.drawable.bg_13);
-			} else if (520 <= id && id <= 599) {
-				v.setBackgroundResource(R.drawable.bg_09);
-			} else if (600 <= id && id <= 699) {
-				v.setBackgroundResource(R.drawable.bg_13);
-			} else if (700 <= id && id <= 799) {
-				v.setBackgroundResource(R.drawable.bg_50);
-			} else if (800 == id) {
-				v.setBackgroundResource(R.drawable.bg_01);
-			} else if (801 == id) {
-				v.setBackgroundResource(R.drawable.bg_02);
-			} else if (802 == id || 803 == id) {
-				v.setBackgroundResource(R.drawable.bg_03);
-			} else if (804 == id) {
-				v.setBackgroundResource(R.drawable.bg_04);
+		static void setBackgroundOfView(View v, int weatherId) {
+			int resId;
+			if (200 <= weatherId && weatherId <= 299) {
+				resId = R.drawable.bg_11;
+			} else if (300 <= weatherId && weatherId <= 399) {
+				resId = R.drawable.bg_09;
+			} else if (500 <= weatherId && weatherId <= 504) {
+				resId = R.drawable.bg_10;
+			} else if (511 == weatherId) {
+				resId = R.drawable.bg_13;
+			} else if (520 <= weatherId && weatherId <= 599) {
+				resId = R.drawable.bg_09;
+			} else if (600 <= weatherId && weatherId <= 699) {
+				resId = R.drawable.bg_13;
+			} else if (700 <= weatherId && weatherId <= 799) {
+				resId = R.drawable.bg_50;
+			} else if (800 == weatherId) {
+				resId = R.drawable.bg_01;
+			} else if (801 == weatherId) {
+				resId = R.drawable.bg_02;
+			} else if (802 == weatherId || 803 == weatherId) {
+				resId = R.drawable.bg_03;
+			} else if (804 == weatherId) {
+				resId = R.drawable.bg_04;
 			} else {
-				v.setBackgroundResource(0);
+				resId = 0;
 			}
+			
+			v.setBackgroundResource(resId);
 		}
 	
 	}

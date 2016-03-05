@@ -17,5 +17,123 @@
     <string name="layer_pressure">Pressure</string>
     <string name="layer_temperature">Temperature</string>
     <string name="layer_windspeed">Windspeed</string>
+    
+    <!-- Description of ultra violet radiation index -->
+    <string name="uv_low">Low</string>
+    <string name="uv_moderate">Moderate</string>
+    <string name="uv_high">High</string>
+    <string name="uv_very_high">Very high</string>
+    <string name="uv_extreme">Extreme</string>
+    <string name="uv_invalid">Invalid</string>
+    
+    <!-- Description of weather category -->
+    <string name="cat_thunderstorm">Thunderstorm</string>
+    <string name="cat_drizzle">Drizzle</string>
+    <string name="cat_rain">Rain</string>
+    <string name="cat_snow">Snow</string>
+    <string name="cat_mist">Mist</string>
+    <string name="cat_smoke">Smoke</string>
+    <string name="cat_haze">Haze</string>
+    <string name="cat_sand">Sand</string>
+    <string name="cat_fog">Fog</string>
+    <string name="cat_dust">Dust</string>
+    <string name="cat_volcanic_ash">Volcanic Ash</string>
+    <string name="cat_squalls">Squalls</string>
+    <string name="cat_tornado">Tornado</string>
+    <string name="cat_clear">Clear</string>
+    <string name="cat_clouds">Clouds</string>
+    <string name="cat_invalid">Invalid</string>
+    
+    <!-- Description of weather -->
+    <string name="desc_thunderstorm">thunderstorm</string>
+    <string name="desc_thunderstorm_light">light thunderstorm</string>
+    <string name="desc_thunderstorm_heavy">heavy thunderstorm</string>
+    <string name="desc_thunderstorm_ragged">ragged thunderstorm</string>
+    <string name="desc_thunderstorm_rain">thunderstorm with rain</string>
+    <string name="desc_thunderstorm_rain_light">thunderstorm with light rain</string>
+    <string name="desc_thunderstorm_rain_heavy">thunderstorm with heavy rain</string>
+    <string name="desc_thunderstorm_drizzle">thunderstorm with drizzle</string>
+    <string name="desc_thunderstorm_drizzle_light">thunderstorm with light drizzle</string>
+    <string name="desc_thunderstorm_drizzle_heavy">thunderstorm with heavy drizzle</string>
+    
+    <string name="desc_drizzle_light">light drizzle</string>
+    <string name="desc_drizzle">drizzle</string>
+    <string name="desc_drizzle_heavy">heavy drizzle</string>
+    <string name="desc_drizzle_rain_light">light drizzle rain</string>
+    <string name="desc_drizzle_rain">drizzle rain</string>
+    <string name="desc_drizzle_rain_heavy">heavy drizzle rain</string>
+    <string name="desc_drizzle_shower_rain">shower rain drizzle</string>
+    <string name="desc_drizzle_shower">shower drizzle</string>
+    <string name="desc_drizzle_shower_heavy">heavy shower rain drizzle</string>
+    
+    <string name="desc_snow_light">light snow</string>
+    <string name="desc_snow">snow</string>
+    <string name="desc_snow_heavy">heavy snow</string>
+    <string name="desc_sleet">sleet</string>
+    <string name="desc_sleet_shower">shower sleet</string>
+    <string name="desc_snow_rain_light">light rain and snow</string>
+    <string name="desc_snow_rain">rain and snow</string>
+    <string name="desc_snow_shower_light">light shower snow</string>
+    <string name="desc_snow_shower">shower snow</string>
+    <string name="desc_snow_shower_heavy">heavy shower snow</string>
+    
+    <string name="desc_mist">mist</string>
+    <string name="desc_smoke">smoke</string>
+    <string name="desc_haze">haze</string>
+    <string name="desc_sand_dust">sand with dust whirls</string>
+    <string name="desc_fog">fog</string>
+    <string name="desc_sand">sand</string>
+    <string name="desc_dust">dust</string>
+    <string name="desc_volcanic_ash">volcanic ash</string>
+    <string name="desc_squalls">squalls</string>
+    
+    <string name="desc_rain_light">light rain</string>
+    <string name="desc_rain_moderate">moderate rain</string>
+    <string name="desc_rain_heavy">heavy rain</string>
+    <string name="desc_rain_very_heavy">very heavy rain</string>
+    <string name="desc_rain_extreme">extreme rain</string>
+    <string name="desc_rain_freezing">freezing rain</string>
+    <string name="desc_rain_shower_light">light shower rain</string>
+    <string name="desc_rain_shower">shower rain</string>
+    <string name="desc_rain_shower_heavy">heavy shower rain</string>
+    <string name="desc_rain_shower_ragged">radded shower rain</string>
+    
+    <string name="desc_sky_clear">clear sky</string>
+    <string name="desc_clouds_few">few clouds</string>
+    <string name="desc_clouds_scattered">scattered clouds</string>
+    <string name="desc_clouds_broken">broken clouds</string>
+    <string name="desc_clouds_overcast">overcast clouds</string>
+    
+    <string name="desc_tornado">tornado</string>
+    <string name="desc_storm">storm</string>
+    <string name="desc_storm_violent">violent storm</string>
+    <string name="desc_storm_tropical">tropical storm</string>
+    <string name="desc_hurricane">hurricane</string>
+    <string name="desc_cold">cold</string>
+    <string name="desc_hot">hot</string>
+    <string name="desc_windy">windy</string>
+    <string name="desc_hail">hail</string>
+    
+    <string name="desc_calm">calm</string>
+    <string name="desc_breeze_light">light breeze</string>
+    <string name="desc_breeze_gentle">gentle breeze</string>
+    <string name="desc_breeze_moderate">moderate breeze</string>
+    <string name="desc_breeze_fresh">fresh breeze</string>
+    <string name="desc_breeze_strong">strong breeze</string>
+    <string name="desc_gale_near">near gale</string>
+    <string name="desc_gale">gale</string>
+    <string name="desc_gale_severe">severe gale</string>
+    
+    <string name="desc_invalid">invalid</string>
+    <!-- End of section -->
+    
+    <!-- Abbrieviation in day of week -->
+    <string name="abbrev_sunday">Sun</string>
+    <string name="abbrev_monday">Mon</string>
+    <string name="abbrev_tuesday">Tues</string>
+    <string name="abbrev_wednesday">Wed</string>
+    <string name="abbrev_thursday">Thur</string>
+    <string name="abbrev_friday">Fri</string>
+    <string name="abbrev_saturday">Sat</string>
 
 </resources>
