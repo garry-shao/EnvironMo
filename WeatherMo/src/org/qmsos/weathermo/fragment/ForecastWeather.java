@@ -1,14 +1,13 @@
 package org.qmsos.weathermo.fragment;
 
-import java.util.Calendar;
-
 import org.qmsos.weathermo.R;
 import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
+import org.qmsos.weathermo.resources.CalendarFactory;
+import org.qmsos.weathermo.resources.WeatherIconFactory;
 import org.qmsos.weathermo.util.IntentConstants;
 import org.qmsos.weathermo.util.WeatherParser;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -23,16 +22,16 @@ import android.widget.TextView;
 
 public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor> {
 
-	private OnForecastClickedListener mListener;
+	private OnForecastViewClickedListener mListener;
 	
 	@Override
 	public void onAttach(Context context) {
 		super.onAttach(context);
 		
 		try {
-			mListener = (OnForecastClickedListener) context;
+			mListener = (OnForecastViewClickedListener) context;
 		} catch (ClassCastException e) {
-			String listenerName = OnForecastClickedListener.class.getSimpleName();
+			String listenerName = OnForecastViewClickedListener.class.getSimpleName();
 			
 			throw new ClassCastException(context.toString() + " must implements " + listenerName);
 		}
@@ -54,7 +53,7 @@ public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor>
 
 			@Override
 			public void onClick(View v) {
-				mListener.onForecastClicked(0);
+				mListener.onForecastViewClicked(0);
 			}
 		});
 
@@ -66,7 +65,7 @@ public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor>
 
 				@Override
 				public void onClick(View v) {
-					mListener.onForecastClicked(j);
+					mListener.onForecastViewClicked(j);
 				}
 			});
 		}
@@ -118,7 +117,7 @@ public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor>
 		} else {
 			textView.setText(R.string.placeholder);
 		}
-		IconFactory.setIconOfForecastView(textView, currentWeatherId);
+		WeatherIconFactory.setWeatherIcon(textView, currentWeatherId);
 		
 		for (int i = 1; i <= WeatherParser.COUNT_FORECAST_DAYS; i++) {
 			int forecastWeatherId = WeatherParser.getForecastWeatherId(forecasts[i - 1]);
@@ -135,7 +134,7 @@ public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor>
 			} else {
 				v.setText(R.string.placeholder);
 			}
-			IconFactory.setIconOfForecastView(v, forecastWeatherId);
+			WeatherIconFactory.setWeatherIcon(v, forecastWeatherId);
 		}
 	}
 
@@ -143,7 +142,10 @@ public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor>
 	public void onLoaderReset(Loader<Cursor> loader) {
 	}
 
-	public interface OnForecastClickedListener {
+	/**
+	 * Callback that will be invoked when user clicked views of forecast.
+	 */
+	public interface OnForecastViewClickedListener {
 
 		/**
 		 * When views of forecast weather are clicked.
@@ -152,72 +154,7 @@ public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor>
 		 *            which day is clicked(0 means current, 1 means next 24h,
 		 *            etc...).
 		 */
-		void onForecastClicked(int day);
-	}
-
-	private static class CalendarFactory {
-		
-		static String getDayOfWeek(Context context, int day) {
-			Resources resources = context.getResources();
-			
-			Calendar c = Calendar.getInstance();
-			c.add(Calendar.DAY_OF_YEAR, day);
-			int i = c.get(Calendar.DAY_OF_WEEK);
-			switch (i) {
-			case 1:
-				return resources.getString(R.string.abbrev_sunday);
-			case 2:
-				return resources.getString(R.string.abbrev_monday);
-			case 3:
-				return resources.getString(R.string.abbrev_tuesday);
-			case 4:
-				return resources.getString(R.string.abbrev_wednesday);
-			case 5:
-				return resources.getString(R.string.abbrev_thursday);
-			case 6:
-				return resources.getString(R.string.abbrev_friday);
-			case 7:
-				return resources.getString(R.string.abbrev_saturday);
-			default:
-				return null;
-			}
-		}
-	
-	}
-	
-	private static class IconFactory {
-		
-		static void setIconOfForecastView(TextView v, int id) {
-			int resId;
-			if (200 <= id && id <= 299) {
-				resId = R.drawable.ic_11;
-			} else if (300 <= id && id <= 399) {
-				resId = R.drawable.ic_09;
-			} else if (500 <= id && id <= 504) {
-				resId = R.drawable.ic_10;
-			} else if (511 == id) {
-				resId = R.drawable.ic_13;
-			} else if (520 <= id && id <= 599) {
-				resId = R.drawable.ic_09;
-			} else if (600 <= id && id <= 699) {
-				resId = R.drawable.ic_13;
-			} else if (700 <= id && id <= 799) {
-				resId = R.drawable.ic_50;
-			} else if (800 == id) {
-				resId = R.drawable.ic_01;
-			} else if (801 == id) {
-				resId = R.drawable.ic_02;
-			} else if (802 == id || 803 == id) {
-				resId = R.drawable.ic_03;
-			} else if (804 == id) {
-				resId = R.drawable.ic_04;
-			} else {
-				resId = 0;
-			}
-			
-			v.setCompoundDrawablesRelativeWithIntrinsicBounds(0, resId, 0, 0);
-		}
-		
+		void onForecastViewClicked(int day);
 	}
 
 }
