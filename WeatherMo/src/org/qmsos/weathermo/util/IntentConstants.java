@@ -24,5 +24,6 @@ public class IntentConstants {
 	
 	// Key used in bundle.
 	public static final String KEY_CITY_ID = BASE_PACKAGE_NAME + "KEY_CITY_ID";
+	public static final String KEY_DAY = BASE_PACKAGE_NAME + "KEY_DAY";
 
 }

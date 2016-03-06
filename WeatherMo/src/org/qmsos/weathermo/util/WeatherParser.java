@@ -216,6 +216,24 @@ public class WeatherParser {
 		}
 	}
 	
+	public static int getWeatherId(String weatherRaw) {
+		if (weatherRaw == null) {
+			return WEATHER_ID_INVALID;
+		}
+		
+		String[] elements = weatherRaw.split("\\|");
+		if (elements == null) {
+			return WEATHER_ID_INVALID;
+		}
+		
+		int length = elements.length;
+		if ((length == COUNT_ELEMENTS_CURRENT) || (length == COUNT_ELEMENTS_FORECAST)) {
+			return Integer.parseInt(elements[0]);
+		} else {
+			return WEATHER_ID_INVALID;
+		}
+	}
+	
 	public static int getCurrentWeatherId(String current) {
 		if (current == null) {
 			return WEATHER_ID_INVALID;
