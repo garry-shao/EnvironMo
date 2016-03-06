@@ -148,7 +148,7 @@ public class WeatherForecast extends Fragment implements LoaderCallbacks<Cursor>
 	public interface OnForecastViewClickedListener {
 
 		/**
-		 * When views of forecast weather are clicked.
+		 * Called when views of forecast weather are clicked.
 		 * 
 		 * @param day
 		 *            which day is clicked(0 means current, 1 means next 24h,

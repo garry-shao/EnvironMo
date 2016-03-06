@@ -1,10 +1,11 @@
 package org.qmsos.weathermo;
 
+import org.qmsos.weathermo.fragment.CityName;
+import org.qmsos.weathermo.fragment.CityName.OnCityNameViewClickedListener;
 import org.qmsos.weathermo.fragment.WeatherCurrent;
 import org.qmsos.weathermo.fragment.WeatherForecast;
 import org.qmsos.weathermo.fragment.WeatherForecast.OnForecastViewClickedListener;
 import org.qmsos.weathermo.fragment.WeatherPagerAdapter;
-import org.qmsos.weathermo.provider.WeatherContract.CityEntity;
 import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
 import org.qmsos.weathermo.resources.BackgroundFactory;
 import org.qmsos.weathermo.util.IntentConstants;
@@ -15,6 +16,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -23,9 +25,6 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.app.AppCompatActivity;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.style.RelativeSizeSpan;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -37,8 +36,8 @@ import android.widget.TextView;
  * 
  */
 public class MainActivity extends AppCompatActivity 
-implements LoaderCallbacks<Cursor>, OnPageChangeListener, 
-		OnRefreshListener, OnClickListener, OnForecastViewClickedListener {
+implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener, 
+		OnClickListener, OnCityNameViewClickedListener, OnForecastViewClickedListener {
 	
 	private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -53,9 +52,6 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 		mRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
 		mRefreshLayout.setOnRefreshListener(this);
 
-		TextView cityName = (TextView) findViewById(R.id.city_name);
-		cityName.setOnClickListener(this);
-		
 		TextView weatherMap = (TextView) findViewById(R.id.weather_map);
 		weatherMap.setOnClickListener(this);
 	
@@ -129,20 +125,27 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 
 	@Override
 	public void onClick(View v) {
-		if (v.getId() == R.id.weather_map) {
-			ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
-			if (viewPager != null) {
-				long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
-				if (cityId != 0) {
-					Intent i = new Intent(this, MapActivity.class);
-					i.putExtra(IntentConstants.EXTRA_CITY_ID, cityId);
-					startActivity(i);
-				}
-			}
-		} else if (v.getId() == R.id.city_name) {
-			Intent i = new Intent(this, CityActivity.class);
+		if (v.getId() != R.id.weather_map) {
+			return;
+		}
+		
+		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+		if (viewPager == null) {
+			return;
+		}
+		
+		long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
+		if (cityId != 0L) {
+			Intent i = new Intent(this, MapActivity.class);
+			i.putExtra(IntentConstants.EXTRA_CITY_ID, cityId);
 			startActivity(i);
 		}
+	}
+
+	@Override
+	public void onCityNameViewClicked() {
+		Intent i = new Intent(this, CityActivity.class);
+		startActivity(i);
 	}
 
 	@Override
@@ -156,28 +159,35 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 					mPagerAdapter.instantiateItem(viewPager, viewPager.getCurrentItem());
 			if (weatherCurrent != null && weatherCurrent.isAdded()) {
 				weatherCurrent.showWeather(day);
-				
-				long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
-				updateBackground(cityId, day);
 			}
+			
+			long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
+			updateBackground(cityId, day);
 		}
 	}
 
 	private void refreshGui() {
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
 		if (viewPager != null) {
+			long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
+			Bundle args = new Bundle();
+			args.putLong(IntentConstants.KEY_CITY_ID, cityId);
+			
+			FragmentManager manager = getSupportFragmentManager();
+			
 			WeatherForecast weatherForecast = (WeatherForecast) 
-					getSupportFragmentManager().findFragmentById(R.id.weather_forecast);
+					manager.findFragmentById(R.id.fragment_weather_forecast);
 			if (weatherForecast != null && weatherForecast.isAdded()) {
-				long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
-				
-				Bundle args = new Bundle();
-				args.putLong(IntentConstants.KEY_CITY_ID, cityId);
 				weatherForecast.getLoaderManager().restartLoader(0, args, weatherForecast);
-				
-				updateBackground(cityId, 0);
-				updateCityName(cityId);
 			}
+			
+			CityName cityName = (CityName) 
+					manager.findFragmentById(R.id.fragment_city_name);
+			if (cityName != null && cityName.isAdded()) {
+				cityName.getLoaderManager().restartLoader(0, args, cityName);
+			}
+			
+			updateBackground(cityId, 0);
 		}
 		
 		DotViewPagerIndicator indicator = (DotViewPagerIndicator) findViewById(R.id.pager_indicator);
@@ -221,42 +231,6 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 		
 		View v = findViewById(R.id.swipe_refresh);
 		BackgroundFactory.setBackground(v, weatherId);
-	}
-	
-	private void updateCityName(long cityId) {
-		String name = null;
-		String country = null;
-		Cursor cursor = null;
-		try {
-			String[] projection = { CityEntity.CITY_ID, CityEntity.CITY_NAME, CityEntity.COUNTRY };
-			String where = CityEntity.CITY_ID + " = " + cityId;
-			
-			cursor = getContentResolver().query(
-					CityEntity.CONTENT_URI, projection, where, null, null);
-			if (cursor != null && cursor.moveToFirst()) {
-				name = cursor.getString(cursor.getColumnIndexOrThrow(CityEntity.CITY_NAME));
-				country = cursor.getString(cursor.getColumnIndexOrThrow(CityEntity.COUNTRY));
-			}
-		} catch (IllegalArgumentException e) {
-			Log.e(TAG, "The column does not exist");
-		} finally {
-			if (cursor != null & !cursor.isClosed()) {
-				cursor.close();
-			}
-		}
-		
-		TextView textView = (TextView) findViewById(R.id.city_name);
-		if (name != null && country != null) {
-			String raw = name + " " +country;
-			
-			SpannableString spanned = new SpannableString(raw);
-			spanned.setSpan(new RelativeSizeSpan(0.5f), 
-					name.length() + 1, raw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-			
-			textView.setText(spanned);
-		} else {
-			textView.setText(R.string.placeholder);
-		}
 	}
 
 }
