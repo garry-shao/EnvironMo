@@ -1,8 +1,8 @@
 package org.qmsos.weathermo;
 
-import org.qmsos.weathermo.fragment.CurrentWeather;
-import org.qmsos.weathermo.fragment.ForecastWeather;
-import org.qmsos.weathermo.fragment.ForecastWeather.OnForecastViewClickedListener;
+import org.qmsos.weathermo.fragment.WeatherCurrent;
+import org.qmsos.weathermo.fragment.WeatherForecast;
+import org.qmsos.weathermo.fragment.WeatherForecast.OnForecastViewClickedListener;
 import org.qmsos.weathermo.fragment.WeatherPagerAdapter;
 import org.qmsos.weathermo.provider.WeatherContract.CityEntity;
 import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
@@ -97,15 +97,15 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 	}
 
 	@Override
-	public void onPageScrollStateChanged(int arg0) {
+	public void onPageScrollStateChanged(int state) {
 	}
 
 	@Override
-	public void onPageScrolled(int arg0, float arg1, int arg2) {
+	public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 	}
 
 	@Override
-	public void onPageSelected(int arg0) {
+	public void onPageSelected(int position) {
 		refreshGui();
 	}
 	
@@ -152,10 +152,10 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 //			Workaround: FragmentStatePagerAdapter's instantiateItem() method will return 
 //			the reference of fragment instead of calling getItem() method to create a new 
 //			one if it exists already.
-			CurrentWeather fragment = (CurrentWeather) 
+			WeatherCurrent weatherCurrent = (WeatherCurrent) 
 					mPagerAdapter.instantiateItem(viewPager, viewPager.getCurrentItem());
-			if (fragment != null && fragment.isAdded()) {
-				fragment.showWeather(day);
+			if (weatherCurrent != null && weatherCurrent.isAdded()) {
+				weatherCurrent.showWeather(day);
 				
 				long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
 				updateBackground(cityId, day);
@@ -166,14 +166,14 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener,
 	private void refreshGui() {
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
 		if (viewPager != null) {
-			ForecastWeather fragment = (ForecastWeather) 
-					getSupportFragmentManager().findFragmentById(R.id.forecast_fragment);
-			if (fragment != null && fragment.isAdded()) {
+			WeatherForecast weatherForecast = (WeatherForecast) 
+					getSupportFragmentManager().findFragmentById(R.id.weather_forecast);
+			if (weatherForecast != null && weatherForecast.isAdded()) {
 				long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
 				
 				Bundle args = new Bundle();
 				args.putLong(IntentConstants.KEY_CITY_ID, cityId);
-				fragment.getLoaderManager().restartLoader(0, args, fragment);
+				weatherForecast.getLoaderManager().restartLoader(0, args, weatherForecast);
 				
 				updateBackground(cityId, 0);
 				updateCityName(cityId);

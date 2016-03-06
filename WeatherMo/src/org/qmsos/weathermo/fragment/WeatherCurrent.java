@@ -19,16 +19,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-public class CurrentWeather extends Fragment {
+public class WeatherCurrent extends Fragment {
 	
-	private static final String TAG = CurrentWeather.class.getSimpleName();
+	private static final String TAG = WeatherCurrent.class.getSimpleName();
 	private static final String KEY_CITY_ID = "KEY_CITY_ID";
 	
-	public static CurrentWeather newInstance(Context context, long cityId) {
+	public static WeatherCurrent newInstance(Context context, long cityId) {
 		Bundle b = new Bundle();
 		b.putLong(KEY_CITY_ID, cityId);
 
-		CurrentWeather fragment = new CurrentWeather();
+		WeatherCurrent fragment = new WeatherCurrent();
 		fragment.setArguments(b);
 		
 		return fragment;
@@ -36,7 +36,7 @@ public class CurrentWeather extends Fragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view =  inflater.inflate(R.layout.fragment_current_weather, container, false);
+		View view =  inflater.inflate(R.layout.fragment_weather_current, container, false);
 	
 		return view;
 	}

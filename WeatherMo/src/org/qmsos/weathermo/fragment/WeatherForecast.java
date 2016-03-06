@@ -20,7 +20,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor> {
+public class WeatherForecast extends Fragment implements LoaderCallbacks<Cursor> {
 
 	private OnForecastViewClickedListener mListener;
 	
@@ -39,7 +39,7 @@ public class ForecastWeather extends Fragment implements LoaderCallbacks<Cursor>
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fragment_forecast_weather, container, false);
+		View view = inflater.inflate(R.layout.fragment_weather_forecast, container, false);
 
 		return view;
 	}

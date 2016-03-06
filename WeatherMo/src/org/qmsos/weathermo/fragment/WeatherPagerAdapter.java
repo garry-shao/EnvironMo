@@ -42,10 +42,10 @@ public class WeatherPagerAdapter extends FragmentStatePagerAdapter {
 		}
 	}
 
-	public Fragment getItem(Context context, Cursor cursor, int position) {
+	private Fragment getItem(Context context, Cursor cursor, int position) {
 		if (cursor.moveToPosition(position)) {
 			long cityId = cursor.getLong(cursor.getColumnIndexOrThrow(WeatherEntity.CITY_ID));
-			CurrentWeather fragment = CurrentWeather.newInstance(context, cityId);
+			WeatherCurrent fragment = WeatherCurrent.newInstance(context, cityId);
 			
 			return fragment;
 		} else {
