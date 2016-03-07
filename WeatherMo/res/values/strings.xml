@@ -24,7 +24,6 @@
     <string name="uv_high">High</string>
     <string name="uv_very_high">Very high</string>
     <string name="uv_extreme">Extreme</string>
-    <string name="uv_invalid">Invalid</string>
     
     <!-- Description of weather category -->
     <string name="cat_thunderstorm">Thunderstorm</string>
@@ -42,7 +41,6 @@
     <string name="cat_tornado">Tornado</string>
     <string name="cat_clear">Clear</string>
     <string name="cat_clouds">Clouds</string>
-    <string name="cat_invalid">Invalid</string>
     
     <!-- Description of weather -->
     <string name="desc_thunderstorm">thunderstorm</string>
@@ -123,8 +121,6 @@
     <string name="desc_gale_near">near gale</string>
     <string name="desc_gale">gale</string>
     <string name="desc_gale_severe">severe gale</string>
-    
-    <string name="desc_invalid">invalid</string>
     <!-- End of section -->
     
     <!-- Abbrieviation in day of week -->

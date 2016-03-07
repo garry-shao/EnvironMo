@@ -23,11 +23,14 @@ public class WeatherParser {
 	private static final int COUNT_ELEMENTS_CURRENT = 2;
 	private static final int COUNT_ELEMENTS_FORECAST = 3;
 	
+	// count of forecast parameters, the website provider often change so in case here.
 	public static final int COUNT_FORECAST_DAYS = 3;
 	public static final int COUNT_FORECAST_HOURS = 8;
-	public static final int TEMPERATURE_INVALID = -274;
-	public static final int WEATHER_ID_INVALID = 0;
-	public static final double UV_INDEX_INVALID = -1.0f;
+	
+	// Invalid constant values of various parameters.
+	public static final int INVALID_TEMPERATURE = -274;
+	public static final int INVALID_WEATHER_ID = 0;
+	public static final double INVALID_UV_INDEX = -1.0f;
 	
 	public static String parseRawToCurrent(String raw) {
 		try {
@@ -212,90 +215,79 @@ public class WeatherParser {
 		} catch (JSONException e) {
 			Log.e(TAG, "Error parsing JSON string");
 			
-			return UV_INDEX_INVALID;
+			return INVALID_UV_INDEX;
 		}
 	}
 	
 	public static int getWeatherId(String weatherRaw) {
 		if (weatherRaw == null) {
-			return WEATHER_ID_INVALID;
+			return INVALID_WEATHER_ID;
 		}
 		
 		String[] elements = weatherRaw.split("\\|");
 		if (elements == null) {
-			return WEATHER_ID_INVALID;
+			return INVALID_WEATHER_ID;
 		}
 		
 		int length = elements.length;
 		if ((length == COUNT_ELEMENTS_CURRENT) || (length == COUNT_ELEMENTS_FORECAST)) {
 			return Integer.parseInt(elements[0]);
 		} else {
-			return WEATHER_ID_INVALID;
+			return INVALID_WEATHER_ID;
 		}
 	}
 	
-	public static int getCurrentWeatherId(String current) {
-		if (current == null) {
-			return WEATHER_ID_INVALID;
+	public static int getTemperature(String weatherRaw) {
+		if (weatherRaw == null) {
+			return INVALID_TEMPERATURE;
 		}
 		
-		String[] elements = current.split("\\|");
-		if (elements != null && (elements.length == COUNT_ELEMENTS_CURRENT)) {
-			return Integer.parseInt(elements[0]);
-		} else {
-			return WEATHER_ID_INVALID;
-		}
-	}
-	
-	public static int getCurrentTemperature(String current) {
-		if (current == null) {
-			return TEMPERATURE_INVALID;
+		String[] elements = weatherRaw.split("\\|");
+		if (elements == null) {
+			return INVALID_TEMPERATURE;
 		}
 		
-		String[] elements = current.split("\\|");
-		if (elements.length == COUNT_ELEMENTS_CURRENT) {
+		int length = elements.length;
+		if (length == COUNT_ELEMENTS_CURRENT) {
 			return Integer.parseInt(elements[1]);
 		} else {
-			return TEMPERATURE_INVALID;
-		}
-	}
-
-	public static int getForecastWeatherId(String forecast) {
-		if (forecast == null) {
-			return WEATHER_ID_INVALID;
-		}
-		
-		String[] elements = forecast.split("\\|");
-		if (elements != null && (elements.length == COUNT_ELEMENTS_FORECAST)) {
-			return Integer.parseInt(elements[0]);
-		} else {
-			return WEATHER_ID_INVALID;
+			return INVALID_TEMPERATURE;
 		}
 	}
 	
-	public static int getForecastTemperatureMin(String forecast) {
-		if (forecast == null) {
-			return TEMPERATURE_INVALID;
+	public static int getTemperatureMin(String weatherRaw) {
+		if (weatherRaw == null) {
+			return INVALID_TEMPERATURE;
 		}
 		
-		String[] elements = forecast.split("\\|");
-		if (elements != null && (elements.length == COUNT_ELEMENTS_FORECAST)) {
+		String[] elements = weatherRaw.split("\\|");
+		if (elements == null) {
+			return INVALID_TEMPERATURE;
+		}
+		
+		int length = elements.length;
+		if (length == COUNT_ELEMENTS_FORECAST) {
 			return Integer.parseInt(elements[1]);
 		} else {
-			return TEMPERATURE_INVALID;
+			return INVALID_TEMPERATURE;
 		}
 	}
 	
-	public static int getForecastTemperatureMax(String forecast) {
-		if (forecast == null) {
-			return TEMPERATURE_INVALID;
+	public static int getTemperatureMax(String weatherRaw) {
+		if (weatherRaw == null) {
+			return INVALID_TEMPERATURE;
 		}
 		
-		String[] elements = forecast.split("\\|");
-		if (elements != null && (elements.length == COUNT_ELEMENTS_FORECAST)) {
+		String[] elements = weatherRaw.split("\\|");
+		if (elements == null) {
+			return INVALID_TEMPERATURE;
+		}
+		
+		int length = elements.length;
+		if (length == COUNT_ELEMENTS_FORECAST) {
 			return Integer.parseInt(elements[2]);
 		} else {
-			return TEMPERATURE_INVALID;
+			return INVALID_TEMPERATURE;
 		}
 	}
 

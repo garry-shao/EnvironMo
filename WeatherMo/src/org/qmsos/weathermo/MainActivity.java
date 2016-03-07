@@ -26,7 +26,6 @@ import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.TextView;
 
 /**
  * Main activity of EnvironMo.
@@ -51,9 +50,9 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener,
 		mRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
 		mRefreshLayout.setOnRefreshListener(this);
 
-		TextView weatherMap = (TextView) findViewById(R.id.weather_map);
+		View weatherMap = findViewById(R.id.weather_map);
 		weatherMap.setOnClickListener(this);
-	
+
 		mPagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager(), this, null);
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
 		viewPager.setAdapter(mPagerAdapter);
@@ -175,7 +174,15 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener,
 			indicator.dataChanged();
 		}
 		
-		Bundle args = createReloadParameters(0);
+		int day;
+		WeatherCurrent weatherCurrent = getFragmentOfCurrentWeather();
+		if (weatherCurrent != null) {
+			day = weatherCurrent.getDayOnDisplay();
+		} else {
+			day = 0;
+		}
+		
+		Bundle args = createReloadParameters(day);
 		reloadFragmentCityName(args);
 		reloadFragmentForecast(args);
 		reloadBackgroundImage(args);
@@ -244,16 +251,9 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener,
 	 *            Which day will be shown, 0 means current, 1 means tomorrow, etc.
 	 */
 	private void reloadFragmentCurrent(int day) {
-		WeatherCurrent weatherCurrent = null;
-		
-		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
-		if ((viewPager != null) && (mPagerAdapter.getCount() > 0)) {
-			weatherCurrent = (WeatherCurrent) 
-					mPagerAdapter.instantiateItem(viewPager, viewPager.getCurrentItem());
-		}
-		
+		WeatherCurrent weatherCurrent = getFragmentOfCurrentWeather();
 		if (weatherCurrent != null && weatherCurrent.isAdded()) {
-			weatherCurrent.showWeather(day);
+			weatherCurrent.reload(day);
 		}
 	}
 
@@ -309,7 +309,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener,
 	 * @return The created bundle.
 	 */
 	private Bundle createReloadParameters(int day) {
-		long cityId = getCityIdOfCurrentView();
+		long cityId = getCityIdOfCurrentWeather();
 		if (cityId <= 0) {
 			return null;
 		} else {
@@ -322,16 +322,30 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener,
 	}
 	
 	/**
-	 * Get the city id of current fragment that shown in ViewPager.
+	 * Get the city id of the fragment that currently showing in ViewPager.
 	 * 
 	 * @return The city id or 0L if invalid.
 	 */
-	private long getCityIdOfCurrentView() {
+	private long getCityIdOfCurrentWeather() {
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
 		if (viewPager != null) {
 			return mPagerAdapter.getCityId(viewPager.getCurrentItem());
 		} else {
 			return 0L;
+		}
+	}
+	
+	/**
+	 * Get the fragment that currently showing in ViewPager.
+	 * 
+	 * @return The fragment that currently showing or else null.
+	 */
+	private WeatherCurrent getFragmentOfCurrentWeather() {
+		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+		if ((viewPager != null) && (mPagerAdapter.getCount() > 0)) {
+			return (WeatherCurrent)	mPagerAdapter.instantiateItem(viewPager, viewPager.getCurrentItem());
+		} else {
+			return null;
 		}
 	}
 

@@ -108,31 +108,31 @@ public class WeatherForecast extends Fragment implements LoaderCallbacks<Cursor>
 			forecasts[2] = data.getString(data.getColumnIndexOrThrow(WeatherEntity.FORECAST3));
 		}
 		
-		int currentWeatherId = WeatherParser.getCurrentWeatherId(current);
-		int currentTemperature = WeatherParser.getCurrentTemperature(current);
+		int currentWeatherId = WeatherParser.getWeatherId(current);
+		int temperature = WeatherParser.getTemperature(current);
 		
 		TextView textView = (TextView) getView().findViewById(R.id.current);
-		if (currentTemperature != WeatherParser.TEMPERATURE_INVALID) {
-			textView.setText("Now" + "\n" + currentTemperature + "\u00B0" + "C");
+		if (temperature != WeatherParser.INVALID_TEMPERATURE) {
+			textView.setText("Now" + "\n" + temperature + "\u00B0" + "C");
 		} else {
-			textView.setText(R.string.placeholder);
+			textView.setText(null);
 		}
 		WeatherIconFactory.setWeatherIcon(textView, currentWeatherId);
 		
 		for (int i = 1; i <= WeatherParser.COUNT_FORECAST_DAYS; i++) {
-			int forecastWeatherId = WeatherParser.getForecastWeatherId(forecasts[i - 1]);
-			int forecastTemperatureMin = WeatherParser.getForecastTemperatureMin(forecasts[i - 1]);
-			int forecastTemperatureMax = WeatherParser.getForecastTemperatureMax(forecasts[i - 1]);
+			int forecastWeatherId = WeatherParser.getWeatherId(forecasts[i - 1]);
+			int temperatureMin = WeatherParser.getTemperatureMin(forecasts[i - 1]);
+			int temperatureMax = WeatherParser.getTemperatureMax(forecasts[i - 1]);
 			
 			TextView v = (TextView) getView().findViewById(
 					getResources().getIdentifier("forecast_" + i, "id", getContext().getPackageName()));
-			if (forecastTemperatureMin != WeatherParser.TEMPERATURE_INVALID
-					|| forecastTemperatureMax != WeatherParser.TEMPERATURE_INVALID) {
+			if (temperatureMin != WeatherParser.INVALID_TEMPERATURE
+					|| temperatureMax != WeatherParser.INVALID_TEMPERATURE) {
 				
 				v.setText(CalendarFactory.getDayOfWeek(getContext(), i) + "\n" 
-						+ forecastTemperatureMin + "~" + forecastTemperatureMax + "\u00B0" + "C");
+						+ temperatureMin + "~" + temperatureMax + "\u00B0" + "C");
 			} else {
-				v.setText(R.string.placeholder);
+				v.setText(null);
 			}
 			WeatherIconFactory.setWeatherIcon(v, forecastWeatherId);
 		}

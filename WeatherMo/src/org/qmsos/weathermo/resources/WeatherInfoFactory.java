@@ -55,7 +55,7 @@ public class WeatherInfoFactory {
 		} else if (801 <= weatherId && weatherId <= 899) {
 			return resources.getString(R.string.cat_clouds);
 		} else {
-			return resources.getString(R.string.cat_invalid);
+			return null;
 		}
 	}
 
@@ -219,7 +219,7 @@ public class WeatherInfoFactory {
 		case 962: 	
 			return resources.getString(R.string.desc_hurricane);
 		default:
-			return resources.getString(R.string.desc_invalid);
+			return null;
 		}
 	}
 
@@ -236,7 +236,7 @@ public class WeatherInfoFactory {
 		Resources resources = context.getResources();
 		
 		if (uvIndex < 0.0f) {
-			return resources.getString(R.string.uv_invalid);
+			return null;
 		} else if (uvIndex < 3.0f) {
 			return resources.getString(R.string.uv_low);
 		} else if (uvIndex < 6.0f) {
