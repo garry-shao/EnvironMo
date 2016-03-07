@@ -1,12 +1,17 @@
 package org.qmsos.weathermo;
 
+import java.util.ArrayList;
+
 import org.qmsos.weathermo.provider.WeatherContract.CityEntity;
 import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
 
 import android.content.ContentProvider;
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.OperationApplicationException;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -116,50 +121,6 @@ public class WeatherProvider extends ContentProvider {
 	}
 
 	@Override
-	public int bulkInsert(Uri uri, ContentValues[] values) {
-		SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
-		
-		switch (URI_MATCHER.match(uri)) {
-		case CITIES:
-			database.beginTransaction();
-			try {
-				for (ContentValues value : values) {
-					long rowId = database.insert(DatabaseHelper.TABLE_CITIES, "city", value);
-					if (rowId < 0) {
-						return 0;
-					}
-				}
-				database.setTransactionSuccessful();
-			} finally {
-				database.endTransaction();
-			}
-			
-			getContext().getContentResolver().notifyChange(uri, null);
-			
-			return values.length;
-		case WEATHER:
-			database.beginTransaction();
-			try {
-				for (ContentValues value : values) {
-					long rowId = database.insert(DatabaseHelper.TABLE_WEATHER, "weather", value);
-					if (rowId < 0) {
-						return 0;
-					}
-				}
-				database.setTransactionSuccessful();
-			} finally {
-				database.endTransaction();
-			}
-			
-			getContext().getContentResolver().notifyChange(uri, null);
-			
-			return values.length;
-		default:
-			throw new SQLException("Failed to insert row into " + uri);
-		}
-	}
-
-	@Override
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
 		SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
 		
@@ -203,6 +164,67 @@ public class WeatherProvider extends ContentProvider {
 		getContext().getContentResolver().notifyChange(uri, null);
 		
 		return count;
+	}
+
+	@Override
+	public ContentProviderResult[] applyBatch(ArrayList<ContentProviderOperation> operations)
+			throws OperationApplicationException {
+		
+		SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
+		
+		database.beginTransaction();
+		try {
+			ContentProviderResult[] results = super.applyBatch(operations);
+			database.setTransactionSuccessful();
+			
+			return results;
+		} finally {
+			database.endTransaction();
+		}
+	}
+
+	@Override
+	public int bulkInsert(Uri uri, ContentValues[] values) {
+		SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
+		
+		switch (URI_MATCHER.match(uri)) {
+		case CITIES:
+			database.beginTransaction();
+			try {
+				for (ContentValues value : values) {
+					long rowId = database.insert(DatabaseHelper.TABLE_CITIES, "city", value);
+					if (rowId < 0) {
+						return 0;
+					}
+				}
+				database.setTransactionSuccessful();
+			} finally {
+				database.endTransaction();
+			}
+			
+			getContext().getContentResolver().notifyChange(uri, null);
+			
+			return values.length;
+		case WEATHER:
+			database.beginTransaction();
+			try {
+				for (ContentValues value : values) {
+					long rowId = database.insert(DatabaseHelper.TABLE_WEATHER, "weather", value);
+					if (rowId < 0) {
+						return 0;
+					}
+				}
+				database.setTransactionSuccessful();
+			} finally {
+				database.endTransaction();
+			}
+			
+			getContext().getContentResolver().notifyChange(uri, null);
+			
+			return values.length;
+		default:
+			throw new SQLException("Failed to insert row into " + uri);
+		}
 	}
 
 	private static class DatabaseHelper extends SQLiteOpenHelper {
