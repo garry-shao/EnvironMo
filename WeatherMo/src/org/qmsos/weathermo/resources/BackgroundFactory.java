@@ -78,7 +78,7 @@ public class BackgroundFactory {
 			break;
 		case 701:
 		case 741:
-			resId = R.drawable.bg_mist;
+			resId = R.drawable.bg_fog;
 			break;
 		case 711:
 		case 721:
