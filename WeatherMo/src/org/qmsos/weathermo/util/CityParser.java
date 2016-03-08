@@ -6,7 +6,7 @@ import org.json.JSONObject;
 import org.qmsos.weathermo.datamodel.City;
 
 /**
- * Factory class that used to parse response from the search that by city name.
+ * Utility class that used to parse response from the search that by city name.
  */
 public class CityParser {
 	

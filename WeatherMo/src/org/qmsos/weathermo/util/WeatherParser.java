@@ -11,27 +11,41 @@ import android.util.Log;
 import android.util.SparseIntArray;
 
 /**
- * Utility class for several useful methods.
- * 
- *
+ * Utility class that used to parse weather string from the raw response of remote server.
  */
 public class WeatherParser {
 	
 	private static final String TAG = WeatherParser.class.getSimpleName();
 	
-	// count of parsed weather, RELLY THINK BEFORE MODIFY!!!
-	private static final int COUNT_ELEMENTS_CURRENT = 2;
-	private static final int COUNT_ELEMENTS_FORECAST = 3;
+	/**
+	 * Forecast range in days, this is <b>critical</b> because fragment of forecast weather
+	 * may dependent on this value.
+	 */
+	public static final int FORECAST_IN_DAYS = 3;
 	
-	// count of forecast parameters, the website provider often change so in case here.
-	public static final int COUNT_FORECAST_DAYS = 3;
-	public static final int COUNT_FORECAST_HOURS = 8;
-	
-	// Invalid constant values of various parameters.
+	/**
+	 * Invalid value of temperature, make sure below <b>Kelvin Zero</b>, or "<b>Absolute Zero</b>".
+	 */
 	public static final int INVALID_TEMPERATURE = -274;
+	
+	/**
+	 * Invalid value of weather id.
+	 */
 	public static final int INVALID_WEATHER_ID = 0;
+	
+	/**
+	 * Invalid value of ultra-violet radiation.
+	 */
 	public static final double INVALID_UV_INDEX = -1.0f;
 	
+	/**
+	 * Parse the valid current weather values from the raw results.
+	 * 
+	 * @param raw
+	 *            The raw results from remote server.
+	 * @return The formatted string used in content provider(have multiple elements)
+	 *         or Null if the raw results are invalid.
+	 */
 	public static String parseRawToCurrent(String raw) {
 		try {
 			JSONObject reader = new JSONObject(raw);
@@ -55,6 +69,23 @@ public class WeatherParser {
 		}
 	}
 	
+	/**
+	 * Parse the valid forecast weather values from the raw results.
+	 * <br>
+	 * <br>
+	 * Notice: because the remote server always change, forecast by day or hourly
+	 * sometimes invalid, here providing two methods(
+	 * {@link #parseRawToForecastsDaily(String)}, {@link #parseRawToForecastsHourly(String)})
+	 * who are exclusive, avoid using at the same time.
+	 * <br>
+	 * <br>
+	 * Notice: normally {@link #parseRawToForecastsHourly(String)} is <b>preferred</b>.
+	 * 
+	 * @param raw
+	 *            The raw results from remote server.
+	 * @return The formatted array of strings used in content provider
+	 *         (have multiple elements) or Null if the raw results are invalid.
+	 */
 	public static String[] parseRawToForecastsDaily(String raw) {
 		JSONArray list = null;
 		int length = 0;
@@ -68,7 +99,7 @@ public class WeatherParser {
 			return null;
 		}
 		
-		if (list == null || length < COUNT_FORECAST_DAYS + 1) {
+		if (list == null || length < FORECAST_IN_DAYS + 1) {
 			Log.e(TAG, "raw data does not have enough information");
 			
 			return null;
@@ -89,13 +120,13 @@ public class WeatherParser {
 		long currentMillis = System.currentTimeMillis();
 		if (currentMillis > firstMillis) {
 			i = 1;
-			count = COUNT_FORECAST_DAYS + 1;
+			count = FORECAST_IN_DAYS + 1;
 		} else {
 			i = 0;
-			count = COUNT_FORECAST_DAYS;
+			count = FORECAST_IN_DAYS;
 		}
 		
-		String[] parsed = new String[COUNT_FORECAST_DAYS];
+		String[] parsed = new String[FORECAST_IN_DAYS];
 		int j = 0;
 		try {
 			while (i < count) {
@@ -129,6 +160,23 @@ public class WeatherParser {
 		}
 	}
 	
+	/**
+	 * Parse the valid forecast weather values from the raw results.
+	 * <br>
+	 * <br>
+	 * Notice: because the remote server always change, forecast by day or hourly
+	 * sometimes invalid, here providing two methods(
+	 * {@link #parseRawToForecastsDaily(String)}, {@link #parseRawToForecastsHourly(String)})
+	 * who are exclusive, avoid using at the same time.
+	 * <br>
+	 * <br>
+	 * Notice: this method is <b>preferred</b> due to accuracy and remote server policy.
+	 * 
+	 * @param raw
+	 *            The raw results from remote server.
+	 * @return The formatted array of strings used in content provider
+	 *         (have multiple elements) or Null if the raw results are invalid.
+	 */
 	public static String[] parseRawToForecastsHourly(String raw) {
 		JSONArray list = null;
 		int length = 0;
@@ -142,21 +190,21 @@ public class WeatherParser {
 			return null;
 		}
 		
-		if (list == null || length < COUNT_FORECAST_DAYS * COUNT_FORECAST_HOURS) {
+		if (list == null || length < FORECAST_IN_DAYS * Contract.DATAPOINTS_IN_ONE_DAY) {
 			Log.e(TAG, "raw data does not have enough information");
 			
 			return null;
 		}
 		
-		String[] parsed = new String[COUNT_FORECAST_DAYS];
-		for (int i = 0; i < COUNT_FORECAST_DAYS; i++) {
+		String[] parsed = new String[FORECAST_IN_DAYS];
+		for (int i = 0; i < FORECAST_IN_DAYS; i++) {
 			SparseIntArray tempWeatherIds = new SparseIntArray(); 
 			ArrayList<Double> tempTemperatures = new ArrayList<Double>();
-			for (int j = 0; j < COUNT_FORECAST_HOURS; j++) {
+			for (int j = 0; j < Contract.DATAPOINTS_IN_ONE_DAY; j++) {
 				int weatherId;
 				double temperature;
 				try {
-					JSONObject forecast = list.getJSONObject(j + COUNT_FORECAST_HOURS * i);
+					JSONObject forecast = list.getJSONObject(j + Contract.DATAPOINTS_IN_ONE_DAY * i);
 					JSONArray weather = forecast.getJSONArray("weather");
 					weatherId = weather.getJSONObject(0).getInt("id");
 					
@@ -206,6 +254,13 @@ public class WeatherParser {
 		return parsed;
 	}
 
+	/**
+	 * Parse the valid ultra-violet radiation value from the raw results.
+	 * 
+	 * @param raw
+	 *            The raw results from remote server.
+	 * @return The valid uv index of {@link #INVALID_UV_INDEX}.
+	 */
 	public static double parseRawToUvIndex(String raw) {
 		try {
 			JSONObject reader = new JSONObject(raw);
@@ -219,6 +274,18 @@ public class WeatherParser {
 		}
 	}
 	
+	/**
+	 * Get weather id from raw string from content provider.
+	 * <br>
+	 * <br>
+	 * Notice: the raw string is already parsed when they are stored into
+	 * the content provider, but that still contains multiple elements(weather 
+	 * id, temperature etc.), so here are still described as "raw" string.
+	 * 
+	 * @param weatherRaw
+	 *           The string retrieved from content provider.
+	 * @return The valid weather id or {@link #INVALID_WEATHER_ID}.
+	 */
 	public static int getWeatherId(String weatherRaw) {
 		if (weatherRaw == null) {
 			return INVALID_WEATHER_ID;
@@ -230,13 +297,24 @@ public class WeatherParser {
 		}
 		
 		int length = elements.length;
-		if ((length == COUNT_ELEMENTS_CURRENT) || (length == COUNT_ELEMENTS_FORECAST)) {
+		if ((length == Contract.SEGMENTS_CURRENT) || (length == Contract.SEGMENTS_FORECAST)) {
 			return Integer.parseInt(elements[0]);
 		} else {
 			return INVALID_WEATHER_ID;
 		}
 	}
 	
+	/**
+	 * Get temperature from raw string of current weather from content provider.
+	 * <br>
+	 * <br>
+	 * Notice: only use this when retrieving from current weather, or else the result
+	 * is invalid.
+	 * 
+	 * @param weatherRaw
+	 *           The string of current weather retrieved from content provider.
+	 * @return The valid temperature of current weather or {@link #INVALID_TEMPERATURE}.
+	 */
 	public static int getTemperature(String weatherRaw) {
 		if (weatherRaw == null) {
 			return INVALID_TEMPERATURE;
@@ -248,13 +326,24 @@ public class WeatherParser {
 		}
 		
 		int length = elements.length;
-		if (length == COUNT_ELEMENTS_CURRENT) {
+		if (length == Contract.SEGMENTS_CURRENT) {
 			return Integer.parseInt(elements[1]);
 		} else {
 			return INVALID_TEMPERATURE;
 		}
 	}
 	
+	/**
+	 * Get the minimum temperature from raw string of forecast weather from content provider.
+	 * <br>
+	 * <br>
+	 * Notice: only use this when retrieving from forecast weather, or else the result
+	 * is invalid.
+	 * 
+	 * @param weatherRaw
+	 *           The string of forecast weather retrieved from content provider.
+	 * @return The valid minimum temperature of forecast weather or {@link #INVALID_TEMPERATURE}.
+	 */
 	public static int getTemperatureMin(String weatherRaw) {
 		if (weatherRaw == null) {
 			return INVALID_TEMPERATURE;
@@ -266,13 +355,24 @@ public class WeatherParser {
 		}
 		
 		int length = elements.length;
-		if (length == COUNT_ELEMENTS_FORECAST) {
+		if (length == Contract.SEGMENTS_FORECAST) {
 			return Integer.parseInt(elements[1]);
 		} else {
 			return INVALID_TEMPERATURE;
 		}
 	}
 	
+	/**
+	 * Get the maximum temperature from raw string of forecast weather from content provider.
+	 * <br>
+	 * <br>
+	 * Notice: only use this when retrieving from forecast weather, or else the result
+	 * is invalid.
+	 * 
+	 * @param weatherRaw
+	 *           The string of forecast weather retrieved from content provider.
+	 * @return The valid maximum temperature of forecast weather or {@link #INVALID_TEMPERATURE}.
+	 */
 	public static int getTemperatureMax(String weatherRaw) {
 		if (weatherRaw == null) {
 			return INVALID_TEMPERATURE;
@@ -284,11 +384,32 @@ public class WeatherParser {
 		}
 		
 		int length = elements.length;
-		if (length == COUNT_ELEMENTS_FORECAST) {
+		if (length == Contract.SEGMENTS_FORECAST) {
 			return Integer.parseInt(elements[2]);
 		} else {
 			return INVALID_TEMPERATURE;
 		}
+	}
+	
+	/**
+	 * Containing contract of parsed string that describes weather. 
+	 */
+	private static class Contract {
+		
+		/**
+		 * How many segments that contained in parsed current weather.
+		 */
+		static final int SEGMENTS_CURRENT = 2;
+		
+		/**
+		 * How many segments that contained in parsed forecast weather.
+		 */
+		static final int SEGMENTS_FORECAST = 3;
+		
+		/**
+		 * How many data points in a whole day(24H) when performing forecast by hours.
+		 */
+		static final int DATAPOINTS_IN_ONE_DAY = 8;
 	}
 
 }

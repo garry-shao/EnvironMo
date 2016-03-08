@@ -344,7 +344,7 @@ public class WeatherService extends IntentService {
 				return null;
 			}
 		case Contract.FLAG_FORECAST_DAILY:
-			int days = WeatherParser.COUNT_FORECAST_DAYS + 1;
+			int days = WeatherParser.FORECAST_IN_DAYS + 1;
 			
 			return "http://api.openweathermap.org/data/2.5/" 
 					+ "forecast/daily?" + "id=" + String.valueOf(cityId) 
@@ -352,7 +352,7 @@ public class WeatherService extends IntentService {
 					+ "&units=" + "metric"
 					+ "&appid=" + Contract.API_KEY;
 		case Contract.FLAG_FORECAST_HOURLY:
-			int count = WeatherParser.COUNT_FORECAST_DAYS * WeatherParser.COUNT_FORECAST_HOURS;
+			int count = WeatherParser.FORECAST_IN_DAYS * Contract.DATAPOINTS_IN_ONE_DAY;
 			
 			return "http://api.openweathermap.org/data/2.5/" 
 					+ "forecast?" + "id=" + String.valueOf(cityId) 
@@ -476,6 +476,11 @@ public class WeatherService extends IntentService {
 		 * API key used to contact remote server.
 		 */
 		static final String API_KEY = "054dcbb7bea48220bc5d30d5fc53932e";
+		
+		/**
+		 * How many data points in a whole day(24H) when performing forecast by hours.
+		 */
+		static final int DATAPOINTS_IN_ONE_DAY = 8;
 		
 		/**
 		 * Used to refresh current weather section from remote server.

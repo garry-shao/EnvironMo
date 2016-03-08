@@ -56,7 +56,7 @@ public class WeatherForecast extends Fragment implements LoaderCallbacks<Cursor>
 			}
 		});
 
-		for (int i = 1; i <= WeatherParser.COUNT_FORECAST_DAYS; i++) {
+		for (int i = 1; i <= WeatherParser.FORECAST_IN_DAYS; i++) {
 			final int j = i;
 			textView = (TextView) getView().findViewById(
 					getResources().getIdentifier("forecast_" + j, "id", getContext().getPackageName()));
@@ -98,7 +98,7 @@ public class WeatherForecast extends Fragment implements LoaderCallbacks<Cursor>
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 		String current = null;
-		String[] forecasts = new String[WeatherParser.COUNT_FORECAST_DAYS];
+		String[] forecasts = new String[WeatherParser.FORECAST_IN_DAYS];
 		if (data != null && data.moveToFirst()) {
 			current = data.getString(data.getColumnIndexOrThrow(WeatherEntity.CURRENT));
 			
@@ -119,7 +119,7 @@ public class WeatherForecast extends Fragment implements LoaderCallbacks<Cursor>
 		}
 		WeatherIconFactory.setWeatherIcon(textView, currentWeatherId);
 		
-		for (int i = 1; i <= WeatherParser.COUNT_FORECAST_DAYS; i++) {
+		for (int i = 1; i <= WeatherParser.FORECAST_IN_DAYS; i++) {
 			int forecastWeatherId = WeatherParser.getWeatherId(forecasts[i - 1]);
 			int temperatureMin = WeatherParser.getTemperatureMin(forecasts[i - 1]);
 			int temperatureMax = WeatherParser.getTemperatureMax(forecasts[i - 1]);
