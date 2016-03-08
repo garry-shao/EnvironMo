@@ -2,7 +2,6 @@ package org.qmsos.weathermo.fragment;
 
 import org.qmsos.weathermo.R;
 import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
-import org.qmsos.weathermo.resources.CalendarFactory;
 import org.qmsos.weathermo.resources.WeatherIconFactory;
 import org.qmsos.weathermo.util.IntentConstants;
 import org.qmsos.weathermo.util.WeatherParser;
@@ -113,7 +112,8 @@ public class WeatherForecast extends Fragment implements LoaderCallbacks<Cursor>
 		
 		TextView textView = (TextView) getView().findViewById(R.id.current);
 		if (temperature != WeatherParser.INVALID_TEMPERATURE) {
-			textView.setText("Now" + "\n" + temperature + "\u00B0" + "C");
+			String uiCurrent = getContext().getString(R.string.ui_current);
+			textView.setText(uiCurrent + "\n" + temperature + "\u00B0" + "C");
 		} else {
 			textView.setText(null);
 		}
@@ -129,8 +129,9 @@ public class WeatherForecast extends Fragment implements LoaderCallbacks<Cursor>
 			if (temperatureMin != WeatherParser.INVALID_TEMPERATURE
 					|| temperatureMax != WeatherParser.INVALID_TEMPERATURE) {
 				
-				v.setText(CalendarFactory.getDayOfWeek(getContext(), i) + "\n" 
-						+ temperatureMin + "~" + temperatureMax + "\u00B0" + "C");
+				String forecastTime = "+" + 24 * i + ":00H";
+				String forecastTemperature = temperatureMin + "~" + temperatureMax + "\u00B0" + "C";
+				v.setText(forecastTime + "\n" + forecastTemperature);
 			} else {
 				v.setText(null);
 			}

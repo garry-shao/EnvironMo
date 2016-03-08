@@ -9,6 +9,8 @@
     <string name="button_insert">Insert</string>
     <string name="button_delete">Delete</string>
     
+    <string name="ui_current">Current</string>
+    
     <!-- Used in map layers option -->
     <string name="layer_precipitation">Precipitation</string>
     <string name="layer_rain">Rain</string>

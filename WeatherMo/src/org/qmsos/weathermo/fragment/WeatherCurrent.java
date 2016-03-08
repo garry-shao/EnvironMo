@@ -148,10 +148,23 @@ public class WeatherCurrent extends Fragment implements LoaderCallbacks<Cursor> 
 			}
 		}
 		
+		String dateText;
+		switch (mDayOnDisplay) {
+		case 0:
+			String date = CalendarFactory.getDate(mDayOnDisplay);
+			String dayOfWeek = CalendarFactory.getDayOfWeek(getContext(), mDayOnDisplay);
+			dateText = date + " " + dayOfWeek;
+			break;
+		case 1:
+		case 2:
+		case 3:
+			dateText = "+" + 24 * mDayOnDisplay + ":00H";
+			break;
+		default:
+			dateText = null;
+		}
 		TextView v = (TextView) getView().findViewById(R.id.current_date);
-		String date = CalendarFactory.getDate(mDayOnDisplay);
-		String dayOfWeek = CalendarFactory.getDayOfWeek(getContext(), mDayOnDisplay);
-		v.setText(date + " " + dayOfWeek);
+		v.setText(dateText);
 	}
 
 	@Override
