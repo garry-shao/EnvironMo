@@ -335,7 +335,7 @@ public class WeatherService extends IntentService {
 					+ "&units=" + "metric"
 					+ "&appid=" + Contract.API_KEY;
 		case Contract.FLAG_CURRENT_UV_INDEX:
-			String geo = assembleRequestGeo(cityId);
+			String geo = assembleRequestExtra(cityId);
 			if (geo != null) {
 				return "http://api.owm.io/air/1.0/uvi/"
 						+ "current?" + geo
@@ -381,7 +381,7 @@ public class WeatherService extends IntentService {
 	 *            The id of city.
 	 * @return The assembled extra section.
 	 */
-	private String assembleRequestGeo(long cityId) {
+	private String assembleRequestExtra(long cityId) {
 		double latitude = 200.0f;
 		double longitude = 200.0f;
 		Cursor cursor = null;
