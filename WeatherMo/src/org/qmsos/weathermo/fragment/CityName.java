@@ -1,8 +1,8 @@
 package org.qmsos.weathermo.fragment;
 
 import org.qmsos.weathermo.R;
-import org.qmsos.weathermo.provider.WeatherContract.CityEntity;
-import org.qmsos.weathermo.util.IntentConstants;
+import org.qmsos.weathermo.contract.LoaderContract;
+import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -71,7 +71,7 @@ public class CityName extends Fragment implements LoaderCallbacks<Cursor> {
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		long cityId;
 		if (args != null) {
-			cityId = args.getLong(IntentConstants.KEY_CITY_ID);
+			cityId = args.getLong(LoaderContract.KEY_CITY_ID);
 		} else {
 			cityId = 0L;
 		}

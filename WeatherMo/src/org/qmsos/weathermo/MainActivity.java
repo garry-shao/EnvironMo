@@ -1,14 +1,15 @@
 package org.qmsos.weathermo;
 
+import org.qmsos.weathermo.contract.IntentContract;
+import org.qmsos.weathermo.contract.LoaderContract;
+import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
 import org.qmsos.weathermo.fragment.CityName;
 import org.qmsos.weathermo.fragment.CityName.OnCityNameViewClickedListener;
 import org.qmsos.weathermo.fragment.WeatherCurrent;
 import org.qmsos.weathermo.fragment.WeatherForecast;
 import org.qmsos.weathermo.fragment.WeatherForecast.OnForecastViewClickedListener;
 import org.qmsos.weathermo.fragment.WeatherPagerAdapter;
-import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
 import org.qmsos.weathermo.resources.BackgroundFactory;
-import org.qmsos.weathermo.util.IntentConstants;
 import org.qmsos.weathermo.util.WeatherParser;
 import org.qmsos.weathermo.widget.DotViewPagerIndicator;
 
@@ -86,8 +87,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener,
 			long cityId;
 			int day;
 			if (args != null) {
-				cityId = args.getLong(IntentConstants.KEY_CITY_ID);
-				day = args.getInt(IntentConstants.KEY_DAY, -1);
+				cityId = args.getLong(LoaderContract.KEY_CITY_ID);
+				day = args.getInt(LoaderContract.KEY_DAY, -1);
 			} else {
 				cityId = 0L;
 				day = -1;
@@ -191,7 +192,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener,
 	@Override
 	public void onRefresh() {
 		final Intent intent = new Intent(this, WeatherService.class);
-		intent.setAction(IntentConstants.ACTION_REFRESH_WEATHER);
+		intent.setAction(IntentContract.ACTION_REFRESH_WEATHER);
 		
 		// make animation here 
 		int animationTimeInMillis = 1000;
@@ -220,7 +221,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener,
 		long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
 		if (cityId != 0L) {
 			Intent i = new Intent(this, MapActivity.class);
-			i.putExtra(IntentConstants.EXTRA_CITY_ID, cityId);
+			i.putExtra(IntentContract.EXTRA_CITY_ID, cityId);
 			startActivity(i);
 		}
 	}
@@ -314,8 +315,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener,
 			return null;
 		} else {
 			Bundle args = new Bundle();
-			args.putLong(IntentConstants.KEY_CITY_ID, cityId);
-			args.putInt(IntentConstants.KEY_DAY, day);
+			args.putLong(LoaderContract.KEY_CITY_ID, cityId);
+			args.putInt(LoaderContract.KEY_DAY, day);
 			
 			return args;
 		}

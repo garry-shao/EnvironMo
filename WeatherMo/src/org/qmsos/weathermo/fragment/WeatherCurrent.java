@@ -1,7 +1,7 @@
 package org.qmsos.weathermo.fragment;
 
 import org.qmsos.weathermo.R;
-import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
+import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
 import org.qmsos.weathermo.resources.CalendarFactory;
 import org.qmsos.weathermo.resources.WeatherInfoFactory;
 import org.qmsos.weathermo.util.WeatherParser;

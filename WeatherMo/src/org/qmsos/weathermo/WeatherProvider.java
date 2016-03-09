@@ -2,8 +2,8 @@ package org.qmsos.weathermo;
 
 import java.util.ArrayList;
 
-import org.qmsos.weathermo.provider.WeatherContract.CityEntity;
-import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
+import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
+import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
 
 import android.content.ContentProvider;
 import android.content.ContentProviderOperation;

@@ -25,7 +25,7 @@ public class CityCandidates extends Fragment {
 	private static final String KEY_CITY_CANDIDATES = "KEY_CITY_CANDIDATES";
 
 	private CityCandidatesRecyclerViewAdapter mCityCandidatesAdapter;
-	private OnStartQueryListener mListener;
+	private OnStartSearchListener mListener;
 
 	private City[] mCityCandidates = null;
 
@@ -34,9 +34,9 @@ public class CityCandidates extends Fragment {
 		super.onAttach(context);
 		
 		try {
-			mListener = (OnStartQueryListener) context;
+			mListener = (OnStartSearchListener) context;
 		} catch (ClassCastException e) {
-			String listenerName = OnStartQueryListener.class.getSimpleName();
+			String listenerName = OnStartSearchListener.class.getSimpleName();
 			
 			throw new ClassCastException(context.toString() + " must implements " + listenerName);
 		}
@@ -69,7 +69,7 @@ public class CityCandidates extends Fragment {
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 				if (actionId == EditorInfo.IME_ACTION_DONE) {
 					String cityName = v.getText().toString();
-					mListener.onStartQuery(cityName);
+					mListener.onStartSearch(cityName);
 					
 					InputMethodManager manager = (InputMethodManager) getContext().getSystemService(
 							Context.INPUT_METHOD_SERVICE);
@@ -98,16 +98,16 @@ public class CityCandidates extends Fragment {
 
 	/**
 	 * Interface for a callback to be invoked when the input is done, user 
-	 * should implements the query feature(Sync or Async).
+	 * should implements the search feature(Sync or Async).
 	 */
-	public interface OnStartQueryListener {
+	public interface OnStartSearchListener {
 		/**
-		 * Callback when input is done, should implements query feature.
+		 * Callback when input is done, should implements search feature.
 		 * 
 		 * @param cityName
-		 *            The city name that to be queried.
+		 *            The city name that to be searched.
 		 */
-		void onStartQuery(String cityName);
+		void onStartSearch(String cityName);
 	}
 
 }

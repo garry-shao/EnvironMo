@@ -1,10 +1,10 @@
 package org.qmsos.weathermo;
 
+import org.qmsos.weathermo.contract.IntentContract;
 import org.qmsos.weathermo.datamodel.City;
 import org.qmsos.weathermo.fragment.CityCandidates;
-import org.qmsos.weathermo.fragment.CityCandidates.OnStartQueryListener;
+import org.qmsos.weathermo.fragment.CityCandidates.OnStartSearchListener;
 import org.qmsos.weathermo.fragment.CityList;
-import org.qmsos.weathermo.util.IntentConstants;
 import org.qmsos.weathermo.widget.CityCandidatesRecyclerViewAdapter.OnInsertCityClickedListener;
 import org.qmsos.weathermo.widget.CityListRecyclerViewAdapter.OnDeleteCityClickedListener;
 
@@ -22,7 +22,7 @@ import android.support.v7.widget.Toolbar;
 import android.widget.Toast;
 
 public class CityActivity extends AppCompatActivity 
-implements OnDeleteCityClickedListener, OnStartQueryListener, OnInsertCityClickedListener {
+implements OnDeleteCityClickedListener, OnInsertCityClickedListener, OnStartSearchListener {
 
 	private static final String FRAGMENT_TAG_CITY_LIST = "FRAGMENT_TAG_CITY_LIST";
 	private static final String FRAGMENT_TAG_CITY_CANDIDATES = "FRAGMENT_TAG_CITY_CANDIDATES";
@@ -71,8 +71,8 @@ implements OnDeleteCityClickedListener, OnStartQueryListener, OnInsertCityClicke
 		super.onResume();
 		
 		IntentFilter filter = new IntentFilter();
-		filter.addAction(IntentConstants.ACTION_QUERY_EXECUTED);
-		filter.addAction(IntentConstants.ACTION_INSERT_EXECUTED);
+		filter.addAction(IntentContract.ACTION_SEARCH_EXECUTED);
+		filter.addAction(IntentContract.ACTION_INSERT_EXECUTED);
 		LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, filter);
 	}
 
@@ -104,8 +104,8 @@ implements OnDeleteCityClickedListener, OnStartQueryListener, OnInsertCityClicke
 	@Override
 	public void onDeleteCityClicked(long cityId) {
 		Intent i = new Intent(this, WeatherService.class);
-		i.setAction(IntentConstants.ACTION_DELETE_CITY);
-		i.putExtra(IntentConstants.EXTRA_CITY_ID, cityId);
+		i.setAction(IntentContract.ACTION_DELETE_CITY);
+		i.putExtra(IntentContract.EXTRA_CITY_ID, cityId);
 		
 		startService(i);
 	}
@@ -113,22 +113,22 @@ implements OnDeleteCityClickedListener, OnStartQueryListener, OnInsertCityClicke
 	@Override
 	public void onInsertCityClicked(City city) {
 		Intent i = new Intent(this, WeatherService.class);
-		i.setAction(IntentConstants.ACTION_INSERT_CITY);
-		i.putExtra(IntentConstants.EXTRA_INSERT_CITY, city);
+		i.setAction(IntentContract.ACTION_INSERT_CITY);
+		i.putExtra(IntentContract.EXTRA_INSERT_CITY, city);
 		
 		startService(i);		
 	}
 
 	@Override
-	public void onStartQuery(String cityName) {
+	public void onStartSearch(String cityName) {
 		Intent i = new Intent(getBaseContext(), WeatherService.class);
-		i.setAction(IntentConstants.ACTION_QUERY_CITY);
-		i.putExtra(IntentConstants.EXTRA_CITY_NAME, cityName);
+		i.setAction(IntentContract.ACTION_SEARCH_CITY);
+		i.putExtra(IntentContract.EXTRA_CITY_NAME, cityName);
 		
 		startService(i);		
 	}
 
-	private void onQueryResultReceived(String result) {
+	private void onSearchResultReceived(String result) {
 		FragmentManager manager = getSupportFragmentManager();
 		Fragment fragmentCityCandidates = manager.findFragmentByTag(FRAGMENT_TAG_CITY_CANDIDATES);
 		if (fragmentCityCandidates != null) {
@@ -149,19 +149,19 @@ implements OnDeleteCityClickedListener, OnStartQueryListener, OnInsertCityClicke
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
-			if (action != null) {
-				if (action.equals(IntentConstants.ACTION_QUERY_EXECUTED)) {
-					boolean flag = intent.getBooleanExtra(IntentConstants.EXTRA_QUERY_EXECUTED, false);
-					if (flag) {
-						String result = intent.getStringExtra(IntentConstants.EXTRA_QUERY_RESULT);
-						
-						onQueryResultReceived(result);
-					}
-				} else if (action.equals(IntentConstants.ACTION_INSERT_EXECUTED)) {
-					boolean flag = intent.getBooleanExtra(IntentConstants.EXTRA_INSERT_EXECUTED, false);
+			if (action == null) {
+				return;
+			} else if (action.equals(IntentContract.ACTION_SEARCH_EXECUTED)) {
+				boolean flag = intent.getBooleanExtra(IntentContract.EXTRA_SEARCH_EXECUTED, false);
+				if (flag) {
+					String result = intent.getStringExtra(IntentContract.EXTRA_SEARCH_RESULT);
 					
-					onInsertExecuted(flag);
+					onSearchResultReceived(result);
 				}
+			} else if (action.equals(IntentContract.ACTION_INSERT_EXECUTED)) {
+				boolean flag = intent.getBooleanExtra(IntentContract.EXTRA_INSERT_EXECUTED, false);
+				
+				onInsertExecuted(flag);
 			}
 		}
 	}

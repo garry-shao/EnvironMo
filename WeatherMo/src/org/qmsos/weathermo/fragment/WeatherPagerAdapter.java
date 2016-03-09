@@ -1,6 +1,6 @@
 package org.qmsos.weathermo.fragment;
 
-import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
+import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
 
 import android.content.Context;
 import android.database.Cursor;

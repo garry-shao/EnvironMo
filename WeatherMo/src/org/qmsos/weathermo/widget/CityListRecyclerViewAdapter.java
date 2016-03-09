@@ -1,7 +1,7 @@
 package org.qmsos.weathermo.widget;
 
 import org.qmsos.weathermo.R;
-import org.qmsos.weathermo.provider.WeatherContract.CityEntity;
+import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
 
 import android.content.Context;
 import android.database.Cursor;

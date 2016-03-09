@@ -9,11 +9,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
+import org.qmsos.weathermo.contract.IntentContract;
+import org.qmsos.weathermo.contract.ProviderContract;
+import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
+import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
 import org.qmsos.weathermo.datamodel.City;
-import org.qmsos.weathermo.provider.WeatherContract;
-import org.qmsos.weathermo.provider.WeatherContract.CityEntity;
-import org.qmsos.weathermo.provider.WeatherContract.WeatherEntity;
-import org.qmsos.weathermo.util.IntentConstants;
 import org.qmsos.weathermo.util.WeatherParser;
 
 import android.app.IntentService;
@@ -63,7 +63,7 @@ public class WeatherService extends IntentService {
 			return;
 		}
 		
-		if (action.equals(IntentConstants.ACTION_REFRESH_WEATHER)) {
+		if (action.equals(IntentContract.ACTION_REFRESH_WEATHER)) {
 			if (checkConnection()) {
 				int[] flags = { 
 						Contract.FLAG_CURRENT_WEATHER, 
@@ -72,35 +72,35 @@ public class WeatherService extends IntentService {
 				
 				executeRefreshWeather(flags);
 			}
-		} else if (action.equals(IntentConstants.ACTION_QUERY_CITY)) {
-			Intent localIntent = new Intent(IntentConstants.ACTION_QUERY_EXECUTED);
+		} else if (action.equals(IntentContract.ACTION_SEARCH_CITY)) {
+			Intent localIntent = new Intent(IntentContract.ACTION_SEARCH_EXECUTED);
 			if (checkConnection()) {
-				String cityname = intent.getStringExtra(IntentConstants.EXTRA_CITY_NAME);
+				String cityname = intent.getStringExtra(IntentContract.EXTRA_CITY_NAME);
 				
 				String result = executeSearchCity(cityname);
 				if (result != null) {
-					localIntent.putExtra(IntentConstants.EXTRA_QUERY_EXECUTED, true);
-					localIntent.putExtra(IntentConstants.EXTRA_QUERY_RESULT, result);
+					localIntent.putExtra(IntentContract.EXTRA_SEARCH_EXECUTED, true);
+					localIntent.putExtra(IntentContract.EXTRA_SEARCH_RESULT, result);
 				} else {
-					localIntent.putExtra(IntentConstants.EXTRA_QUERY_EXECUTED, false);
+					localIntent.putExtra(IntentContract.EXTRA_SEARCH_EXECUTED, false);
 				}
 			} else {
-				localIntent.putExtra(IntentConstants.EXTRA_QUERY_EXECUTED, false);
+				localIntent.putExtra(IntentContract.EXTRA_SEARCH_EXECUTED, false);
 			}
 			
 			LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
-		} else if (action.equals(IntentConstants.ACTION_INSERT_CITY)) {
-			City city = intent.getParcelableExtra(IntentConstants.EXTRA_INSERT_CITY);
+		} else if (action.equals(IntentContract.ACTION_INSERT_CITY)) {
+			City city = intent.getParcelableExtra(IntentContract.EXTRA_INSERT_CITY);
 			if (city != null) {
 				boolean flag = executeInsertCity(city);
 				
-				Intent localIntent = new Intent(IntentConstants.ACTION_INSERT_EXECUTED);
-				localIntent.putExtra(IntentConstants.EXTRA_INSERT_EXECUTED, flag);
+				Intent localIntent = new Intent(IntentContract.ACTION_INSERT_EXECUTED);
+				localIntent.putExtra(IntentContract.EXTRA_INSERT_EXECUTED, flag);
 				
 				LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
 			}
-		} else if (action.equals(IntentConstants.ACTION_DELETE_CITY)) {
-			long cityId = intent.getLongExtra(IntentConstants.EXTRA_CITY_ID, -1);
+		} else if (action.equals(IntentContract.ACTION_DELETE_CITY)) {
+			long cityId = intent.getLongExtra(IntentContract.EXTRA_CITY_ID, -1);
 			if (cityId != -1) {
 				executeDeleteCity(cityId);
 			}
@@ -159,7 +159,7 @@ public class WeatherService extends IntentService {
 		}
 		
 		try {
-			getContentResolver().applyBatch(WeatherContract.AUTHORITY, operations);
+			getContentResolver().applyBatch(ProviderContract.AUTHORITY, operations);
 		} catch (RemoteException e) {
 			Log.e(TAG, "Error when batch update weathers: " + e.getMessage());
 		} catch (OperationApplicationException e) {
