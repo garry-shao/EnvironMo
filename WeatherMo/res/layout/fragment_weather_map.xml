@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <org.apache.cordova.engine.SystemWebView
+    <org.qmsos.weathermo.widget.CustomMapView
         android:id="@+id/weather_map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
