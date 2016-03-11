@@ -15,13 +15,13 @@
     <string name="ui_current">Current</string>
     
     <!-- Used in map layers option -->
-    <string name="layer_precipitation">Precipitation</string>
-    <string name="layer_rain">Rain</string>
-    <string name="layer_snow">Snow</string>
-    <string name="layer_clouds">Clouds</string>
-    <string name="layer_pressure">Pressure</string>
-    <string name="layer_temperature">Temperature</string>
-    <string name="layer_windspeed">Windspeed</string>
+    <string name="ui_layer_precipitation">Precipitation</string>
+    <string name="ui_layer_rain">Rain</string>
+    <string name="ui_layer_snow">Snow</string>
+    <string name="ui_layer_clouds">Clouds</string>
+    <string name="ui_layer_pressure">Pressure</string>
+    <string name="ui_layer_temperature">Temperature</string>
+    <string name="ui_layer_windspeed">Windspeed</string>
     
     <!-- Description of ultra violet radiation index -->
     <string name="uv_low">Low</string>
