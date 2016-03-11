@@ -9,6 +9,9 @@
     <string name="button_insert">Insert</string>
     <string name="button_delete">Delete</string>
     
+    <string name="snackbar_succeed">Insert succeed!!!</string>
+    <string name="snackbar_failed">Insert failed!!!</string>
+    
     <string name="ui_current">Current</string>
     
     <!-- Used in map layers option -->

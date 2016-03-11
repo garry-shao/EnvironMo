@@ -13,13 +13,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.widget.Toast;
+import android.view.View;
 
 public class CityActivity extends AppCompatActivity 
 implements OnDeleteCityClickedListener, OnInsertCityClickedListener, OnStartSearchListener {
@@ -137,8 +138,16 @@ implements OnDeleteCityClickedListener, OnInsertCityClickedListener, OnStartSear
 	}
 
 	private void onInsertExecuted(boolean flag) {
-		String text = flag ? "Succeeded" : "Failed";
-		Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+		View view = findViewById(R.id.layout_activity_city);
+		if (view != null) {
+			int resId;
+			if (flag) {
+				resId = R.string.snackbar_succeed;
+			} else {
+				resId = R.string.snackbar_failed;
+			}
+			Snackbar.make(view, resId, Snackbar.LENGTH_LONG).show();
+		}
 	}
 
 	/**
