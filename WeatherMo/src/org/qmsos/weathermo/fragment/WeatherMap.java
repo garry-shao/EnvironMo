@@ -36,11 +36,12 @@ import android.view.ViewGroup;
 public class WeatherMap extends Fragment implements CordovaInterface, LoaderCallbacks<Cursor> {
 
 	private static final String KEY_CITY_ID = "KEY_CITY_ID";
-	private static final String START_URL = "file:///android_asset/www/index.html";
+	private static final String KEY_LAYER = "KEY_LAYER";
 	private static final String TAG = WeatherMap.class.getSimpleName();
 
-	// The base url that connects to remote server, can add parameter of layer to this.
-	private String mBaseLoadUrl = null;
+	private String mLayer;
+	private double mLatitude;
+	private double mLongitude;
 
 	private SystemWebView mSystemWebView;
 	private CordovaWebView mCordovaWebView;
@@ -86,12 +87,19 @@ public class WeatherMap extends Fragment implements CordovaInterface, LoaderCall
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		
+		if (savedInstanceState != null) {
+			mLayer = savedInstanceState.getString(KEY_LAYER);
+		} else {
+			mLayer = null;
+		}
+		
 		mThreadPool = Executors.newCachedThreadPool();
 		
 		ConfigXmlParser parser = new ConfigXmlParser();
         parser.parse(getContext());
         
-        mCordovaWebView = new CordovaWebViewImpl(new SystemWebViewEngine(mSystemWebView));
+        SystemWebViewEngine systemWebViewEngine = new SystemWebViewEngine(mSystemWebView);
+		mCordovaWebView = new CordovaWebViewImpl(systemWebViewEngine);
 		mCordovaWebView.init(this, parser.getPluginEntries(), parser.getPreferences());
 		
 		getLoaderManager().initLoader(0, null, this);
@@ -106,6 +114,13 @@ public class WeatherMap extends Fragment implements CordovaInterface, LoaderCall
 		}
 		
 		super.onDestroyView();
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		outState.putString(KEY_LAYER, mLayer);
+		
+		super.onSaveInstanceState(outState);
 	}
 
 	@Override
@@ -198,24 +213,12 @@ public class WeatherMap extends Fragment implements CordovaInterface, LoaderCall
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-		StringBuilder builder = new StringBuilder(START_URL + "?");
-		
 		if (data != null && data.moveToFirst()) {
-			double longitude = data.getDouble(data.getColumnIndexOrThrow(CityEntity.LONGITUDE));
-			double latitude = data.getDouble(data.getColumnIndexOrThrow(CityEntity.LATITUDE));
-			
-			int zoomlevel = 4;
-			
-			builder.append("&lon=");
-			builder.append(longitude);
-			builder.append("&lat=");
-			builder.append(latitude);
-			builder.append("&zoom=");
-			builder.append(zoomlevel);
+			mLatitude = data.getDouble(data.getColumnIndexOrThrow(CityEntity.LATITUDE));
+			mLongitude = data.getDouble(data.getColumnIndexOrThrow(CityEntity.LONGITUDE));
 		}
 		
-		mBaseLoadUrl = builder.toString();
-		loadMap(null);
+		reloadView();
 	}
 
 	@Override
@@ -229,15 +232,43 @@ public class WeatherMap extends Fragment implements CordovaInterface, LoaderCall
 	 *            The name of the layer that will be showed, NULL means default layer.
 	 */
 	public void loadMap(String layer) {
-		StringBuilder builder = new StringBuilder(mBaseLoadUrl);
-		if (layer != null) {
+		mLayer = layer;
+		
+		reloadView();
+	}
+
+	/**
+	 * Reload Webview with new parameters.
+	 */
+	private void reloadView() {
+		String url = assembleUrl();
+		if (mCordovaWebView != null) {
+			mCordovaWebView.loadUrlIntoView(url, false);
+		}
+	}
+
+	/**
+	 * Assemble the url string based on values of current field variables.
+	 * 
+	 * @return The assembled url string.
+	 */
+	private String assembleUrl() {
+		String startUrl = "file:///android_asset/www/index.html";
+		int zoomlevel = 4;
+		
+		StringBuilder builder = new StringBuilder(startUrl + "?");
+		builder.append("&lat=");
+		builder.append(mLatitude);
+		builder.append("&lon=");
+		builder.append(mLongitude);
+		builder.append("&zoom=");
+		builder.append(zoomlevel);
+		if (mLayer != null) {
 			builder.append("&l=");
-			builder.append(layer);
+			builder.append(mLayer);
 		}
 		
-		if (mCordovaWebView != null) {
-			mCordovaWebView.loadUrlIntoView(builder.toString(), false);
-		}
+		return builder.toString();
 	}
 
 }
