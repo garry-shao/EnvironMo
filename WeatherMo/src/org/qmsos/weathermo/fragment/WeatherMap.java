@@ -67,7 +67,7 @@ public class WeatherMap extends Fragment implements CordovaInterface, LoaderCall
 		
 		return fragment;
 	}
-	
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fragment_weather_map, container, false);
@@ -115,9 +115,6 @@ public class WeatherMap extends Fragment implements CordovaInterface, LoaderCall
 
 	@Override
 	public Object onMessage(String id, Object data) {
-		if ("exit".equals(id)) {
-            getActivity().finish();
-        }
         return null;
 	}
 
@@ -152,8 +149,8 @@ public class WeatherMap extends Fragment implements CordovaInterface, LoaderCall
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         	String[] permissions = { permission };
-        	requestPermissions(permissions, requestCode);		
-        }		
+        	requestPermissions(permissions, requestCode);
+        }
 	}
 
 	@Override
