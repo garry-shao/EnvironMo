@@ -96,9 +96,9 @@ public class WeatherMap extends Fragment implements CordovaInterface, LoaderCall
 		mThreadPool = Executors.newCachedThreadPool();
 		
 		ConfigXmlParser parser = new ConfigXmlParser();
-        parser.parse(getContext());
+		parser.parse(getContext());
         
-        SystemWebViewEngine systemWebViewEngine = new SystemWebViewEngine(mSystemWebView);
+		SystemWebViewEngine systemWebViewEngine = new SystemWebViewEngine(mSystemWebView);
 		mCordovaWebView = new CordovaWebViewImpl(systemWebViewEngine);
 		mCordovaWebView.init(this, parser.getPluginEntries(), parser.getPreferences());
 		
@@ -130,7 +130,7 @@ public class WeatherMap extends Fragment implements CordovaInterface, LoaderCall
 
 	@Override
 	public Object onMessage(String id, Object data) {
-        return null;
+		return null;
 	}
 
 	@Override
@@ -138,14 +138,14 @@ public class WeatherMap extends Fragment implements CordovaInterface, LoaderCall
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 		
 		if (mPermissionResultCallback != null) {
-            try {
+			try {
 				mPermissionResultCallback.onRequestPermissionResult(
 						requestCode, permissions, grantResults);
 			} catch (JSONException e) {
 				Log.e(TAG, e.getMessage());
 			}
-            mPermissionResultCallback = null;
-        }
+			mPermissionResultCallback = null;
+		}
 	}
 
 	@Override
@@ -161,44 +161,43 @@ public class WeatherMap extends Fragment implements CordovaInterface, LoaderCall
 	@Override
 	public void requestPermission(CordovaPlugin plugin, int requestCode, String permission) {
 		mPermissionResultCallback = plugin;
-        
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        	String[] permissions = { permission };
-        	requestPermissions(permissions, requestCode);
-        }
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			String[] permissions = { permission };
+			requestPermissions(permissions, requestCode);
+		}
 	}
 
 	@Override
 	public void requestPermissions(CordovaPlugin plugin, int requestCode, String[] permissions) {
 		mPermissionResultCallback = plugin;
-        
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        	requestPermissions(permissions, requestCode);
-        }
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			requestPermissions(permissions, requestCode);
+		}
 	}
 
 	@Override
 	public void setActivityResultCallback(CordovaPlugin plugin) {
-	    // Cancel any previously pending activity.
-        if (mActivityResultCallback != null) {
-            mActivityResultCallback.onActivityResult(
-            		mActivityResultRequestCode, Activity.RESULT_CANCELED, null);
-        }
-        mActivityResultCallback = plugin;
+		// Cancel any previously pending activity.
+		if (mActivityResultCallback != null) {
+			mActivityResultCallback.onActivityResult(
+					mActivityResultRequestCode, Activity.RESULT_CANCELED, null);
+		}
+		mActivityResultCallback = plugin;
 	}
 
 	@Override
 	public void startActivityForResult(CordovaPlugin command, Intent intent, int requestCode) {
 		setActivityResultCallback(command);
-        try {
-            startActivityForResult(intent, requestCode);
-        } catch (RuntimeException e) { // E.g.: ActivityNotFoundException
-            mActivityResultCallback = null;
-            
-            Log.e(TAG, e.getMessage());
-            
-            throw e;
-        }
+		try {
+			startActivityForResult(intent, requestCode);
+		} catch (RuntimeException e) { // E.g.: ActivityNotFoundException
+			mActivityResultCallback = null;
+			
+			Log.e(TAG, e.getMessage());
+			
+			throw e;
+		}
 	}
 
 	@Override
