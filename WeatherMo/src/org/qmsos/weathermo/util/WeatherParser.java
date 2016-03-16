@@ -63,7 +63,7 @@ public class WeatherParser {
 			
 			return builder.toString();
 		} catch (JSONException e) {
-			Log.e(TAG, "Error parsing JSON string");
+			Log.e(TAG, "Error parsing JSON string. " + e.getMessage());
 			
 			return null;
 		}
@@ -94,7 +94,7 @@ public class WeatherParser {
 			list = reader.getJSONArray("list");
 			length = list.length();
 		} catch (JSONException e) {
-			Log.e(TAG, "Error parsing JSON string");
+			Log.e(TAG, "Error parsing JSON string. " + e.getMessage());
 			
 			return null;
 		}
@@ -112,7 +112,7 @@ public class WeatherParser {
 			JSONObject forecastFirst = list.getJSONObject(0);
 			firstMillis = forecastFirst.getLong("dt");
 		} catch (JSONException e) {
-			Log.e(TAG, "Error parsing JSON string");
+			Log.e(TAG, "Error parsing JSON string. " + e.getMessage());
 			
 			return null;
 		}
@@ -154,7 +154,7 @@ public class WeatherParser {
 			
 			return parsed;
 		} catch (JSONException e) {
-			Log.e(TAG, "Error parsing JSON string");
+			Log.e(TAG, "Error parsing JSON string. " + e.getMessage());
 			
 			return null;
 		}
@@ -185,7 +185,7 @@ public class WeatherParser {
 			list = reader.getJSONArray("list");
 			length = list.length();
 		} catch (JSONException e) {
-			Log.e(TAG, "Error parsing JSON string");
+			Log.e(TAG, "Error parsing JSON string. " + e.getMessage());
 			
 			return null;
 		}
@@ -211,7 +211,7 @@ public class WeatherParser {
 					JSONObject main = forecast.getJSONObject("main");
 					temperature = main.getInt("temp");
 				} catch (JSONException e) {
-					Log.e(TAG, "Error parsing JSON string");
+					Log.e(TAG, "Error parsing JSON string. " + e.getMessage());
 					
 					return null;
 				}
@@ -268,7 +268,7 @@ public class WeatherParser {
 			
 			return value;
 		} catch (JSONException e) {
-			Log.e(TAG, "Error parsing JSON string");
+			Log.e(TAG, "Error parsing JSON string. " + e.getMessage());
 			
 			return INVALID_UV_INDEX;
 		}
