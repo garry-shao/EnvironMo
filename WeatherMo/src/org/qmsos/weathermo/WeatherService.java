@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 import org.qmsos.weathermo.contract.IntentContract;
@@ -75,9 +77,9 @@ public class WeatherService extends IntentService {
 		} else if (action.equals(IntentContract.ACTION_SEARCH_CITY)) {
 			Intent localIntent = new Intent(IntentContract.ACTION_SEARCH_EXECUTED);
 			if (checkConnection()) {
-				String cityname = intent.getStringExtra(IntentContract.EXTRA_CITY_NAME);
+				String cityName = intent.getStringExtra(IntentContract.EXTRA_CITY_NAME);
 				
-				String result = executeSearchCity(cityname);
+				String result = executeSearchCity(cityName);
 				if (result != null) {
 					localIntent.putExtra(IntentContract.EXTRA_SEARCH_EXECUTED, true);
 					localIntent.putExtra(IntentContract.EXTRA_SEARCH_RESULT, result);
@@ -108,24 +110,6 @@ public class WeatherService extends IntentService {
 	}
 
 	/**
-	 * Proceed the execution of searching city id with city name.
-	 * 
-	 * @param cityName
-	 *            The phrase of city name which would be used to search for.
-	 * @return The raw, unparsed results from remote server.
-	 */
-	private String executeSearchCity(String cityName) {
-		if (cityName == null) {
-			return null;
-		}
-		
-		String request = assembleRequest(Contract.FLAG_SEARCH_CITY, 0, cityName);
-		String result = download(request);
-		
-		return result;
-	}
-	
-	/**
 	 * Proceed the execution of refreshing weather from remote server.
 	 * 
 	 * @param flags
@@ -137,7 +121,7 @@ public class WeatherService extends IntentService {
 			return;
 		}
 		
-		long[] cityIds = getAvailableCityIds();
+		long[] cityIds = getMonitoringCities();
 		if (cityIds == null) {
 			return;
 		}
@@ -148,7 +132,7 @@ public class WeatherService extends IntentService {
 			
 			String where = WeatherEntity.CITY_ID + " = " + cityId;
 			
-			ContentValues value = executeRefreshInstance(cityId, flags);
+			ContentValues value = refreshInstance(cityId, flags);
 			
 			operations.add(
 					ContentProviderOperation
@@ -168,6 +152,89 @@ public class WeatherService extends IntentService {
 	}
 
 	/**
+	 * Proceed the execution of searching city id with city name.
+	 * 
+	 * @param cityName
+	 *            The phrase of city name which would be used to search for.
+	 * @return The raw, unparsed results from remote server.
+	 */
+	private String executeSearchCity(String cityName) {
+		if (cityName == null) {
+			return null;
+		}
+		
+		String request = assembleRequest(Contract.FLAG_SEARCH_CITY, 0, cityName);
+		String result = download(request);
+		
+		return result;
+	}
+	
+	/**
+	 * Proceed the execution of inserting new city to provider.
+	 * 
+	 * @param city
+	 *            The instance of city that will be inserted.
+	 * @return Whether the operation succeed, TRUE means succeed.
+	 */
+	private boolean executeInsertCity(City city) {
+		if (city == null) {
+			return false;
+		}
+		
+		ContentResolver resolver = getContentResolver();
+		
+		boolean cityExisting = false;
+		Cursor cursor = null;
+		try {
+			String where = CityEntity.CITY_ID + " = " + city.getCityId();
+			
+			cursor = resolver.query(CityEntity.CONTENT_URI, null, where, null, null);
+			if (cursor != null && cursor.moveToNext()) {
+				cityExisting = true;
+			}
+		} finally {
+			if (cursor != null && !cursor.isClosed()) {
+				cursor.close();
+			}
+		}
+		
+		if (!cityExisting) {
+			ContentValues cityValues = new ContentValues();
+			cityValues.put(CityEntity.CITY_ID, city.getCityId());
+			cityValues.put(CityEntity.CITY_NAME, city.getCityName());
+			cityValues.put(CityEntity.COUNTRY, city.getCountry());
+			cityValues.put(CityEntity.LONGITUDE, city.getLongitude());
+			cityValues.put(CityEntity.LATITUDE, city.getLatitude());
+			
+			ContentValues weatherValues = new ContentValues();
+			weatherValues.put(CityEntity.CITY_ID, city.getCityId());
+			
+			resolver.insert(CityEntity.CONTENT_URI, cityValues);
+			resolver.insert(WeatherEntity.CONTENT_URI, weatherValues);
+			
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Proceed the execution of deleting specified city from provider.
+	 * 
+	 * @param cityId
+	 *            The id of city that would be deleted.
+	 * @return Whether the operation succeed, TRUE means succeed.
+	 */
+	private boolean executeDeleteCity(long cityId) {
+		String where = CityEntity.CITY_ID + " = " + cityId;
+		
+		int rows1 = getContentResolver().delete(CityEntity.CONTENT_URI, where, null);
+		int rows2 = getContentResolver().delete(WeatherEntity.CONTENT_URI, where, null);
+		
+		return (rows1 > 0 && rows2 > 0) ? true : false;
+	}
+
+	/**
 	 * This is the single instance of refreshing weather from remote server. should
 	 * be considered is a component of operation, should not be used alone.
 	 * 
@@ -180,7 +247,7 @@ public class WeatherService extends IntentService {
 	 * @return The parsed value that containing the refreshed data for further 
 	 *         execution, as the refreshing should be a transaction operation.
 	 */
-	private ContentValues executeRefreshInstance(long cityId, int[] flags) {
+	private ContentValues refreshInstance(long cityId, int[] flags) {
 		if (cityId == 0L || flags == null) {
 			return null;
 		}
@@ -220,99 +287,58 @@ public class WeatherService extends IntentService {
 	}
 
 	/**
-	 * Get the available city ids that needs monitoring.
+	 * Download from remote server for results.
 	 * 
-	 * @return The array that containing available city ids. 
+	 * @param request
+	 *            The URL string of request, <b>should comply with URL-Encoding</b>.
+	 * @return Results of this request, NULL otherwise.
 	 */
-	private long[] getAvailableCityIds() {
-		Cursor cursor = null;
+	private String download(String request) {
+		if (request == null) {
+			return null;
+		}
+		
+		URL url = null;
 		try {
-			String[] projection = { WeatherEntity.CITY_ID };
-			String where = WeatherEntity.CITY_ID;
+			url = new URL(request);
+		} catch (MalformedURLException e) {
+			Log.e(TAG, "The provided URL is Malformed. " + e.getMessage());
 			
-			cursor = getContentResolver().query(WeatherEntity.CONTENT_URI, projection, where, null, null);
-			if (cursor == null) {
-				return null;
-			}
+			return null;
+		}
+		
+		HttpURLConnection httpConnection = null;
+		try {
+			httpConnection = (HttpURLConnection) url.openConnection();
+		} catch (IOException e) {
+			Log.e(TAG, "Error opening connection. " + e.getMessage());
 			
-			int i = 0;
-			long[] cityIds = new long[cursor.getCount()];
-			while (cursor.moveToNext()) {
-				long cityId = cursor.getLong(cursor.getColumnIndexOrThrow(WeatherEntity.CITY_ID));
+			return null;
+		}
+		
+		StringBuilder builder = new StringBuilder();
+		try {
+			int responseCode = httpConnection.getResponseCode();
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				InputStream inStream = httpConnection.getInputStream();
+				BufferedReader reader = new BufferedReader(new InputStreamReader(inStream));
 				
-				cityIds[i] = cityId;
-				i++;
+				String line;
+				while ((line = reader.readLine()) != null) {
+					builder.append(line);
+				}
 			}
-			
-			return cityIds;
-		} catch (IllegalArgumentException e) {
-			Log.e(TAG, "The column does not exist");
+		} catch (IOException e) {
+			Log.e(TAG, "Error reading from the connection. " + e.getMessage());
 			
 			return null;
 		} finally {
-			if (cursor != null && !cursor.isClosed()) {
-				cursor.close();
-			}
-		}
-	}
-
-	/**
-	 * Proceed the execution of inserting new city to provider.
-	 * 
-	 * @param city
-	 *            The instance of city that will be inserted.
-	 * @return Whether the operation succeed, TRUE means succeed.
-	 */
-	private boolean executeInsertCity(City city) {
-		if (city == null) {
-			return false;
-		}
-		
-		boolean flag = false;
-
-		Cursor cursor = null;
-		try {
-			ContentResolver resolver = getContentResolver();
-			String where = CityEntity.CITY_ID + " = " + city.getCityId();
-			cursor = resolver.query(CityEntity.CONTENT_URI, null, where, null, null);
-			if (cursor != null && !cursor.moveToNext()) {
-				ContentValues values = new ContentValues();
-				values.put(CityEntity.CITY_ID, city.getCityId());
-				
-				resolver.insert(WeatherEntity.CONTENT_URI, values);
-				
-				values.put(CityEntity.CITY_NAME, city.getCityName());
-				values.put(CityEntity.COUNTRY, city.getCountry());
-				values.put(CityEntity.LONGITUDE, city.getLongitude());
-				values.put(CityEntity.LATITUDE, city.getLatitude());
-				resolver.insert(CityEntity.CONTENT_URI, values);
-				
-				flag = true;
-			}
-		} catch (Exception e) {
-			Log.e(TAG, "Error found when adding city to provider");
-		} finally {
-			if (cursor != null && !cursor.isClosed()) {
-				cursor.close();
+			if (httpConnection != null) {
+				httpConnection.disconnect();
 			}
 		}
 		
-		return flag;
-	}
-
-	/**
-	 * Proceed the execution of deleting specified city from provider.
-	 * 
-	 * @param cityId
-	 *            The id of city that would be deleted.
-	 * @return Whether the operation succeed, TRUE means succeed.
-	 */
-	private boolean executeDeleteCity(long cityId) {
-		String where = CityEntity.CITY_ID + " = " + cityId;
-		int rows1 = getContentResolver().delete(CityEntity.CONTENT_URI, where, null);
-		int rows2 = getContentResolver().delete(WeatherEntity.CONTENT_URI, where, null);
-		
-		return (rows1 > 0 && rows2 > 0) ? true : false;
+		return builder.toString();
 	}
 
 	/**
@@ -335,7 +361,7 @@ public class WeatherService extends IntentService {
 					+ "&units=" + "metric"
 					+ "&appid=" + Contract.API_KEY;
 		case Contract.FLAG_CURRENT_UV_INDEX:
-			String geo = assembleRequestExtra(cityId);
+			String geo = assembleRequestExtraUv(cityId);
 			if (geo != null) {
 				return "http://api.owm.io/air/1.0/uvi/"
 						+ "current?" + geo
@@ -360,11 +386,16 @@ public class WeatherService extends IntentService {
 					+ "&units=" + "metric"
 					+ "&appid=" + Contract.API_KEY;
 		case Contract.FLAG_SEARCH_CITY:
-			return "http://api.openweathermap.org/data/2.5/"
-					+ "find?" + "q=" + cityName
-					+ "&type=" + "like"
-					+ "&units=" + "metric"
-					+ "&appid=" + Contract.API_KEY;
+			String encodedCityName = assembleRequestEncode(cityName);
+			if (encodedCityName != null) {
+				return "http://api.openweathermap.org/data/2.5/"
+						+ "find?" + "q=" + encodedCityName
+						+ "&type=" + "like"
+						+ "&units=" + "metric"
+						+ "&appid=" + Contract.API_KEY;
+			} else {
+				return null;
+			}
 		default:
 			return null;
 		}
@@ -375,19 +406,21 @@ public class WeatherService extends IntentService {
 	 * server. Only used when refresh ultra violet radiation value.
 	 * <br>
 	 * <br>
-	 * This method should not be used alone.
+	 * <b>This method should only be used in assembling request.</b>
 	 * 
 	 * @param cityId
 	 *            The id of city.
 	 * @return The assembled extra section.
 	 */
-	private String assembleRequestExtra(long cityId) {
+	private String assembleRequestExtraUv(long cityId) {
 		double latitude = 200.0f;
 		double longitude = 200.0f;
+		
 		Cursor cursor = null;
 		try {
 			String[] projection = { CityEntity.CITY_ID, CityEntity.LATITUDE,  CityEntity.LONGITUDE };
 			String where =  CityEntity.CITY_ID + " = " + cityId;
+			
 			cursor = getContentResolver().query(
 					 CityEntity.CONTENT_URI, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
@@ -395,7 +428,7 @@ public class WeatherService extends IntentService {
 				longitude = cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LONGITUDE));
 			}
 		} catch (IllegalArgumentException e) {
-			Log.e(TAG, "The column does not exist");
+			Log.e(TAG, "The column does not exist. " + e.getMessage());
 		} finally {
 			if (cursor != null && !cursor.isClosed()) {
 				cursor.close();
@@ -406,6 +439,65 @@ public class WeatherService extends IntentService {
 			return null;
 		} else {
 			return "lat=" + latitude + "&lon=" + longitude;
+		}
+	}
+
+	/**
+	 * Encode the city name that would be used as search parameter with <b>URL-Encoding</b>.
+	 * <br>
+	 * <br>
+	 * <b>This method should only be used in assembling request.</b>
+	 * 
+	 * @param cityName
+	 *            The city name that to be encoded.
+	 * @return The encoded URL-Encoding complied string.
+	 */
+	private String assembleRequestEncode(String cityName) {
+		String encodedCityName = null;
+		try {
+			encodedCityName = URLEncoder.encode(cityName, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			Log.e(TAG, "The encoding is not supported. " + e.getMessage());
+			
+			return null;
+		}
+		return encodedCityName;
+	}
+
+	/**
+	 * Get the available city ids that currently monitoring.
+	 * 
+	 * @return The array that containing ids of the cities monitoring. 
+	 */
+	private long[] getMonitoringCities() {
+		Cursor cursor = null;
+		try {
+			String[] projection = { WeatherEntity.CITY_ID };
+			String where = WeatherEntity.CITY_ID;
+			
+			cursor = getContentResolver().query(WeatherEntity.CONTENT_URI, projection, where, null, null);
+			if (cursor == null) {
+				return null;
+			}
+			
+			int i = 0;
+			long[] cityIds = new long[cursor.getCount()];
+			while (cursor.moveToNext()) {
+				long cityId = cursor.getLong(cursor.getColumnIndexOrThrow(WeatherEntity.CITY_ID));
+				
+				cityIds[i] = cityId;
+				i++;
+			}
+			
+			return cityIds;
+		} catch (IllegalArgumentException e) {
+			Log.e(TAG, "The column does not exist. " + e.getMessage());
+			
+			return null;
+		} finally {
+			if (cursor != null && !cursor.isClosed()) {
+				cursor.close();
+			}
 		}
 	}
 
@@ -423,48 +515,6 @@ public class WeatherService extends IntentService {
 		} else {
 			return false;
 		}
-	}
-
-	/**
-	 * Query remote server for specific request.
-	 * 
-	 * @param request
-	 *            The request URL as string.
-	 * @return Result of this query.
-	 */
-	private String download(String request) {
-		if (request == null) {
-			return null;
-		}
-		
-		StringBuilder builder = new StringBuilder();
-		try {
-			// workaround: whitespace makes the url invalid, replace with URL-encode.
-			URL url = new URL(request.replace(" ", "%20"));
-			HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
-			try {
-				int responseCode = httpConnection.getResponseCode();
-				if (responseCode == HttpURLConnection.HTTP_OK) {
-					InputStream inStream = httpConnection.getInputStream();
-					BufferedReader reader = new BufferedReader(new InputStreamReader(inStream));
-					
-					String line;
-					while ((line = reader.readLine()) != null) {
-						builder.append(line);
-					}
-				}
-			} catch (IOException e) {
-				Log.e(TAG, "Error reading from the http connection");
-			} finally {
-				httpConnection.disconnect();
-			}
-		} catch (MalformedURLException e) {
-			Log.e(TAG, "Malformed URL");
-		} catch (IOException e) {
-			Log.e(TAG, "Error opening the http connection");
-		}
-	
-		return builder.toString();
 	}
 
 	/**
