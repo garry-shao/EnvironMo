@@ -25,8 +25,8 @@ public class DotViewPagerIndicator extends View implements OnPageChangeListener 
 	
 	private float mRadius;
 	private float mPadding;
-	private Paint mSelectedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-	private Paint mUnselectedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+	private Paint mSelectedPaint;
+	private Paint mUnselectedPaint;
 	
 	private int mCurrent;
 	
@@ -46,8 +46,12 @@ public class DotViewPagerIndicator extends View implements OnPageChangeListener 
 		
 		mRadius = a.getDimension(R.styleable.DotViewPagerIndicator_radius, defaultRadius);
 		mPadding = a.getDimension(R.styleable.DotViewPagerIndicator_padding, defaultPadding);
+		
+		mSelectedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		mSelectedPaint.setColor(
 				a.getColor(R.styleable.DotViewPagerIndicator_selectedColor, defaultSelectedColor));
+		
+		mUnselectedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		mUnselectedPaint.setColor(
 				a.getColor(R.styleable.DotViewPagerIndicator_unselectedColor, defaultUnselectedColor));
 		
