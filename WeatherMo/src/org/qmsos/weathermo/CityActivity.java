@@ -42,28 +42,10 @@ implements OnDeleteCityClickedListener, OnInsertCityClickedListener, OnStartSear
 		mMessageReceiver = new MessageReceiver();
 		
 		FragmentManager manager = getSupportFragmentManager();
-		
-		CityList cityList = null;
 		Fragment fragmentCityList = manager.findFragmentByTag(FRAGMENT_TAG_CITY_LIST);
-		if (fragmentCityList != null) {
-			cityList = (CityList) fragmentCityList;
-		} else {
-			cityList = new CityList();
-			
+		if (fragmentCityList == null) {
 			FragmentTransaction transaction = manager.beginTransaction();
-			transaction.add(R.id.fragment_container, cityList, FRAGMENT_TAG_CITY_LIST);
-			transaction.commit();
-		}
-		
-		CityCandidates cityCandidates = null;
-		Fragment fragmentCityCandidates = manager.findFragmentByTag(FRAGMENT_TAG_CITY_CANDIDATES);
-		if (fragmentCityCandidates != null) {
-			cityCandidates = (CityCandidates) fragmentCityCandidates;
-		}
-		
-		if (cityList != null && cityCandidates != null) {
-			FragmentTransaction transaction = manager.beginTransaction();
-			transaction.hide(cityList);
+			transaction.replace(R.id.fragment_container, new CityList(), FRAGMENT_TAG_CITY_LIST);
 			transaction.commit();
 		}
 	}
@@ -89,18 +71,10 @@ implements OnDeleteCityClickedListener, OnInsertCityClickedListener, OnStartSear
 	public void onSubViewButtonClicked() {
 		FragmentManager manager = getSupportFragmentManager();
 		
-		Fragment fragmentCityList = manager.findFragmentByTag(FRAGMENT_TAG_CITY_LIST);
-		Fragment fragmentAddCity = manager.findFragmentByTag(FRAGMENT_TAG_CITY_CANDIDATES);
-		if (fragmentCityList != null && fragmentAddCity == null) {
-			CityList cityList = (CityList) fragmentCityList;
-			CityCandidates cityCandidates = new CityCandidates();
-			
-			FragmentTransaction transaction = manager.beginTransaction();
-			transaction.hide(cityList);
-			transaction.add(R.id.fragment_container, cityCandidates, FRAGMENT_TAG_CITY_CANDIDATES);
-			transaction.addToBackStack(null);
-			transaction.commit();
-		}
+		FragmentTransaction transaction = manager.beginTransaction();
+		transaction.replace(R.id.fragment_container, new CityCandidates(), FRAGMENT_TAG_CITY_CANDIDATES);
+		transaction.addToBackStack(null);
+		transaction.commit();
 	}
 
 	@Override

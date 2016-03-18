@@ -4,7 +4,6 @@ import org.qmsos.weathermo.contract.IntentContract;
 import org.qmsos.weathermo.fragment.WeatherMap;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -31,17 +30,13 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
 		toolbar.inflateMenu(R.menu.menu_map_layer);
 		toolbar.setOnMenuItemClickListener(this);
 		
+		long cityId = getIntent().getLongExtra(IntentContract.EXTRA_CITY_ID, -1);
+		WeatherMap weatherMap = WeatherMap.newInstance(cityId);
+		
 		FragmentManager manager = getSupportFragmentManager();
-		Fragment fragmentWeatherMap = manager.findFragmentByTag(FRAGMENT_TAG_WEATHER_MAP);
-		if (fragmentWeatherMap == null) {
-			long cityId = getIntent().getLongExtra(IntentContract.EXTRA_CITY_ID, -1);
-			
-			WeatherMap weatherMap = WeatherMap.newInstance(cityId);
-			
-			FragmentTransaction transaction = manager.beginTransaction();
-			transaction.add(R.id.fragment_container, weatherMap, FRAGMENT_TAG_WEATHER_MAP);
-			transaction.commit();
-		}
+		FragmentTransaction transaction = manager.beginTransaction();
+		transaction.replace(R.id.fragment_container, weatherMap, FRAGMENT_TAG_WEATHER_MAP);
+		transaction.commit();
 	}
 
 	@Override
