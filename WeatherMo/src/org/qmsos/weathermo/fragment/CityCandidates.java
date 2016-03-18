@@ -62,7 +62,7 @@ public class CityCandidates extends Fragment {
 		recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 		recyclerView.setAdapter(mCityCandidatesAdapter);
 		
-		EditText cityNameEditText = (EditText) view.findViewById(R.id.city_name);
+		EditText cityNameEditText = (EditText) view.findViewById(R.id.input_city_name);
 		cityNameEditText.setOnEditorActionListener(new OnEditorActionListener() {
 
 			@Override

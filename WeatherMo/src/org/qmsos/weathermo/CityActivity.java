@@ -17,6 +17,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -140,13 +141,22 @@ implements OnDeleteCityClickedListener, OnInsertCityClickedListener, OnStartSear
 	private void onInsertExecuted(boolean flag) {
 		View view = findViewById(R.id.layout_activity_city);
 		if (view != null) {
+			int snackbarActionTextColor = 
+					ContextCompat.getColor(this, R.color.snackbar_action_text_color);
+			int snakbarBackgroundColor = 
+					ContextCompat.getColor(this, R.color.snackbar_background_color);
+			
 			int resId;
 			if (flag) {
 				resId = R.string.snackbar_succeed;
 			} else {
 				resId = R.string.snackbar_failed;
 			}
-			Snackbar.make(view, resId, Snackbar.LENGTH_LONG).show();
+			
+			Snackbar snackbar = Snackbar.make(view, resId, Snackbar.LENGTH_LONG);
+			snackbar.setActionTextColor(snackbarActionTextColor);
+			snackbar.getView().setBackgroundColor(snakbarBackgroundColor);
+			snackbar.show();
 		}
 	}
 

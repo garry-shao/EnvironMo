@@ -18,18 +18,23 @@ import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
 import org.qmsos.weathermo.datamodel.City;
 import org.qmsos.weathermo.util.WeatherParser;
 
+import android.app.AlarmManager;
 import android.app.IntentService;
+import android.app.PendingIntent;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.OperationApplicationException;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 
 /**
@@ -65,7 +70,20 @@ public class WeatherService extends IntentService {
 			return;
 		}
 		
-		if (action.equals(IntentContract.ACTION_REFRESH_WEATHER)) {
+		if (action.equals(IntentContract.ACTION_REFRESH_WEATHER_AUTO)) {
+			boolean flagAuto = intent.getBooleanExtra(IntentContract.EXTRA_REFRESH_WEATHER_AUTO, false);
+			
+			scheduleAutoRefresh(flagAuto);
+			
+			if (flagAuto && checkConnection()) {
+				int[] flags = { 
+						Contract.FLAG_CURRENT_WEATHER, 
+						Contract.FLAG_CURRENT_UV_INDEX, 
+						Contract.FLAG_FORECAST_HOURLY };
+				
+				executeRefreshWeather(flags);
+			}
+		} else if (action.equals(IntentContract.ACTION_REFRESH_WEATHER_MANUAL)) {
 			if (checkConnection()) {
 				int[] flags = { 
 						Contract.FLAG_CURRENT_WEATHER, 
@@ -232,6 +250,36 @@ public class WeatherService extends IntentService {
 		int rows2 = getContentResolver().delete(WeatherEntity.CONTENT_URI, where, null);
 		
 		return (rows1 > 0 && rows2 > 0) ? true : false;
+	}
+
+	/**
+	 * Schedule the behavior of the alarm that invoked repeatedly to execute automatic refresh.
+	 * 
+	 * @param flag
+	 *            TRUE when setting up the alarm, FALSE when canceling the alarm.
+	 */
+	private void scheduleAutoRefresh(boolean flag) {
+		int requestCode = 1;
+		
+		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+		PendingIntent alarmIntent = PendingIntent.getBroadcast(this, requestCode,
+				new Intent(IntentContract.ACTION_REFRESH_ALARM), PendingIntent.FLAG_UPDATE_CURRENT);
+		
+		if (flag) {
+			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+			int frequency = Integer.parseInt(prefs.getString(
+					getString(R.string.PREF_REFRESH_AUTO_FREQUENCY), 
+					getString(R.string.frequency_values_default)));
+			
+			long intervalMillis = frequency * AlarmManager.INTERVAL_HOUR;
+			long timeToRefresh = SystemClock.elapsedRealtime() + intervalMillis;
+			
+			alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 
+					timeToRefresh, intervalMillis, alarmIntent);
+		} else {
+			alarmManager.cancel(alarmIntent);
+		}
 	}
 
 	/**

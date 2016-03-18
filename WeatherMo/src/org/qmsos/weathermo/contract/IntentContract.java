@@ -13,9 +13,24 @@ public final class IntentContract {
 	// below are standard intent actions.
 	
 	/**
-	 * Activity action: refreshing weather.
+	 * Broadcast action: setting up repeat alarm.
 	 */
-	public static final String ACTION_REFRESH_WEATHER = BASE_PACKAGE_NAME + "ACTION_REFRESH_WEATHER";
+	public static final String ACTION_REFRESH_ALARM = BASE_PACKAGE_NAME + "ACTION_REFRESH_ALARM";
+	
+	/**
+	 * Service action: refreshing weather automatically.
+	 */
+	public static final String ACTION_REFRESH_WEATHER_AUTO = BASE_PACKAGE_NAME + "ACTION_REFRESH_WEATHER_AUTO";
+	
+	/**
+	 * Used as a boolean field in determine whether start the automatic refreshing.
+	 */
+	public static final String EXTRA_REFRESH_WEATHER_AUTO = BASE_PACKAGE_NAME + "EXTRA_REFRESH_WEATHER_AUTO";
+	
+	/**
+	 * Activity action: refreshing weather manually.
+	 */
+	public static final String ACTION_REFRESH_WEATHER_MANUAL = BASE_PACKAGE_NAME + "ACTION_REFRESH_WEATHER_MANUAL";
 	
 	/**
 	 * Activity action: insert city.

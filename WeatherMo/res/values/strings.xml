@@ -1,18 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
     <string name="app_name">WeatherMo</string>
+    
     <string name="placeholder">null</string>
-    <string name="weather_map">Map</string>
+    
+    <string name="ui_current">Current</string>
+    <string name="ui_hint_city_name">Enter here:</string>
+    
+    <!-- Strings used in toolbar -->
     <string name="activity_city_name">Cities</string>
-    <string name="activity_weather_map">Weather Map</string>
+    <string name="activity_weather_map">Map</string>
+    <string name="activity_settings">Settings</string>
+    
+    <!-- Strings used in button -->
     <string name="button_add_more">Add More</string>
     <string name="button_insert">Insert</string>
     <string name="button_delete">Delete</string>
     
+    <!-- Strings used in snackbar -->
     <string name="snackbar_succeed">Insert succeed!!!</string>
     <string name="snackbar_failed">Insert failed!!!</string>
+
+    <!-- Strings used in preferences -->
+    <string name="list_preference_negative_button">Cancel</string>
+    <string name="switch_preference_negative_button">No</string>
+    <string name="switch_preference_positive_button">Yes</string>
+    <string name="switch_preference_title">Warning</string>
+    <string name="switch_preference_message">May cost money updating, are you SURE ?</string>
     
-    <string name="ui_current">Current</string>
+    <string name="pref_refresh_auto_toggle_summary">Enable automatic refresh</string>
+    <string name="pref_refresh_auto_toggle_title">Automatic</string>
+    <string name="pref_refresh_auto_frequency_title">Frequency</string>
+    
+    <!-- Keys for shared preferences. DO NOT MODIFY -->
+    <string name="PREF_REFRESH_AUTO_TOGGLE">PREF_REFRESH_AUTO_TOGGLE</string>
+    <string name="PREF_REFRESH_AUTO_FREQUENCY">PREF_REFRESH_AUTO_FREQUENCY</string>
+    
+    <!-- Default values in /array. CHECK before modify -->
+    <string name="frequency_values_default">3</string>
     
     <!-- Used in map layers option -->
     <string name="ui_layer_precipitation">Precipitation</string>

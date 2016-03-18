@@ -5,12 +5,14 @@
     android:orientation="vertical" >
 
     <EditText
-        android:id="@+id/city_name"
+        android:id="@+id/input_city_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:hint="@string/ui_hint_city_name"
         android:inputType="text"
         android:imeOptions="actionDone"
-        android:labelFor="@id/city_name" />
+        android:labelFor="@id/input_city_name" />
         
     <android.support.v7.widget.RecyclerView
     	android:id="@+id/city_candidates"

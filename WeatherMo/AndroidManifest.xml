@@ -18,7 +18,8 @@
         android:theme="@style/AppCompatTheme" >
         <activity
             android:name=".MainActivity"
-            android:launchMode="singleTop" >
+            android:launchMode="singleTop"
+            android:theme="@style/AppCompatThemeInverted" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -33,6 +34,17 @@
             android:name=".MapActivity"
             android:label="@string/activity_weather_map" >
         </activity>
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/activity_settings"
+            android:parentActivityName=".MainActivity" >
+        </activity>
+
+        <provider
+            android:name=".WeatherProvider"
+            android:authorities="org.qmsos.weathermo.weatherprovider"
+            android:exported="false" >
+        </provider>
 
         <service
             android:name=".WeatherService"
@@ -40,11 +52,14 @@
             android:exported="false" >
         </service>
 
-        <provider
-            android:name=".WeatherProvider"
-            android:authorities="org.qmsos.weathermo.weatherprovider"
+        <receiver
+            android:name=".WeatherAlarmReceiver"
+            android:enabled="true"
             android:exported="false" >
-        </provider>
+            <intent-filter>
+                <action android:name="org.qmsos.weathermo.ACTION_REFRESH_ALARM" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

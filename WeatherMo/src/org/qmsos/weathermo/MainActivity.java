@@ -14,6 +14,8 @@ import org.qmsos.weathermo.util.WeatherParser;
 import org.qmsos.weathermo.widget.DotViewPagerIndicator;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,6 +27,7 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceManager;
 import android.view.View;
 import android.view.View.OnClickListener;
 
@@ -34,8 +37,8 @@ import android.view.View.OnClickListener;
  * 
  */
 public class MainActivity extends AppCompatActivity 
-implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener, 
-		OnClickListener, OnCityNameViewClickedListener, OnForecastViewClickedListener {
+implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener, OnClickListener, 
+		OnSharedPreferenceChangeListener, OnCityNameViewClickedListener, OnForecastViewClickedListener {
 	
 	private static final int LOAD_ID_MAIN_INTERFACE = 0;
 	private static final int LOAD_ID_ASYNC_BACKGROUND = 1;
@@ -51,8 +54,10 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener,
 		mRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
 		mRefreshLayout.setOnRefreshListener(this);
 
-		View weatherMap = findViewById(R.id.weather_map);
+		View weatherMap = findViewById(R.id.button_map);
 		weatherMap.setOnClickListener(this);
+		View settings = findViewById(R.id.button_settings);
+		settings.setOnClickListener(this);
 
 		mPagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager(), this, null);
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
@@ -64,6 +69,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener,
 		
 		getSupportLoaderManager().initLoader(LOAD_ID_MAIN_INTERFACE, null, this);
 		getSupportLoaderManager().initLoader(LOAD_ID_ASYNC_BACKGROUND, null, this);
+		
+		scheduleService();
 	}
 
 	@Override
@@ -192,7 +199,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener,
 	@Override
 	public void onRefresh() {
 		final Intent intent = new Intent(this, WeatherService.class);
-		intent.setAction(IntentContract.ACTION_REFRESH_WEATHER);
+		intent.setAction(IntentContract.ACTION_REFRESH_WEATHER_MANUAL);
 		
 		// make animation here 
 		int animationTimeInMillis = 1000;
@@ -209,21 +216,36 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener,
 
 	@Override
 	public void onClick(View v) {
-		if (v.getId() != R.id.weather_map) {
-			return;
-		}
-		
-		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
-		if (viewPager == null) {
-			return;
-		}
-		
-		long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
-		if (cityId != 0L) {
-			Intent i = new Intent(this, MapActivity.class);
-			i.putExtra(IntentContract.EXTRA_CITY_ID, cityId);
+		switch (v.getId()) {
+		case R.id.button_map:
+			ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+			if (viewPager == null) {
+				return;
+			}
+			
+			long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
+			if (cityId != 0L) {
+				Intent i = new Intent(this, MapActivity.class);
+				i.putExtra(IntentContract.EXTRA_CITY_ID, cityId);
+				startActivity(i);
+			}
+			
+			break;
+		case R.id.button_settings:
+			Intent i = new Intent(this, SettingsActivity.class);
 			startActivity(i);
+			
+			break;
 		}
+	}
+
+	@Override
+	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+		if (key.equals(getString(R.string.PREF_REFRESH_AUTO_TOGGLE)) || 
+				key.equals(getString(R.string.PREF_REFRESH_AUTO_FREQUENCY))) {
+			
+			scheduleService();
+		}		
 	}
 
 	@Override
@@ -348,6 +370,19 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener,
 		} else {
 			return null;
 		}
+	}
+
+	/**
+	 * Schedule the state of background service based on user preferences.
+	 */
+	private void scheduleService() {
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		boolean flagAuto = prefs.getBoolean(getString(R.string.PREF_REFRESH_AUTO_TOGGLE), false);
+		
+		Intent intent = new Intent(this, WeatherService.class);
+		intent.setAction(IntentContract.ACTION_REFRESH_WEATHER_AUTO);
+		intent.putExtra(IntentContract.EXTRA_REFRESH_WEATHER_AUTO, flagAuto);
+		startService(intent);
 	}
 
 }
