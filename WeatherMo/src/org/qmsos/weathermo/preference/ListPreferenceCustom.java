@@ -47,7 +47,7 @@ public class ListPreferenceCustom extends ListPreference {
 	}
 
 	public ListPreferenceCustom(Context context, AttributeSet attrs) {
-		this(context, attrs, 0);
+		this(context, attrs, R.attr.dialogPreferenceStyle);
 	}
 
 	public ListPreferenceCustom(Context context) {
