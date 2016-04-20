@@ -101,7 +101,7 @@ public class CityName extends Fragment implements LoaderCallbacks<Cursor> {
 			
 			textView.setText(spanned);
 		} else {
-			textView.setText(R.string.placeholder);
+			textView.setText(R.string.ui_placeholder);
 		}
 	}
 

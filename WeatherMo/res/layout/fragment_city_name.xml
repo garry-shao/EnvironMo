@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clickable="true"
-        android:text="@string/placeholder"
+        android:text="@string/ui_placeholder"
         android:textSize="32sp" />
 
 </FrameLayout>
