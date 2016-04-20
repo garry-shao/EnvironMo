@@ -13,7 +13,7 @@ import org.apache.cordova.engine.SystemWebViewEngine;
 import org.json.JSONException;
 import org.qmsos.weathermo.R;
 import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
-
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -148,6 +148,7 @@ public class WeatherMap extends Fragment implements CordovaInterface, LoaderCall
 		}
 	}
 
+	@TargetApi(23)
 	@Override
 	public boolean hasPermission(String permission) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
