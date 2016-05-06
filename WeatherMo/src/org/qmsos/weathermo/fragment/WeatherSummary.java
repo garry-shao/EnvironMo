@@ -19,18 +19,22 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-public class WeatherForecast extends Fragment implements LoaderCallbacks<Cursor> {
+/**
+ * Show summary of weather.
+ *
+ */
+public class WeatherSummary extends Fragment implements LoaderCallbacks<Cursor> {
 
-	private OnForecastViewClickedListener mListener;
+	private OnSummaryClickedListener mListener;
 	
 	@Override
 	public void onAttach(Context context) {
 		super.onAttach(context);
 		
 		try {
-			mListener = (OnForecastViewClickedListener) context;
+			mListener = (OnSummaryClickedListener) context;
 		} catch (ClassCastException e) {
-			String listenerName = OnForecastViewClickedListener.class.getSimpleName();
+			String listenerName = OnSummaryClickedListener.class.getSimpleName();
 			
 			throw new ClassCastException(context.toString() + " must implements " + listenerName);
 		}
@@ -38,7 +42,7 @@ public class WeatherForecast extends Fragment implements LoaderCallbacks<Cursor>
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fragment_weather_forecast, container, false);
+		View view = inflater.inflate(R.layout.fragment_weather_summary, container, false);
 
 		return view;
 	}
@@ -47,24 +51,24 @@ public class WeatherForecast extends Fragment implements LoaderCallbacks<Cursor>
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		TextView textView = (TextView) getView().findViewById(R.id.current);
-		textView.setOnClickListener(new OnClickListener() {
+		TextView tv = (TextView) getView().findViewById(R.id.current);
+		tv.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				mListener.onForecastViewClicked(0);
+				mListener.onSummaryClicked(0);
 			}
 		});
 
 		for (int i = 1; i <= WeatherParser.FORECAST_IN_DAYS; i++) {
 			final int j = i;
-			textView = (TextView) getView().findViewById(
+			tv = (TextView) getView().findViewById(
 					getResources().getIdentifier("forecast_" + j, "id", getContext().getPackageName()));
-			textView.setOnClickListener(new OnClickListener() {
+			tv.setOnClickListener(new OnClickListener() {
 
 				@Override
 				public void onClick(View v) {
-					mListener.onForecastViewClicked(j);
+					mListener.onSummaryClicked(j);
 				}
 			});
 		}
@@ -110,32 +114,32 @@ public class WeatherForecast extends Fragment implements LoaderCallbacks<Cursor>
 		int currentWeatherId = WeatherParser.getWeatherId(current);
 		int temperature = WeatherParser.getTemperature(current);
 		
-		TextView textView = (TextView) getView().findViewById(R.id.current);
+		TextView tv = (TextView) getView().findViewById(R.id.current);
 		if (temperature != WeatherParser.INVALID_TEMPERATURE) {
 			String uiCurrent = getContext().getString(R.string.ui_current);
-			textView.setText(uiCurrent + "\n" + temperature + "\u00B0" + "C");
+			tv.setText(uiCurrent + "\n" + temperature + "\u00B0" + "C");
 		} else {
-			textView.setText(null);
+			tv.setText(null);
 		}
-		WeatherIconFactory.setWeatherIcon(textView, currentWeatherId);
+		WeatherIconFactory.setWeatherIcon(tv, currentWeatherId);
 		
 		for (int i = 1; i <= WeatherParser.FORECAST_IN_DAYS; i++) {
 			int forecastWeatherId = WeatherParser.getWeatherId(forecasts[i - 1]);
 			int temperatureMin = WeatherParser.getTemperatureMin(forecasts[i - 1]);
 			int temperatureMax = WeatherParser.getTemperatureMax(forecasts[i - 1]);
 			
-			TextView v = (TextView) getView().findViewById(
+			tv = (TextView) getView().findViewById(
 					getResources().getIdentifier("forecast_" + i, "id", getContext().getPackageName()));
 			if (temperatureMin != WeatherParser.INVALID_TEMPERATURE
 					|| temperatureMax != WeatherParser.INVALID_TEMPERATURE) {
 				
 				String forecastTime = "+" + 24 * i + ":00H";
 				String forecastTemperature = temperatureMin + "~" + temperatureMax + "\u00B0" + "C";
-				v.setText(forecastTime + "\n" + forecastTemperature);
+				tv.setText(forecastTime + "\n" + forecastTemperature);
 			} else {
-				v.setText(null);
+				tv.setText(null);
 			}
-			WeatherIconFactory.setWeatherIcon(v, forecastWeatherId);
+			WeatherIconFactory.setWeatherIcon(tv, forecastWeatherId);
 		}
 	}
 
@@ -144,18 +148,18 @@ public class WeatherForecast extends Fragment implements LoaderCallbacks<Cursor>
 	}
 
 	/**
-	 * Callback that will be invoked when user clicked views of forecast.
+	 * Callback that will be invoked when user clicked views of weather.
 	 */
-	public interface OnForecastViewClickedListener {
+	public interface OnSummaryClickedListener {
 
 		/**
-		 * Called when views of forecast weather are clicked.
+		 * Called when views of weather are clicked.
 		 * 
 		 * @param day
 		 *            which day is clicked(0 means current, 1 means next 24h,
 		 *            etc...).
 		 */
-		void onForecastViewClicked(int day);
+		void onSummaryClicked(int day);
 	}
 
 }

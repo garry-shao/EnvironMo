@@ -3,12 +3,12 @@ package org.qmsos.weathermo;
 import org.qmsos.weathermo.contract.IntentContract;
 import org.qmsos.weathermo.contract.LoaderContract;
 import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
-import org.qmsos.weathermo.fragment.CityName;
-import org.qmsos.weathermo.fragment.CityName.OnCityNameViewClickedListener;
-import org.qmsos.weathermo.fragment.WeatherCurrent;
-import org.qmsos.weathermo.fragment.WeatherForecast;
-import org.qmsos.weathermo.fragment.WeatherForecast.OnForecastViewClickedListener;
-import org.qmsos.weathermo.fragment.WeatherPagerAdapter;
+import org.qmsos.weathermo.fragment.CityHeader;
+import org.qmsos.weathermo.fragment.CityHeader.OnCityHeaderClickedListener;
+import org.qmsos.weathermo.fragment.WeatherDetails;
+import org.qmsos.weathermo.fragment.WeatherSummary;
+import org.qmsos.weathermo.fragment.WeatherSummary.OnSummaryClickedListener;
+import org.qmsos.weathermo.fragment.WeatherDetailsPagerAdapter;
 import org.qmsos.weathermo.resources.BackgroundFactory;
 import org.qmsos.weathermo.util.WeatherParser;
 import org.qmsos.weathermo.widget.DotViewPagerIndicator;
@@ -41,12 +41,12 @@ import android.view.View.OnClickListener;
  */
 public class MainActivity extends AppCompatActivity 
 implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChangeListener, 
-		OnCityNameViewClickedListener, OnForecastViewClickedListener {
+		OnCityHeaderClickedListener, OnSummaryClickedListener {
 	
 	private static final int LOADER_MAIN_INTERFACE = 0x01;
 	private static final int LOADER_ASYNC_BACKGROUND = 0x02;
 	
-	private WeatherPagerAdapter mPagerAdapter;
+	private WeatherDetailsPagerAdapter mPagerAdapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +71,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 			}
 		});
 
-		mPagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager(), this, null);
+		mPagerAdapter = new WeatherDetailsPagerAdapter(getSupportFragmentManager(), this, null);
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
 		viewPager.setAdapter(mPagerAdapter);
 		
@@ -174,8 +174,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 			}
 			
 			Bundle args = createReloadParameters(0);
-			reloadFragmentCityName(args);
-			reloadFragmentForecast(args);
+			reloadHeader(args);
+			reloadSummary(args);
 			reloadBackgroundImage(args);
 			
 			return;
@@ -220,16 +220,16 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 		}
 		
 		int day;
-		WeatherCurrent weatherCurrent = getFragmentOfCurrentWeather();
-		if (weatherCurrent != null) {
-			day = weatherCurrent.getDayOnDisplay();
+		WeatherDetails details = getCurrentDetailsFragment();
+		if (details != null) {
+			day = details.getCurrentShowingDay();
 		} else {
 			day = 0;
 		}
 		
 		Bundle args = createReloadParameters(day);
-		reloadFragmentCityName(args);
-		reloadFragmentForecast(args);
+		reloadHeader(args);
+		reloadSummary(args);
 		reloadBackgroundImage(args);
 	}
 
@@ -243,21 +243,21 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 	}
 
 	@Override
-	public void onCityNameViewClicked() {
+	public void onCityHeaderClicked() {
 		Intent i = new Intent(this, CityActivity.class);
 		startActivity(i);
 	}
 
 	@Override
-	public void onForecastViewClicked(int day) {
-		reloadFragmentCurrent(day);
+	public void onSummaryClicked(int day) {
+		reloadDetails(day);
 		
 		Bundle args = createReloadParameters(day);
 		reloadBackgroundImage(args);
 	}
 
 	/**
-	 * Reload the current Fragment that shows in ViewPager with specified data, so this
+	 * Reload the weather details Fragment that shows in ViewPager with specified data, so this
 	 * fragment can show forecast info.<br><br> 
 	 * 
 	 * NOTICE: there is loophole here: FragmentStatePagerAdapter's instantiateItem() method 
@@ -267,40 +267,40 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 	 * @param day
 	 *            Which day will be shown, 0 means current, 1 means tomorrow, etc.
 	 */
-	private void reloadFragmentCurrent(int day) {
-		WeatherCurrent weatherCurrent = getFragmentOfCurrentWeather();
-		if (weatherCurrent != null && weatherCurrent.isAdded()) {
-			weatherCurrent.reload(day);
+	private void reloadDetails(int day) {
+		WeatherDetails details = getCurrentDetailsFragment();
+		if (details != null && details.isAdded()) {
+			details.showDetails(day);
 		}
 	}
 
 	/**
-	 * Reload the city name Fragment with specified data.
+	 * Reload the header Fragment of current city with specified data.
 	 * 
 	 * @param args
 	 *            This bundle should at least contains the city id 
 	 *            of which wants to be shown.
 	 */
-	private void reloadFragmentCityName(Bundle args) {
-		CityName cityName = (CityName) 
-				getSupportFragmentManager().findFragmentById(R.id.fragment_city_name);
-		if (cityName != null && cityName.isAdded()) {
-			cityName.getLoaderManager().restartLoader(0, args, cityName);
+	private void reloadHeader(Bundle args) {
+		CityHeader header = (CityHeader) 
+				getSupportFragmentManager().findFragmentById(R.id.fragment_current_city);
+		if (header != null && header.isAdded()) {
+			header.getLoaderManager().restartLoader(0, args, header);
 		}
 	}
 	
 	/**
-	 * Reload the weather forecast Fragment with specified data.
+	 * Reload the weather summary Fragment with specified data.
 	 * 
 	 * @param args
 	 *            This bundle should at least contains the city id 
 	 *            of which wants to be shown.
 	 */
-	private void reloadFragmentForecast(Bundle args) {
-		WeatherForecast weatherForecast = (WeatherForecast) 
-				getSupportFragmentManager().findFragmentById(R.id.fragment_weather_forecast);
-		if (weatherForecast != null && weatherForecast.isAdded()) {
-			weatherForecast.getLoaderManager().restartLoader(0, args, weatherForecast);
+	private void reloadSummary(Bundle args) {
+		WeatherSummary summary = (WeatherSummary) 
+				getSupportFragmentManager().findFragmentById(R.id.fragment_weather_summary);
+		if (summary != null && summary.isAdded()) {
+			summary.getLoaderManager().restartLoader(0, args, summary);
 		}
 	}
 	
@@ -326,7 +326,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 	 * @return The created bundle.
 	 */
 	private Bundle createReloadParameters(int day) {
-		long cityId = getCityIdOfCurrentWeather();
+		long cityId = getCurrentCityId();
 		if (cityId <= 0) {
 			return null;
 		} else {
@@ -343,7 +343,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 	 * 
 	 * @return The city id or 0L if invalid.
 	 */
-	private long getCityIdOfCurrentWeather() {
+	private long getCurrentCityId() {
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
 		if (viewPager != null) {
 			return mPagerAdapter.getCityId(viewPager.getCurrentItem());
@@ -357,10 +357,10 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 	 * 
 	 * @return The fragment that currently showing or else null.
 	 */
-	private WeatherCurrent getFragmentOfCurrentWeather() {
+	private WeatherDetails getCurrentDetailsFragment() {
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
 		if ((viewPager != null) && (mPagerAdapter.getCount() > 0)) {
-			return (WeatherCurrent)	mPagerAdapter.instantiateItem(viewPager, viewPager.getCurrentItem());
+			return (WeatherDetails)	mPagerAdapter.instantiateItem(viewPager, viewPager.getCurrentItem());
 		} else {
 			return null;
 		}
@@ -371,11 +371,11 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 	 */
 	private void scheduleService() {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		boolean flagAuto = prefs.getBoolean(getString(R.string.PREF_REFRESH_AUTO_TOGGLE), false);
+		boolean isAutoFresh = prefs.getBoolean(getString(R.string.PREF_REFRESH_AUTO_TOGGLE), false);
 		
 		Intent intent = new Intent(this, WeatherService.class);
 		intent.setAction(IntentContract.ACTION_REFRESH_WEATHER_AUTO);
-		intent.putExtra(IntentContract.EXTRA_REFRESH_WEATHER_AUTO, flagAuto);
+		intent.putExtra(IntentContract.EXTRA_REFRESH_WEATHER_AUTO, isAutoFresh);
 		startService(intent);
 	}
 

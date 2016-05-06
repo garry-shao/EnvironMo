@@ -22,8 +22,8 @@
             app:unselectedColor="@android:color/darker_gray" />
 
         <fragment
-            android:id="@+id/fragment_city_name"
-            android:name="org.qmsos.weathermo.fragment.CityName"
+            android:id="@+id/fragment_current_city"
+            android:name="org.qmsos.weathermo.fragment.CityHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
@@ -50,8 +50,8 @@
             android:text="@string/ui_map" />
 
         <fragment
-            android:id="@+id/fragment_weather_forecast"
-            android:name="org.qmsos.weathermo.fragment.WeatherForecast"
+            android:id="@+id/fragment_weather_summary"
+            android:name="org.qmsos.weathermo.fragment.WeatherSummary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom" />

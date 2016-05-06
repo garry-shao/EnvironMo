@@ -17,11 +17,11 @@ import android.widget.TextView;
 /**
  * Implementation that shows a list of candidate cities from data that passed.
  */
-public class CityCandidatesRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, ViewHolder> {
+public class CitySearchRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<City, ViewHolder> {
 
 	private OnInsertCityClickedListener mListener;
 
-	public CityCandidatesRecyclerViewAdapter(Context context, City[] dataArray) {
+	public CitySearchRecyclerViewAdapter(Context context, City[] dataArray) {
 		super(context, dataArray);
 		
 		try {

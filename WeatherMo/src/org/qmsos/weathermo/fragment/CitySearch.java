@@ -3,7 +3,7 @@ package org.qmsos.weathermo.fragment;
 import org.qmsos.weathermo.R;
 import org.qmsos.weathermo.datamodel.City;
 import org.qmsos.weathermo.util.CityParser;
-import org.qmsos.weathermo.widget.CityCandidatesRecyclerViewAdapter;
+import org.qmsos.weathermo.widget.CitySearchRecyclerViewAdapter;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -20,14 +20,19 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
-public class CityCandidates extends Fragment {
+/**
+ * Fragment that provides framework to search remote server for valid city.
+ *
+ */
+public class CitySearch extends Fragment {
 
-	private static final String KEY_CITY_CANDIDATES = "KEY_CITY_CANDIDATES";
+	private static final String KEY_CITY_SEARCH = "KEY_CITY_SEARCH";
 
-	private CityCandidatesRecyclerViewAdapter mCityCandidatesAdapter;
 	private OnStartSearchListener mListener;
+	
+	private CitySearchRecyclerViewAdapter mCitySearchAdapter;
 
-	private City[] mCityCandidates = null;
+	private City[] mResults = null;
 
 	@Override
 	public void onAttach(Context context) {
@@ -44,7 +49,7 @@ public class CityCandidates extends Fragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view =  inflater.inflate(R.layout.fragment_city_candidates, container, false);
+		View view =  inflater.inflate(R.layout.fragment_city_search, container, false);
 		
 		return view;
 	}
@@ -54,16 +59,16 @@ public class CityCandidates extends Fragment {
 		super.onViewCreated(view, savedInstanceState);
 		
 		if (savedInstanceState != null) {
-			mCityCandidates = (City[]) savedInstanceState.getParcelableArray(KEY_CITY_CANDIDATES);
+			mResults = (City[]) savedInstanceState.getParcelableArray(KEY_CITY_SEARCH);
 		}
 		
-		mCityCandidatesAdapter = new CityCandidatesRecyclerViewAdapter(getContext(), mCityCandidates);
-		RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.city_candidates);
-		recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-		recyclerView.setAdapter(mCityCandidatesAdapter);
+		mCitySearchAdapter = new CitySearchRecyclerViewAdapter(getContext(), mResults);
+		RecyclerView rv = (RecyclerView) view.findViewById(R.id.city_results);
+		rv.setLayoutManager(new LinearLayoutManager(getContext()));
+		rv.setAdapter(mCitySearchAdapter);
 		
-		EditText cityNameEditText = (EditText) view.findViewById(R.id.input_city_name);
-		cityNameEditText.setOnEditorActionListener(new OnEditorActionListener() {
+		EditText cityNameInput = (EditText) view.findViewById(R.id.city_name_input);
+		cityNameInput.setOnEditorActionListener(new OnEditorActionListener() {
 
 			@Override
 			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -85,15 +90,15 @@ public class CityCandidates extends Fragment {
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		outState.putParcelableArray(KEY_CITY_CANDIDATES, mCityCandidates);
+		outState.putParcelableArray(KEY_CITY_SEARCH, mResults);
 		
 		super.onSaveInstanceState(outState);
 	}
 
 	public void swapData(String result) {
-		mCityCandidates = CityParser.parseResult(result);
+		mResults = CityParser.parseResult(result);
 		
-		mCityCandidatesAdapter.swapData(mCityCandidates);
+		mCitySearchAdapter.swapData(mResults);
 	}
 
 	/**

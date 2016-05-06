@@ -20,18 +20,22 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-public class CityName extends Fragment implements LoaderCallbacks<Cursor> {
+/**
+ * A fragment used as header to show info of the city currently showing. 
+ *
+ */
+public class CityHeader extends Fragment implements LoaderCallbacks<Cursor> {
 
-	private OnCityNameViewClickedListener mListener;
+	private OnCityHeaderClickedListener mListener;
 	
 	@Override
 	public void onAttach(Context context) {
 		super.onAttach(context);
 		
 		try {
-			mListener = (OnCityNameViewClickedListener) context;
+			mListener = (OnCityHeaderClickedListener) context;
 		} catch (ClassCastException e) {
-			String listenerName = OnCityNameViewClickedListener.class.getSimpleName();
+			String listenerName = OnCityHeaderClickedListener.class.getSimpleName();
 			
 			throw new ClassCastException(context.toString() + " must implements " + listenerName);
 		}
@@ -39,7 +43,7 @@ public class CityName extends Fragment implements LoaderCallbacks<Cursor> {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fragment_city_name, container, false);
+		View view = inflater.inflate(R.layout.fragment_city_header, container, false);
 
 		return view;
 	}
@@ -48,12 +52,12 @@ public class CityName extends Fragment implements LoaderCallbacks<Cursor> {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		
-		TextView cityName = (TextView) getView().findViewById(R.id.city_name);
-		cityName.setOnClickListener(new OnClickListener() {
+		TextView cityHeader = (TextView) getView().findViewById(R.id.current_city);
+		cityHeader.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				mListener.onCityNameViewClicked();
+				mListener.onCityHeaderClicked();
 			}
 		});
 		
@@ -84,24 +88,24 @@ public class CityName extends Fragment implements LoaderCallbacks<Cursor> {
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-		String cityName = null;
+		String city = null;
 		String country = null;
 		if (data != null & data.moveToFirst()) {
-			cityName = data.getString(data.getColumnIndexOrThrow(CityEntity.CITY_NAME));
+			city = data.getString(data.getColumnIndexOrThrow(CityEntity.CITY_NAME));
 			country = data.getString(data.getColumnIndexOrThrow(CityEntity.COUNTRY));
 		}
 		
-		TextView textView = (TextView) getView().findViewById(R.id.city_name);
-		if (cityName != null && country != null) {
-			String raw = cityName + " " +country;
+		TextView tv = (TextView) getView().findViewById(R.id.current_city);
+		if (city != null && country != null) {
+			String raw = city + " " +country;
 			
 			SpannableString spanned = new SpannableString(raw);
 			spanned.setSpan(new RelativeSizeSpan(0.5f), 
-					cityName.length() + 1, raw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+					city.length() + 1, raw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 			
-			textView.setText(spanned);
+			tv.setText(spanned);
 		} else {
-			textView.setText(R.string.ui_placeholder);
+			tv.setText(R.string.ui_placeholder);
 		}
 	}
 
@@ -110,14 +114,14 @@ public class CityName extends Fragment implements LoaderCallbacks<Cursor> {
 	}
 
 	/**
-	 * Callback that will be invoked when user clicked view of city name.
+	 * Callback that will be invoked when user click view of city header.
 	 */
-	public interface OnCityNameViewClickedListener {
+	public interface OnCityHeaderClickedListener {
 		
 		/**
-		 * Called when view of city name is clicked.
+		 * Called when view of city header is clicked.
 		 */
-		void onCityNameViewClicked();
+		void onCityHeaderClicked();
 	}
 
 }

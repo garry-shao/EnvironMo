@@ -10,7 +10,12 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.util.SparseLongArray;
 import android.view.ViewGroup;
 
-public class WeatherPagerAdapter extends FragmentStatePagerAdapter {
+/**
+ * Customized PagerAdapter that contains 
+ * {@linkplain org.qmsos.weathermo.fragment.WeatherDetails WeatherDetails}. 
+ *
+ */
+public class WeatherDetailsPagerAdapter extends FragmentStatePagerAdapter {
 
 	private boolean mDataValid;
 	private Cursor mCursor;
@@ -18,7 +23,7 @@ public class WeatherPagerAdapter extends FragmentStatePagerAdapter {
 	
 	private SparseLongArray mCityIds;
 	
-	public WeatherPagerAdapter(FragmentManager fm, Context context, Cursor cursor) {
+	public WeatherDetailsPagerAdapter(FragmentManager fm, Context context, Cursor cursor) {
 		super(fm);
 
 		init(context, cursor);
@@ -45,7 +50,7 @@ public class WeatherPagerAdapter extends FragmentStatePagerAdapter {
 	private Fragment getItem(Context context, Cursor cursor, int position) {
 		if (cursor.moveToPosition(position)) {
 			long cityId = cursor.getLong(cursor.getColumnIndexOrThrow(WeatherEntity.CITY_ID));
-			WeatherCurrent fragment = WeatherCurrent.newInstance(context, cityId);
+			WeatherDetails fragment = WeatherDetails.newInstance(context, cityId);
 			
 			return fragment;
 		} else {

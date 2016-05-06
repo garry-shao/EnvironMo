@@ -8,7 +8,7 @@
     app:rowCount="5" >
 
     <TextView
-        android:id="@+id/current_temperature"
+        android:id="@+id/details_temperature"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -20,7 +20,7 @@
         android:textSize="120sp" />
 
     <TextView
-        android:id="@+id/current_main"
+        android:id="@+id/details_category"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -32,7 +32,7 @@
         android:textSize="24sp" />
 
     <TextView
-        android:id="@+id/current_uv_index"
+        android:id="@+id/details_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -44,7 +44,7 @@
         android:textSize="24sp" />
 
     <TextView
-        android:id="@+id/current_date"
+        android:id="@+id/details_timestamp"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"

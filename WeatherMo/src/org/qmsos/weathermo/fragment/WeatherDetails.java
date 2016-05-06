@@ -21,17 +21,30 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-public class WeatherCurrent extends Fragment implements LoaderCallbacks<Cursor> {
+/**
+ * Show details of weather. 
+ *
+ */
+public class WeatherDetails extends Fragment implements LoaderCallbacks<Cursor> {
 	
 	private static final String KEY_CITY_ID = "KEY_CITY_ID";
 	
 	private int mDayOnDisplay = 0;
 	
-	public static WeatherCurrent newInstance(Context context, long cityId) {
+	/**
+	 * Create an instance of fragment that shows details of weather.
+	 * 
+	 * @param context
+	 *            The containing context.
+	 * @param cityId
+	 *            The id of the city currently showing.
+	 * @return The created fragment instance.
+	 */
+	public static WeatherDetails newInstance(Context context, long cityId) {
 		Bundle b = new Bundle();
 		b.putLong(KEY_CITY_ID, cityId);
 
-		WeatherCurrent fragment = new WeatherCurrent();
+		WeatherDetails fragment = new WeatherDetails();
 		fragment.setArguments(b);
 		
 		return fragment;
@@ -39,7 +52,7 @@ public class WeatherCurrent extends Fragment implements LoaderCallbacks<Cursor> 
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view =  inflater.inflate(R.layout.fragment_weather_current, container, false);
+		View view =  inflater.inflate(R.layout.fragment_weather_details, container, false);
 	
 		return view;
 	}
@@ -63,15 +76,19 @@ public class WeatherCurrent extends Fragment implements LoaderCallbacks<Cursor> 
 		String[] projection = null;
 		switch (mDayOnDisplay) {
 		case 0:
+			// Indicates current.
 			projection = new String[] { WeatherEntity.CURRENT, WeatherEntity.UV_INDEX };
 			break;
 		case 1:
+			// Indicates forecast 1.
 			projection = new String[] { WeatherEntity.FORECAST1 };
 			break;
 		case 2:
+			// Indicates forecast 2.
 			projection = new String[] { WeatherEntity.FORECAST2 };
 			break;
 		case 3:
+			// Indicates forecast 3.
 			projection = new String[] { WeatherEntity.FORECAST3 };
 			break;
 		}
@@ -85,16 +102,19 @@ public class WeatherCurrent extends Fragment implements LoaderCallbacks<Cursor> 
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 		if (data != null && data.moveToFirst()) {
+			// Hack here!
+			// Tell whether showing current or forecast by the columns containing.
 			String[] columnNames = data.getColumnNames();
 			switch (columnNames.length) {
 			case 1:
+				// Indicates forecast.
 				String forecastRaw = data.getString(data.getColumnIndexOrThrow(columnNames[0]));
 				
 				int forecastWeatherId = WeatherParser.getWeatherId(forecastRaw);
 				int temperatureMin = WeatherParser.getTemperatureMin(forecastRaw);
 				int temperatureMax = WeatherParser.getTemperatureMax(forecastRaw);
 				
-				TextView fv = (TextView) getView().findViewById(R.id.current_temperature);
+				TextView fv = (TextView) getView().findViewById(R.id.details_temperature);
 				if (temperatureMin != WeatherParser.INVALID_TEMPERATURE
 						|| temperatureMax != WeatherParser.INVALID_TEMPERATURE) {
 					
@@ -108,13 +128,14 @@ public class WeatherCurrent extends Fragment implements LoaderCallbacks<Cursor> 
 					fv.setText(null);
 				}
 				
-				fv = (TextView) getView().findViewById(R.id.current_main);
+				fv = (TextView) getView().findViewById(R.id.details_category);
 				fv.setText(null);
 				
-				fv = (TextView) getView().findViewById(R.id.current_uv_index);
+				fv = (TextView) getView().findViewById(R.id.details_description);
 				fv.setText(WeatherInfoFactory.getWeatherDescription(getContext(), forecastWeatherId));
 				break;
 			case 2:
+				// Indicates current.
 				String currentRaw = data.getString(data.getColumnIndexOrThrow(WeatherEntity.CURRENT));
 				
 				double uvIndex;
@@ -128,17 +149,17 @@ public class WeatherCurrent extends Fragment implements LoaderCallbacks<Cursor> 
 				int currentWeatherId = WeatherParser.getWeatherId(currentRaw);
 				int temperature = WeatherParser.getTemperature(currentRaw);
 				
-				TextView cv = (TextView) getView().findViewById(R.id.current_temperature);
+				TextView cv = (TextView) getView().findViewById(R.id.details_temperature);
 				if (temperature != WeatherParser.INVALID_TEMPERATURE) {
 					cv.setText(String.valueOf(temperature) + "\u00B0");
 				} else {
 					cv.setText(null);
 				}
 				
-				cv = (TextView) getView().findViewById(R.id.current_main);
+				cv = (TextView) getView().findViewById(R.id.details_category);
 				cv.setText(WeatherInfoFactory.getWeatherCategory(getContext(), currentWeatherId));
 				
-				cv = (TextView) getView().findViewById(R.id.current_uv_index);
+				cv = (TextView) getView().findViewById(R.id.details_description);
 				if (Double.compare(uvIndex, WeatherParser.INVALID_UV_INDEX) != 0) {
 					String uvDescription = WeatherInfoFactory.getUvIndexDescription(getContext(), uvIndex);
 					cv.setText("UV: " + uvIndex + " - " + uvDescription);
@@ -163,7 +184,7 @@ public class WeatherCurrent extends Fragment implements LoaderCallbacks<Cursor> 
 		default:
 			dateText = null;
 		}
-		TextView v = (TextView) getView().findViewById(R.id.current_date);
+		TextView v = (TextView) getView().findViewById(R.id.details_timestamp);
 		v.setText(dateText);
 	}
 
@@ -171,12 +192,23 @@ public class WeatherCurrent extends Fragment implements LoaderCallbacks<Cursor> 
 	public void onLoaderReset(Loader<Cursor> loader) {
 	}
 
-	public int getDayOnDisplay() {
+	/**
+	 * Get the day currently showing.
+	 * 
+	 * @return The day currently showing, (0 means current, 1 means next 24 hours, etc).
+	 */
+	public int getCurrentShowingDay() {
 		return mDayOnDisplay;
 	}
 
-	public void reload(int newDayOnDisplay) {
-		mDayOnDisplay = newDayOnDisplay;
+	/**
+	 * Reload view to show specified day of details.
+	 * 
+	 * @param newDay
+	 *            The day to be shown.
+	 */
+	public void showDetails(int newDay) {
+		mDayOnDisplay = newDay;
 		
 		getLoaderManager().restartLoader(0, null, this);
 	}

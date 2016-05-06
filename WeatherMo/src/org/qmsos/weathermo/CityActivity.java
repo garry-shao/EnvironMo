@@ -2,10 +2,10 @@ package org.qmsos.weathermo;
 
 import org.qmsos.weathermo.contract.IntentContract;
 import org.qmsos.weathermo.datamodel.City;
-import org.qmsos.weathermo.fragment.CityCandidates;
-import org.qmsos.weathermo.fragment.CityCandidates.OnStartSearchListener;
+import org.qmsos.weathermo.fragment.CitySearch;
+import org.qmsos.weathermo.fragment.CitySearch.OnStartSearchListener;
 import org.qmsos.weathermo.fragment.CityList;
-import org.qmsos.weathermo.widget.CityCandidatesRecyclerViewAdapter.OnInsertCityClickedListener;
+import org.qmsos.weathermo.widget.CitySearchRecyclerViewAdapter.OnInsertCityClickedListener;
 import org.qmsos.weathermo.widget.CityListRecyclerViewAdapter.OnDeleteCityClickedListener;
 
 import android.content.BroadcastReceiver;
@@ -23,11 +23,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
+/**
+ * Manage cities currently monitoring.
+ *
+ */
 public class CityActivity extends AppCompatActivity 
 implements OnDeleteCityClickedListener, OnInsertCityClickedListener, OnStartSearchListener {
 
 	private static final String FRAGMENT_TAG_CITY_LIST = "FRAGMENT_TAG_CITY_LIST";
-	private static final String FRAGMENT_TAG_CITY_CANDIDATES = "FRAGMENT_TAG_CITY_CANDIDATES";
+	private static final String FRAGMENT_TAG_CITY_SEARCH = "FRAGMENT_TAG_CITY_SEARCH";
 
 	private MessageReceiver mMessageReceiver;
 
@@ -72,7 +76,7 @@ implements OnDeleteCityClickedListener, OnInsertCityClickedListener, OnStartSear
 		FragmentManager manager = getSupportFragmentManager();
 		
 		FragmentTransaction transaction = manager.beginTransaction();
-		transaction.replace(R.id.fragment_container, new CityCandidates(), FRAGMENT_TAG_CITY_CANDIDATES);
+		transaction.replace(R.id.fragment_container, new CitySearch(), FRAGMENT_TAG_CITY_SEARCH);
 		transaction.addToBackStack(null);
 		transaction.commit();
 	}
@@ -106,9 +110,9 @@ implements OnDeleteCityClickedListener, OnInsertCityClickedListener, OnStartSear
 
 	private void onSearchResultReceived(String result) {
 		FragmentManager manager = getSupportFragmentManager();
-		Fragment fragmentCityCandidates = manager.findFragmentByTag(FRAGMENT_TAG_CITY_CANDIDATES);
-		if (fragmentCityCandidates != null) {
-			((CityCandidates) fragmentCityCandidates).swapData(result);
+		Fragment fragmentCitySearch = manager.findFragmentByTag(FRAGMENT_TAG_CITY_SEARCH);
+		if (fragmentCitySearch != null) {
+			((CitySearch) fragmentCitySearch).swapData(result);
 		}
 	}
 

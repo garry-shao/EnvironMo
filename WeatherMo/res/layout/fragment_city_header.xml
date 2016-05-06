@@ -4,7 +4,7 @@
     android:layout_height="match_parent" >
 
     <TextView
-        android:id="@+id/city_name"
+        android:id="@+id/current_city"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clickable="true"

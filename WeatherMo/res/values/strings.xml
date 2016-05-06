@@ -13,7 +13,7 @@
     <string name="ui_placeholder">null</string>
     <string name="ui_current">Current</string>
     <string name="ui_map">map</string>
-    <string name="ui_hint_city_name">Enter here:</string>
+    <string name="ui_city_name_input_hint">Enter Here:</string>
     <!-- End of section -->
     
     <!-- Strings used in option menu -->
