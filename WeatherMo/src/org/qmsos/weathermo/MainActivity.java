@@ -28,6 +28,9 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 
@@ -56,8 +59,6 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener, OnC
 
 		View weatherMap = findViewById(R.id.button_map);
 		weatherMap.setOnClickListener(this);
-		View settings = findViewById(R.id.button_settings);
-		settings.setOnClickListener(this);
 
 		mPagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager(), this, null);
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
@@ -79,6 +80,31 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener, OnC
 		getSupportLoaderManager().destroyLoader(LOADER_ASYNC_BACKGROUND);
 
 		super.onDestroy();
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.menu_main, menu);
+		
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		super.onOptionsItemSelected(item);
+		
+		switch (item.getItemId()) {
+		case R.id.menu_main_settings:
+			Intent i = new Intent(this, SettingsActivity.class);
+			startActivity(i);
+			
+			return true;
+		default:
+			return false;
+		}
 	}
 
 	@Override
@@ -229,11 +255,6 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener, OnC
 				i.putExtra(IntentContract.EXTRA_CITY_ID, cityId);
 				startActivity(i);
 			}
-			
-			break;
-		case R.id.button_settings:
-			Intent i = new Intent(this, SettingsActivity.class);
-			startActivity(i);
 			
 			break;
 		}

@@ -36,33 +36,19 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-		<RelativeLayout
-			android:layout_width="match_parent"
-        	android:layout_height="wrap_content"
-        	android:layout_marginStart="24dp"
+		<TextView
+            android:id="@+id/button_map"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginStart="24dp"
         	android:layout_marginEnd="24dp"
-        	android:layout_marginBottom="18dp" >
-        
-			<TextView
-	            android:id="@+id/button_map"
-	            android:layout_width="wrap_content"
-	            android:layout_height="wrap_content"
-	            android:layout_alignParentEnd="true"
-	            android:clickable="true"
-	            android:gravity="center"
-	            android:background="@android:drawable/ic_menu_view" />
-	            
-	        <TextView
-	            android:id="@+id/button_settings"
-	            android:layout_width="wrap_content"
-	            android:layout_height="wrap_content"
-	            android:layout_toStartOf="@id/button_map"
-	            android:layout_marginEnd="24dp"
-	            android:clickable="true"
-	            android:gravity="center"
-	            android:background="@android:drawable/ic_menu_manage" />
-        </RelativeLayout>
-            
+        	android:layout_marginBottom="18dp"
+        	android:gravity="center"
+            android:clickable="true"
+            android:textSize="24sp"
+            android:text="@string/ui_map" />
+
         <fragment
             android:id="@+id/fragment_weather_forecast"
             android:name="org.qmsos.weathermo.fragment.WeatherForecast"

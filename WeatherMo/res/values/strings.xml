@@ -12,7 +12,12 @@
     <!-- Strings used in various ui components -->
     <string name="ui_placeholder">null</string>
     <string name="ui_current">Current</string>
+    <string name="ui_map">map</string>
     <string name="ui_hint_city_name">Enter here:</string>
+    <!-- End of section -->
+    
+    <!-- Strings used in option menu -->
+    <string name="menu_title_main_settings">Settings</string>
     <!-- End of section -->
     
     <!-- Strings used in toolbar -->
