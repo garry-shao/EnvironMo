@@ -40,13 +40,12 @@ import android.view.View.OnClickListener;
  * 
  */
 public class MainActivity extends AppCompatActivity 
-implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener, OnClickListener, 
-		OnSharedPreferenceChangeListener, OnCityNameViewClickedListener, OnForecastViewClickedListener {
+implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChangeListener, 
+		OnCityNameViewClickedListener, OnForecastViewClickedListener {
 	
 	private static final int LOADER_MAIN_INTERFACE = 0x01;
 	private static final int LOADER_ASYNC_BACKGROUND = 0x02;
 	
-	private SwipeRefreshLayout mRefreshLayout;
 	private WeatherPagerAdapter mPagerAdapter;
 
 	@Override
@@ -54,11 +53,23 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener, OnC
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		mRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
-		mRefreshLayout.setOnRefreshListener(this);
+		SwipeRefreshLayout refreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
+		refreshLayout.setOnRefreshListener(new OnRefreshListener() {
 
-		View weatherMap = findViewById(R.id.button_map);
-		weatherMap.setOnClickListener(this);
+			@Override
+			public void onRefresh() {
+				animateRefreshing();
+			}
+		});
+
+		View buttonWeatherMap = findViewById(R.id.button_map);
+		buttonWeatherMap.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				loadWeatherMap();
+			}
+		});
 
 		mPagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager(), this, null);
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
@@ -221,44 +232,6 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener, OnC
 		reloadFragmentForecast(args);
 		reloadBackgroundImage(args);
 	}
-	
-	@Override
-	public void onRefresh() {
-		final Intent intent = new Intent(this, WeatherService.class);
-		intent.setAction(IntentContract.ACTION_REFRESH_WEATHER_MANUAL);
-		
-		// make animation here 
-		int animationTimeInMillis = 1000;
-		new Handler().postDelayed(new Runnable() {
-
-			@Override
-			public void run() {
-				mRefreshLayout.setRefreshing(false);
-
-				startService(intent);
-			}
-		}, animationTimeInMillis);
-	}
-
-	@Override
-	public void onClick(View v) {
-		switch (v.getId()) {
-		case R.id.button_map:
-			ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
-			if (viewPager == null) {
-				return;
-			}
-			
-			long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
-			if (cityId != 0L) {
-				Intent i = new Intent(this, MapActivity.class);
-				i.putExtra(IntentContract.EXTRA_CITY_ID, cityId);
-				startActivity(i);
-			}
-			
-			break;
-		}
-	}
 
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -404,6 +377,48 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener, OnC
 		intent.setAction(IntentContract.ACTION_REFRESH_WEATHER_AUTO);
 		intent.putExtra(IntentContract.EXTRA_REFRESH_WEATHER_AUTO, flagAuto);
 		startService(intent);
+	}
+
+	/**
+	 * Load weather map of the city currently showing.
+	 */
+	private void loadWeatherMap() {
+		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
+		if (viewPager == null) {
+			return;
+		}
+		
+		long cityId = mPagerAdapter.getCityId(viewPager.getCurrentItem());
+		if (cityId != 0L) {
+			Intent i = new Intent(this, MapActivity.class);
+			i.putExtra(IntentContract.EXTRA_CITY_ID, cityId);
+			startActivity(i);
+		}
+	}
+
+	/**
+	 * Animate refreshing action.
+	 */
+	private void animateRefreshing() {
+		final SwipeRefreshLayout refreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
+		if (refreshLayout == null) {
+			return;
+		}
+		
+		final Intent intent = new Intent(this, WeatherService.class);
+		intent.setAction(IntentContract.ACTION_REFRESH_WEATHER_MANUAL);
+		
+		// make animation here 
+		int animationTimeInMillis = 1000;
+		new Handler().postDelayed(new Runnable() {
+
+			@Override
+			public void run() {
+				refreshLayout.setRefreshing(false);
+
+				startService(intent);
+			}
+		}, animationTimeInMillis);
 	}
 
 }
