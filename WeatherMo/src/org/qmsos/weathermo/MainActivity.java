@@ -40,8 +40,8 @@ public class MainActivity extends AppCompatActivity
 implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener, OnClickListener, 
 		OnSharedPreferenceChangeListener, OnCityNameViewClickedListener, OnForecastViewClickedListener {
 	
-	private static final int LOAD_ID_MAIN_INTERFACE = 0;
-	private static final int LOAD_ID_ASYNC_BACKGROUND = 1;
+	private static final int LOADER_MAIN_INTERFACE = 0x01;
+	private static final int LOADER_ASYNC_BACKGROUND = 0x02;
 	
 	private SwipeRefreshLayout mRefreshLayout;
 	private WeatherPagerAdapter mPagerAdapter;
@@ -67,16 +67,16 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener, OnC
 		pagerIndicator.setViewPager(viewPager);
 		pagerIndicator.setOnPageChangeListener(this);
 		
-		getSupportLoaderManager().initLoader(LOAD_ID_MAIN_INTERFACE, null, this);
-		getSupportLoaderManager().initLoader(LOAD_ID_ASYNC_BACKGROUND, null, this);
+		getSupportLoaderManager().initLoader(LOADER_MAIN_INTERFACE, null, this);
+		getSupportLoaderManager().initLoader(LOADER_ASYNC_BACKGROUND, null, this);
 		
 		scheduleService();
 	}
 
 	@Override
 	protected void onDestroy() {
-		getSupportLoaderManager().destroyLoader(LOAD_ID_MAIN_INTERFACE);
-		getSupportLoaderManager().destroyLoader(LOAD_ID_ASYNC_BACKGROUND);
+		getSupportLoaderManager().destroyLoader(LOADER_MAIN_INTERFACE);
+		getSupportLoaderManager().destroyLoader(LOADER_ASYNC_BACKGROUND);
 
 		super.onDestroy();
 	}
@@ -86,11 +86,11 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener, OnC
 		String[] projection = null;
 		
 		switch (id) {
-		case LOAD_ID_MAIN_INTERFACE:
+		case LOADER_MAIN_INTERFACE:
 			projection = new String[] { WeatherEntity.CITY_ID };
 			
 			return new CursorLoader(this, WeatherEntity.CONTENT_URI, projection, null, null, null);
-		case LOAD_ID_ASYNC_BACKGROUND:
+		case LOADER_ASYNC_BACKGROUND:
 			long cityId;
 			int day;
 			if (args != null) {
@@ -128,7 +128,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener, OnC
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 		switch (loader.getId()) {
-		case LOAD_ID_MAIN_INTERFACE:
+		case LOADER_MAIN_INTERFACE:
 			mPagerAdapter.swapCursor(data);
 			
 			DotViewPagerIndicator indicator = (DotViewPagerIndicator) findViewById(R.id.pager_indicator);
@@ -142,7 +142,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener, OnC
 			reloadBackgroundImage(args);
 			
 			return;
-		case LOAD_ID_ASYNC_BACKGROUND:
+		case LOADER_ASYNC_BACKGROUND:
 			int weatherId;
 			
 			if (data != null && data.moveToFirst()) {
@@ -319,7 +319,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnRefreshListener, OnC
 	 *            to be shown.
 	 */
 	private void reloadBackgroundImage(Bundle args) {
-		getSupportLoaderManager().restartLoader(LOAD_ID_ASYNC_BACKGROUND, args, this);
+		getSupportLoaderManager().restartLoader(LOADER_ASYNC_BACKGROUND, args, this);
 	}
 	
 	/**
