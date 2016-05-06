@@ -109,7 +109,7 @@ public class WeatherCurrent extends Fragment implements LoaderCallbacks<Cursor> 
 				}
 				
 				fv = (TextView) getView().findViewById(R.id.current_main);
-				fv.setText(WeatherInfoFactory.getWeatherCategory(getContext(), forecastWeatherId));
+				fv.setText(null);
 				
 				fv = (TextView) getView().findViewById(R.id.current_uv_index);
 				fv.setText(WeatherInfoFactory.getWeatherDescription(getContext(), forecastWeatherId));
