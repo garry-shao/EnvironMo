@@ -108,8 +108,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 		super.onOptionsItemSelected(item);
 		
 		switch (item.getItemId()) {
-		case R.id.menu_main_settings:
-			Intent i = new Intent(this, SettingsActivity.class);
+		case R.id.menu_main_preference:
+			Intent i = new Intent(this, PreferenceActivity.class);
 			startActivity(i);
 			
 			return true;

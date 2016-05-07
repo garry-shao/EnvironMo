@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto" >
 
     <item
-        android:id="@+id/menu_main_settings"
+        android:id="@+id/menu_main_preference"
         android:showAsAction="never"
-        android:title="@string/menu_title_main_settings">
+        android:title="@string/menu_title_main_preference">
     </item>
 
 </menu>

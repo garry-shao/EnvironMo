@@ -29,7 +29,7 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
 		setContentView(R.layout.activity_map);
 		
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-		toolbar.setTitle(R.string.activity_weather_map);
+		toolbar.setTitle(R.string.activity_map);
 		toolbar.inflateMenu(R.menu.menu_map_layer);
 		toolbar.setOnMenuItemClickListener(this);
 		
