@@ -22,6 +22,7 @@
     <!-- End of section -->
 
     <!-- Strings used in various ui components -->
+    <string name="ui_null"></string>
     <string name="ui_placeholder">null</string>
     <string name="ui_current">Current</string>
     <string name="ui_map">map</string>

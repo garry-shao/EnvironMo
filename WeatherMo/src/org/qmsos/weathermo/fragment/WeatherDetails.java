@@ -2,8 +2,8 @@ package org.qmsos.weathermo.fragment;
 
 import org.qmsos.weathermo.R;
 import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
-import org.qmsos.weathermo.resources.CalendarFactory;
-import org.qmsos.weathermo.resources.WeatherInfoFactory;
+import org.qmsos.weathermo.res.CalendarFactory;
+import org.qmsos.weathermo.res.TextFactory;
 import org.qmsos.weathermo.util.WeatherParser;
 
 import android.content.Context;
@@ -132,7 +132,7 @@ public class WeatherDetails extends Fragment implements LoaderCallbacks<Cursor> 
 				fv.setText(null);
 				
 				fv = (TextView) getView().findViewById(R.id.details_description);
-				fv.setText(WeatherInfoFactory.getWeatherDescription(getContext(), forecastWeatherId));
+				fv.setText(TextFactory.getWeatherDescription(forecastWeatherId));
 				break;
 			case 2:
 				// Indicates current.
@@ -157,11 +157,11 @@ public class WeatherDetails extends Fragment implements LoaderCallbacks<Cursor> 
 				}
 				
 				cv = (TextView) getView().findViewById(R.id.details_category);
-				cv.setText(WeatherInfoFactory.getWeatherCategory(getContext(), currentWeatherId));
+				cv.setText(TextFactory.getWeatherCategory(currentWeatherId));
 				
 				cv = (TextView) getView().findViewById(R.id.details_description);
 				if (Double.compare(uvIndex, WeatherParser.INVALID_UV_INDEX) != 0) {
-					String uvDescription = WeatherInfoFactory.getUvIndexDescription(getContext(), uvIndex);
+					String uvDescription = getString(TextFactory.getUvIndexDescription(uvIndex));
 					cv.setText("UV: " + uvIndex + " - " + uvDescription);
 				} else {
 					cv.setText(null);
@@ -172,7 +172,7 @@ public class WeatherDetails extends Fragment implements LoaderCallbacks<Cursor> 
 		String dateText;
 		switch (mDayOnDisplay) {
 		case 0:
-			String date = CalendarFactory.getDate(mDayOnDisplay);
+			String date = CalendarFactory.getOffsetDate(mDayOnDisplay);
 			String dayOfWeek = CalendarFactory.getDayOfWeek(getContext(), mDayOnDisplay);
 			dateText = date + " " + dayOfWeek;
 			break;

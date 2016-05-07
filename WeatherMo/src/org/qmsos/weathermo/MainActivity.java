@@ -6,10 +6,10 @@ import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
 import org.qmsos.weathermo.fragment.CityHeader;
 import org.qmsos.weathermo.fragment.CityHeader.OnCityHeaderClickedListener;
 import org.qmsos.weathermo.fragment.WeatherDetails;
+import org.qmsos.weathermo.fragment.WeatherDetailsPagerAdapter;
 import org.qmsos.weathermo.fragment.WeatherSummary;
 import org.qmsos.weathermo.fragment.WeatherSummary.OnSummaryClickedListener;
-import org.qmsos.weathermo.fragment.WeatherDetailsPagerAdapter;
-import org.qmsos.weathermo.resources.BackgroundFactory;
+import org.qmsos.weathermo.res.ImageFactory;
 import org.qmsos.weathermo.util.WeatherParser;
 import org.qmsos.weathermo.widget.DotViewPagerIndicator;
 
@@ -176,7 +176,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 			Bundle args = createReloadParameters(0);
 			reloadHeader(args);
 			reloadSummary(args);
-			reloadBackgroundImage(args);
+			reloadBackground(args);
 			
 			return;
 		case LOADER_ASYNC_BACKGROUND:
@@ -195,7 +195,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 			}
 			
 			View v = findViewById(R.id.swipe_refresh);
-			BackgroundFactory.setBackground(v, weatherId);
+			int resId = ImageFactory.getWeatherImage(weatherId);
+			v.setBackgroundResource(resId);
 		}
 	}
 
@@ -230,7 +231,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 		Bundle args = createReloadParameters(day);
 		reloadHeader(args);
 		reloadSummary(args);
-		reloadBackgroundImage(args);
+		reloadBackground(args);
 	}
 
 	@Override
@@ -253,7 +254,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 		reloadDetails(day);
 		
 		Bundle args = createReloadParameters(day);
-		reloadBackgroundImage(args);
+		reloadBackground(args);
 	}
 
 	/**
@@ -312,7 +313,7 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 	 *            day(0 means current, 1 means tomorrow, etc) that wants 
 	 *            to be shown.
 	 */
-	private void reloadBackgroundImage(Bundle args) {
+	private void reloadBackground(Bundle args) {
 		getSupportLoaderManager().restartLoader(LOADER_ASYNC_BACKGROUND, args, this);
 	}
 	

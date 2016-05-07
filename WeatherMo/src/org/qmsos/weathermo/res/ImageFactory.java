@@ -1,25 +1,20 @@
-package org.qmsos.weathermo.resources;
+package org.qmsos.weathermo.res;
 
 import org.qmsos.weathermo.R;
-
-import android.view.View;
 
 /**
  * Set background of view, usually the outer most ViewGroup. 
  */
-public class BackgroundFactory {
+public class ImageFactory {
 	
 	/**
-	 * Set the background of the view to specified drawable based on the weather id
-	 * that passed on.
+	 * Get resource id of the image corresponding specified weather id.
 	 * 
-	 * @param v
-	 *            The view that the background would be set upon.
 	 * @param weatherId
-	 *            The id of specified weather., background drawable would be selected 
-	 *            based on this parameter.
+	 *            The id of specified weather.
+	 * @return The corresponding resource id, or 0 if invalid.
 	 */
-	public static void setBackground(View v, int weatherId) {
+	public static int getWeatherImage(int weatherId) {
 		int resId;
 		
 		switch (weatherId) {
@@ -117,7 +112,7 @@ public class BackgroundFactory {
 			resId = 0;
 		}
 		
-		v.setBackgroundResource(resId);
+		return resId;
 	}
 
 }

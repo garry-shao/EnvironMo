@@ -1,4 +1,4 @@
-package org.qmsos.weathermo.resources;
+package org.qmsos.weathermo.res;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -22,7 +22,7 @@ public class CalendarFactory {
 	 *            0 means today, -1 means yesterday, etc.
 	 * @return The formatted description of date.
 	 */
-	public static String getDate(int day) {
+	public static String getOffsetDate(int day) {
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.DAY_OF_YEAR, day);
 		

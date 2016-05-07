@@ -3,7 +3,7 @@ package org.qmsos.weathermo.fragment;
 import org.qmsos.weathermo.R;
 import org.qmsos.weathermo.contract.LoaderContract;
 import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
-import org.qmsos.weathermo.resources.WeatherIconFactory;
+import org.qmsos.weathermo.res.IconFactory;
 import org.qmsos.weathermo.util.WeatherParser;
 
 import android.content.Context;
@@ -121,7 +121,8 @@ public class WeatherSummary extends Fragment implements LoaderCallbacks<Cursor> 
 		} else {
 			tv.setText(null);
 		}
-		WeatherIconFactory.setWeatherIcon(tv, currentWeatherId);
+		int currentResId = IconFactory.getWeatherIcon(currentWeatherId);
+		tv.setCompoundDrawablesRelativeWithIntrinsicBounds(0, currentResId, 0, 0);
 		
 		for (int i = 1; i <= WeatherParser.FORECAST_IN_DAYS; i++) {
 			int forecastWeatherId = WeatherParser.getWeatherId(forecasts[i - 1]);
@@ -139,7 +140,8 @@ public class WeatherSummary extends Fragment implements LoaderCallbacks<Cursor> 
 			} else {
 				tv.setText(null);
 			}
-			WeatherIconFactory.setWeatherIcon(tv, forecastWeatherId);
+			int forecastResId = IconFactory.getWeatherIcon(forecastWeatherId);
+			tv.setCompoundDrawablesRelativeWithIntrinsicBounds(0, forecastResId, 0, 0);
 		}
 	}
 

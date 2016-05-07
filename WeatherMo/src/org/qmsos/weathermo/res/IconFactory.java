@@ -1,23 +1,20 @@
-package org.qmsos.weathermo.resources;
+package org.qmsos.weathermo.res;
 
 import org.qmsos.weathermo.R;
-
-import android.widget.TextView;
 
 /**
  * Set weather icon to TextView, usually those acted as forecast view.
  */
-public class WeatherIconFactory {
+public class IconFactory {
 	
 	/**
-	 * Set weather icon to specified TextView, based on the provided weather id.
+	 * Get resource id of specified weather.
 	 * 
-	 * @param tv
-	 *            The TextView that the weather icon will be setting to.
 	 * @param weatherId
 	 *            The id of specified weather.
+	 * @return The corresponding resource id, or 0 if invalid. 
 	 */
-	public static void setWeatherIcon(TextView tv, int weatherId) {
+	public static int getWeatherIcon(int weatherId) {
 		int resId;
 		
 		switch (weatherId) {
@@ -113,7 +110,7 @@ public class WeatherIconFactory {
 			resId = 0;
 		}
 		
-		tv.setCompoundDrawablesRelativeWithIntrinsicBounds(0, resId, 0, 0);
+		return resId;
 	}
 	
 }
