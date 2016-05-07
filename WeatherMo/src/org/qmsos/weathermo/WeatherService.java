@@ -88,7 +88,7 @@ public class WeatherService extends IntentService {
 				int[] flags = { 
 						Contract.FLAG_CURRENT_WEATHER, 
 						Contract.FLAG_CURRENT_UV_INDEX, 
-						Contract.FLAG_FORECAST_HOURLY };
+						Contract.FLAG_FORECAST_DAILY };
 				
 				executeRefreshWeather(flags);
 			}
@@ -326,6 +326,14 @@ public class WeatherService extends IntentService {
 					value.put(WeatherEntity.FORECAST1, parsedForecastHourly[0]);
 					value.put(WeatherEntity.FORECAST2, parsedForecastHourly[1]);
 					value.put(WeatherEntity.FORECAST3, parsedForecastHourly[2]);
+				}
+				break;
+			case Contract.FLAG_FORECAST_DAILY:
+				String[] parsedForecastDaily = WeatherParser.parseRawToForecastsDaily(result);
+				if (parsedForecastDaily != null) {
+					value.put(WeatherEntity.FORECAST1, parsedForecastDaily[0]);
+					value.put(WeatherEntity.FORECAST2, parsedForecastDaily[1]);
+					value.put(WeatherEntity.FORECAST3, parsedForecastDaily[2]);
 				}
 				break;
 			}
