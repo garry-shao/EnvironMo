@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" >
+
+    <item
+        android:id="@+id/menu_layer_precipitation"
+        android:showAsAction="never"
+        android:title="@string/ui_layer_precipitation">
+    </item>
+    <item
+        android:id="@+id/menu_layer_rain"
+        android:showAsAction="never"
+        android:title="@string/ui_layer_rain">
+    </item>
+    <item
+        android:id="@+id/menu_layer_snow"
+        android:showAsAction="never"
+        android:title="@string/ui_layer_snow">
+    </item>
+    <item
+        android:id="@+id/menu_layer_clouds"
+        android:showAsAction="never"
+        android:title="@string/ui_layer_clouds">
+    </item>
+    <item
+        android:id="@+id/menu_layer_pressure"
+        android:showAsAction="never"
+        android:title="@string/ui_layer_pressure">
+    </item>
+    <item
+        android:id="@+id/menu_layer_temperature"
+        android:showAsAction="never"
+        android:title="@string/ui_layer_temperature">
+    </item>
+    <item
+        android:id="@+id/menu_layer_windspeed"
+        android:showAsAction="never"
+        android:title="@string/ui_layer_windspeed">
+    </item>
+
+</menu>

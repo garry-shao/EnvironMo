@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <EditText
+        android:id="@+id/city_name_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:hint="@string/ui_city_name_input_hint"
+        android:inputType="text"
+        android:imeOptions="actionDone"
+        android:labelFor="@id/city_name_input" />
+        
+    <android.support.v7.widget.RecyclerView
+    	android:id="@+id/city_results"
+    	android:layout_width="match_parent"
+    	android:layout_height="0dp"
+    	android:layout_weight="1"
+    	android:scrollbars="vertical" />
+
+</LinearLayout>
