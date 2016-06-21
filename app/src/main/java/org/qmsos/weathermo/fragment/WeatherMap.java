@@ -1,13 +1,5 @@
 package org.qmsos.weathermo.fragment;
 
-import org.apache.cordova.ConfigXmlParser;
-import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.CordovaWebViewImpl;
-import org.apache.cordova.engine.SystemWebView;
-import org.apache.cordova.engine.SystemWebViewEngine;
-import org.qmsos.weathermo.R;
-import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
-
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
@@ -17,13 +9,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.apache.cordova.ConfigXmlParser;
+import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.CordovaWebViewImpl;
+import org.apache.cordova.engine.SystemWebView;
+import org.apache.cordova.engine.SystemWebViewEngine;
+import org.qmsos.weathermo.R;
+import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
+
 /**
  * Show weather map.
- *
  */
 public class WeatherMap extends BaseCordovaFragment implements LoaderCallbacks<Cursor> {
 
-	private static final String KEY_CITYID = "KEY_CITYID";
+	private static final String KEY_CITY_ID = "KEY_CITY_ID";
 	private static final String KEY_LAYER = "KEY_LAYER";
 
 	private SystemWebView mSystemWebView;
@@ -40,7 +39,7 @@ public class WeatherMap extends BaseCordovaFragment implements LoaderCallbacks<C
 	 */
 	public static WeatherMap newInstance(long cityId, String layer) {
 		Bundle args = new Bundle();
-		args.putLong(KEY_CITYID, cityId);
+		args.putLong(KEY_CITY_ID, cityId);
 		args.putString(KEY_LAYER, layer);
 		
 		WeatherMap fragment = new WeatherMap();
@@ -50,10 +49,10 @@ public class WeatherMap extends BaseCordovaFragment implements LoaderCallbacks<C
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fragment_weather_map, container, false);
-		
-		return view;
+	public View onCreateView(LayoutInflater inflater,
+							 ViewGroup container, Bundle savedInstanceState) {
+
+		return inflater.inflate(R.layout.fragment_weather_map, container, false);
 	}
 
 	@Override
@@ -90,7 +89,7 @@ public class WeatherMap extends BaseCordovaFragment implements LoaderCallbacks<C
 
 	@Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		long cityId = getArguments().getLong(KEY_CITYID, -1L);
+		long cityId = getArguments().getLong(KEY_CITY_ID, -1L);
 		
 		String[] projection = { CityEntity.LONGITUDE, CityEntity.LATITUDE };
 		String where = CityEntity.CITY_ID + " = " + cityId;
@@ -128,7 +127,7 @@ public class WeatherMap extends BaseCordovaFragment implements LoaderCallbacks<C
 		urlBuilder.append("&lon=");
 		urlBuilder.append(longitude);
 		urlBuilder.append("&zoom=");
-		urlBuilder.append(4);
+		urlBuilder.append(5);
 		
 		String layer = getArguments().getString(KEY_LAYER);
 		if (layer != null) {

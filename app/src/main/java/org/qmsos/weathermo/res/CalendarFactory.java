@@ -1,13 +1,13 @@
 package org.qmsos.weathermo.res;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
+import android.content.Context;
+import android.content.res.Resources;
 
 import org.qmsos.weathermo.R;
 
-import android.content.Context;
-import android.content.res.Resources;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 /**
  * Provide day of the week.
@@ -27,9 +27,8 @@ public class CalendarFactory {
 		c.add(Calendar.DAY_OF_YEAR, day);
 		
 		SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd", Locale.US);
-		String date = dateFormat.format(c.getTime());
-		
-		return date;
+
+		return dateFormat.format(c.getTime());
 	}
 	
 	/**

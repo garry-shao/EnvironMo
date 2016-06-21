@@ -13,18 +13,20 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 
 /**
  * Base customized Fragment class that implements Apache's cordova framework. 
- *
  */
 public abstract class BaseCordovaFragment extends Fragment implements CordovaInterface {
 
 	private ExecutorService mThreadPool;
 	private CordovaPlugin mPermissionResultCallback;
 	private CordovaPlugin mActivityResultCallback;
-	private int mActivityResultRequestCode;
+
+    // Decide an explicit integer later.
+    private int mActivityResultRequestCode;
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -56,8 +58,11 @@ public abstract class BaseCordovaFragment extends Fragment implements CordovaInt
 	}
 
 	@Override
-	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+	public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 		
 		if (mPermissionResultCallback != null) {
 			try {

@@ -1,10 +1,5 @@
 package org.qmsos.weathermo.fragment;
 
-import org.qmsos.weathermo.R;
-import org.qmsos.weathermo.datamodel.City;
-import org.qmsos.weathermo.util.CityParser;
-import org.qmsos.weathermo.widget.CitySearchRecyclerViewAdapter;
-
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -20,9 +15,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import org.qmsos.weathermo.R;
+import org.qmsos.weathermo.datamodel.City;
+import org.qmsos.weathermo.util.CityParser;
+import org.qmsos.weathermo.widget.CitySearchRecyclerViewAdapter;
+
 /**
  * Fragment that provides framework to search remote server for valid city.
- *
  */
 public class CitySearch extends Fragment {
 
@@ -48,10 +47,10 @@ public class CitySearch extends Fragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view =  inflater.inflate(R.layout.fragment_city_search, container, false);
-		
-		return view;
+	public View onCreateView(LayoutInflater inflater,
+							 ViewGroup container, Bundle savedInstanceState) {
+
+		return inflater.inflate(R.layout.fragment_city_search, container, false);
 	}
 
 	@Override
@@ -76,8 +75,8 @@ public class CitySearch extends Fragment {
 					String cityName = v.getText().toString();
 					mListener.onStartSearch(cityName);
 					
-					InputMethodManager manager = (InputMethodManager) getContext().getSystemService(
-							Context.INPUT_METHOD_SERVICE);
+					InputMethodManager manager = (InputMethodManager)
+                            getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
 					manager.hideSoftInputFromWindow(v.getWindowToken(), 0);
 					
 					return true;

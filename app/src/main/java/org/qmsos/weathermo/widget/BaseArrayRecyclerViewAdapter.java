@@ -31,11 +31,10 @@ public abstract class BaseArrayRecyclerViewAdapter<T, VH extends ViewHolder> ext
 			return;
 		}
 		
-		T data = mDataArray[position];
-		onBindViewHolder(holder, data);
+		onBindViewHolder(holder, mDataArray);
 	}
 
-	public abstract void onBindViewHolder(VH holder, T data);
+	protected abstract void onBindViewHolder(VH holder, T[] dataArray);
 
 	public void swapData(T[] dataArray) {
 		mDataArray = dataArray;

@@ -23,8 +23,8 @@ public class CityParser {
 			return null;
 		}
 
-		JSONArray list = null;
-		int length = 0;
+		JSONArray list;
+		int length;
 		try {
 			JSONObject reader = new JSONObject(result);
 			list = reader.getJSONArray("list");

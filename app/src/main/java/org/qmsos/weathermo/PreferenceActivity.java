@@ -1,10 +1,5 @@
 package org.qmsos.weathermo;
 
-import org.qmsos.weathermo.fragment.PreferenceAbout;
-import org.qmsos.weathermo.fragment.PreferenceHeader;
-import org.qmsos.weathermo.fragment.PreferenceHeader.OnPreferenceHeaderClickedListener;
-import org.qmsos.weathermo.fragment.PreferenceRefresh;
-
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -15,13 +10,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.Preference;
 import android.support.v7.widget.Toolbar;
 
+import org.qmsos.weathermo.fragment.PreferenceAbout;
+import org.qmsos.weathermo.fragment.PreferenceHeader;
+import org.qmsos.weathermo.fragment.PreferenceRefresh;
+
 /**
  * The main activity managing preferences.
- *
- *
  */
 public class PreferenceActivity extends AppCompatActivity
-implements OnBackStackChangedListener, OnPreferenceHeaderClickedListener {
+		implements OnBackStackChangedListener,
+		PreferenceHeader.OnPreferenceHeaderClickedListener {
 
 	private static final String FRAGMENT_TAG_HEADER = "FRAGMENT_TAG_HEADER";
 
@@ -39,7 +37,8 @@ implements OnBackStackChangedListener, OnPreferenceHeaderClickedListener {
 		Fragment preferenceHeader = manager.findFragmentByTag(FRAGMENT_TAG_HEADER);
 		if (preferenceHeader == null) {
 			FragmentTransaction transaction = manager.beginTransaction();
-			transaction.replace(R.id.fragment_container, new PreferenceHeader(), FRAGMENT_TAG_HEADER);
+			transaction.replace(R.id.fragment_container,
+                    new PreferenceHeader(), FRAGMENT_TAG_HEADER);
 			transaction.commit();
 			
 			// Toolbar's title will be changed based on currently loaded Fragment.
@@ -126,12 +125,13 @@ implements OnBackStackChangedListener, OnPreferenceHeaderClickedListener {
 	 * @return The resource id of the "bread crumb title" of this fragment.
 	 */
 	private int projectBreadCrumbTitle(String fragmentTag) {
-		if (fragmentTag.equals(FRAGMENT_TAG_ABOUT)) {
-			return R.string.pref_header_about_title;
-		} else if (fragmentTag.equals(FRAGMENT_TAG_REFRESH)) {
-			return R.string.pref_header_refresh_title;
-		} else {
-			return 0;
+		switch (fragmentTag) {
+			case FRAGMENT_TAG_ABOUT:
+				return R.string.pref_header_about_title;
+			case FRAGMENT_TAG_REFRESH:
+				return R.string.pref_header_refresh_title;
+			default:
+				return 0;
 		}
 	}
 

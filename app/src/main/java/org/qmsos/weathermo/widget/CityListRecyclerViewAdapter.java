@@ -1,8 +1,5 @@
 package org.qmsos.weathermo.widget;
 
-import org.qmsos.weathermo.R;
-import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -14,6 +11,9 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import org.qmsos.weathermo.R;
+import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
 
 /**
  * Implementation that shows city list and a type at tails of this list.
@@ -36,11 +36,16 @@ public class CityListRecyclerViewAdapter extends BaseDualRecyclerViewAdapter<Vie
 
 	@Override
 	public void onBindViewHolderMain(ViewHolder holder, Cursor cursor) {
-		final long cityId = cursor.getLong(cursor.getColumnIndexOrThrow(CityEntity.CITY_ID));
-		String cityName = cursor.getString(cursor.getColumnIndexOrThrow(CityEntity.CITY_NAME));
-		String country = cursor.getString(cursor.getColumnIndexOrThrow(CityEntity.COUNTRY));
-		double longitude = cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LONGITUDE));
-		double latitude = cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LATITUDE));
+		final long cityId = cursor.getLong(
+                cursor.getColumnIndexOrThrow(CityEntity.CITY_ID));
+		String cityName = cursor.getString(
+                cursor.getColumnIndexOrThrow(CityEntity.CITY_NAME));
+		String country = cursor.getString(
+                cursor.getColumnIndexOrThrow(CityEntity.COUNTRY));
+		double longitude = cursor.getDouble(
+                cursor.getColumnIndexOrThrow(CityEntity.LONGITUDE));
+		double latitude = cursor.getDouble(
+                cursor.getColumnIndexOrThrow(CityEntity.LATITUDE));
 		
 		int maxLengthOfCityName = 15;
 		if (cityName.length() > maxLengthOfCityName) {
@@ -52,11 +57,14 @@ public class CityListRecyclerViewAdapter extends BaseDualRecyclerViewAdapter<Vie
 		spanned.setSpan(new RelativeSizeSpan(0.5f), 
 				cityName.length() + 1, raw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 		
-		String lon = longitude > 0 ? Math.abs(longitude) + "\u00b0E" : Math.abs(longitude) + "\u00b0W";
-		String lat = latitude > 0 ? Math.abs(latitude) + "\u00b0N" : Math.abs(latitude) + "\u00b0S";
-		
+		String lon = longitude > 0 ?
+				Math.abs(longitude) + "\u00b0E" : Math.abs(longitude) + "\u00b0W";
+		String lat = latitude > 0 ?
+				Math.abs(latitude) + "\u00b0N" : Math.abs(latitude) + "\u00b0S";
+		String coordinateInfo = lon + " " + lat;
+
 		((MainViewHolder) holder).mCityInfoView.setText(spanned);
-		((MainViewHolder) holder).mCityGeoView.setText(lon + " " + lat);
+		((MainViewHolder) holder).mCityGeoView.setText(coordinateInfo);
 		((MainViewHolder) holder).mDeleteButton.setText(R.string.button_delete);
 		((MainViewHolder) holder).mDeleteButton.setOnClickListener(new OnClickListener() {
 			

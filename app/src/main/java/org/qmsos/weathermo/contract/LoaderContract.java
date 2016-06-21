@@ -3,7 +3,6 @@ package org.qmsos.weathermo.contract;
 /**
  * The contract used in loader framework in application scope. Contains definition
  * of keys used in bundle when creating loader.
- *
  */
 public final class LoaderContract {
 

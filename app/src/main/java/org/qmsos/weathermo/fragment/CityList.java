@@ -1,9 +1,5 @@
 package org.qmsos.weathermo.fragment;
 
-import org.qmsos.weathermo.R;
-import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
-import org.qmsos.weathermo.widget.CityListRecyclerViewAdapter;
-
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -16,15 +12,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.qmsos.weathermo.R;
+import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
+import org.qmsos.weathermo.widget.CityListRecyclerViewAdapter;
+
+/**
+ * The fragment that shows the list of cities currently monitoring.
+ */
 public class CityList extends Fragment implements LoaderCallbacks<Cursor> {
 
 	private CityListRecyclerViewAdapter mCityListAdapter;
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fragment_city_list, container, false);
+	public View onCreateView(LayoutInflater inflater,
+							 ViewGroup container, Bundle savedInstanceState) {
 
-		return view;
+		return inflater.inflate(R.layout.fragment_city_list, container, false);
 	}
 
 	@Override

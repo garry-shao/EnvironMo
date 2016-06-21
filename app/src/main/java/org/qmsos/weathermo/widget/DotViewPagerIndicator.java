@@ -1,7 +1,5 @@
 package org.qmsos.weathermo.widget;
 
-import org.qmsos.weathermo.R;
-
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -13,10 +11,10 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.AttributeSet;
 import android.view.View;
 
+import org.qmsos.weathermo.R;
+
 /**
  * Draw circles as indicators of a ViewPager.
- * 
- *
  */
 public class DotViewPagerIndicator extends View implements OnPageChangeListener {
 
@@ -49,11 +47,13 @@ public class DotViewPagerIndicator extends View implements OnPageChangeListener 
 		
 		mSelectedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		mSelectedPaint.setColor(
-				a.getColor(R.styleable.DotViewPagerIndicator_selectedColor, defaultSelectedColor));
+				a.getColor(R.styleable.DotViewPagerIndicator_selectedColor,
+						defaultSelectedColor));
 		
 		mUnselectedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		mUnselectedPaint.setColor(
-				a.getColor(R.styleable.DotViewPagerIndicator_unselectedColor, defaultUnselectedColor));
+				a.getColor(R.styleable.DotViewPagerIndicator_unselectedColor,
+						defaultUnselectedColor));
 		
 		a.recycle();
 	}

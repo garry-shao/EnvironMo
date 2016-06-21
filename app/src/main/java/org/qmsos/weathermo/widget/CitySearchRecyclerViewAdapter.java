@@ -33,38 +33,41 @@ public class CitySearchRecyclerViewAdapter extends BaseArrayRecyclerViewAdapter<
 		}
 	}
 
-	@Override
-	public void onBindViewHolder(ViewHolder holder, City data) {
-		final City fData = data;
-		
+    @Override
+    public void onBindViewHolder(ViewHolder holder, City[] dataArray) {
+        final City fData = dataArray[holder.getAdapterPosition()];
+
 		int maxLengthOfCityName = 15;
-		String cityName = data.getCityName();
+		String cityName = fData.getCityName();
 		if (cityName.length() > maxLengthOfCityName) {
 			cityName = cityName.substring(0, maxLengthOfCityName) + "...";
 		}
-		String country = data.getCountry();
+		String country = fData.getCountry();
 		String raw = cityName + " " + country;
-		
+
 		SpannableString spanned = new SpannableString(raw);
-		spanned.setSpan(new RelativeSizeSpan(0.5f), 
+		spanned.setSpan(new RelativeSizeSpan(0.5f),
 				cityName.length() + 1, raw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-		
-		double longitude = data.getLongitude();
-		double latitude = data.getLatitude();
-		String lon = longitude > 0 ? Math.abs(longitude) + "\u00b0E" : Math.abs(longitude) + "\u00b0W";
-		String lat = latitude > 0 ? Math.abs(latitude) + "\u00b0N" : Math.abs(latitude) + "\u00b0S";
-		
+
+		double longitude = fData.getLongitude();
+		double latitude = fData.getLatitude();
+		String lon = longitude > 0 ?
+				Math.abs(longitude) + "\u00b0E" : Math.abs(longitude) + "\u00b0W";
+		String lat = latitude > 0 ?
+                Math.abs(latitude) + "\u00b0N" : Math.abs(latitude) + "\u00b0S";
+		String coordinateInfo = lon + " " + lat;
+
 		((RecyclerViewHolder) holder).mCityInfoView.setText(spanned);
-		((RecyclerViewHolder) holder).mCityGeoView.setText(lon + " " + lat);
+		((RecyclerViewHolder) holder).mCityGeoView.setText(coordinateInfo);
 		((RecyclerViewHolder) holder).mInsertButton.setText(R.string.button_insert);
 		((RecyclerViewHolder) holder).mInsertButton.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				mListener.onInsertCityClicked(fData);
 			}
 		});
-	}
+    }
 
 	@Override
 	public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {

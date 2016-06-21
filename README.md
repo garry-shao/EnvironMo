@@ -1,4 +1,4 @@
 # WeatherMo
 Weather Monitor
 
-Using openweathermap.org service to monitor & forecast weather.
+Using http://www.openweathermap.org service to monitor & forecast weather.

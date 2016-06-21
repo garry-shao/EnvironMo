@@ -1,5 +1,8 @@
 package org.qmsos.weathermo.datamodel;
 
+/**
+ * Description of weather instance.
+ */
 public class Weather {
 	
 	private final int mWeatherId;

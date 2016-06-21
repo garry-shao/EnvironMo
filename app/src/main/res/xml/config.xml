@@ -2,10 +2,10 @@
 <widget xmlns     = "http://www.w3.org/ns/widgets"
         id        = "org.qmsos.weathermo"
         version   = "1.0.0">
-    <name>Weather Map</name>
+    <name>WeatherMo</name>
 
     <description>
-        Shows weather map on openweathermap.org
+        Show weather map of http://www.openweathermap.org
     </description>
 
     <author href="" email="">
@@ -24,6 +24,6 @@
     </feature>
 
     <preference name="LogLevel" value="WARN" />
-    <preference name="LoadUrlTimeoutValue" value="10000" />
+    <preference name="LoadUrlTimeoutValue" value="20000" />
 
 </widget>

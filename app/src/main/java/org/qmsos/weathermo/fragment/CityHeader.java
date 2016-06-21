@@ -1,9 +1,5 @@
 package org.qmsos.weathermo.fragment;
 
-import org.qmsos.weathermo.R;
-import org.qmsos.weathermo.contract.LoaderContract;
-import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -20,9 +16,12 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.qmsos.weathermo.R;
+import org.qmsos.weathermo.contract.LoaderContract;
+import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
+
 /**
  * A fragment used as header to show info of the city currently showing. 
- *
  */
 public class CityHeader extends Fragment implements LoaderCallbacks<Cursor> {
 
@@ -42,10 +41,10 @@ public class CityHeader extends Fragment implements LoaderCallbacks<Cursor> {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fragment_city_header, container, false);
+	public View onCreateView(LayoutInflater inflater,
+							 ViewGroup container, Bundle savedInstanceState) {
 
-		return view;
+		return inflater.inflate(R.layout.fragment_city_header, container, false);
 	}
 
 	@Override
@@ -83,7 +82,8 @@ public class CityHeader extends Fragment implements LoaderCallbacks<Cursor> {
 		String[] projection = { CityEntity.CITY_ID, CityEntity.CITY_NAME, CityEntity.COUNTRY };
 		String where = CityEntity.CITY_ID + " = " + cityId;
 		
-		return new CursorLoader(getContext(), CityEntity.CONTENT_URI, projection, where, null, null);
+		return new CursorLoader(getContext(),
+                CityEntity.CONTENT_URI, projection, where, null, null);
 	}
 
 	@Override
@@ -97,7 +97,7 @@ public class CityHeader extends Fragment implements LoaderCallbacks<Cursor> {
 		
 		TextView tv = (TextView) getView().findViewById(R.id.current_city);
 		if (city != null && country != null) {
-			String raw = city + " " +country;
+			String raw = city + " " + country;
 			
 			SpannableString spanned = new SpannableString(raw);
 			spanned.setSpan(new RelativeSizeSpan(0.5f), 

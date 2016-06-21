@@ -1,23 +1,5 @@
 package org.qmsos.weathermo;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-
-import org.qmsos.weathermo.contract.IntentContract;
-import org.qmsos.weathermo.contract.ProviderContract;
-import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
-import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
-import org.qmsos.weathermo.datamodel.City;
-import org.qmsos.weathermo.util.WeatherParser;
-
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
@@ -37,10 +19,26 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 
+import org.qmsos.weathermo.contract.IntentContract;
+import org.qmsos.weathermo.contract.ProviderContract;
+import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
+import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
+import org.qmsos.weathermo.datamodel.City;
+import org.qmsos.weathermo.util.WeatherParser;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+
 /**
  * Update weather info and city info in background.
- * 
- *
  */
 public class WeatherService extends IntentService {
 
@@ -69,62 +67,69 @@ public class WeatherService extends IntentService {
 		if (action == null) {
 			return;
 		}
-		
-		if (action.equals(IntentContract.ACTION_REFRESH_WEATHER_AUTO)) {
-			boolean flagAuto = intent.getBooleanExtra(IntentContract.EXTRA_REFRESH_WEATHER_AUTO, false);
-			
-			scheduleAutoRefresh(flagAuto);
-			
-			if (flagAuto && checkConnection()) {
-				int[] flags = { 
-						Contract.FLAG_CURRENT_WEATHER, 
-						Contract.FLAG_CURRENT_UV_INDEX, 
-						Contract.FLAG_FORECAST_HOURLY };
-				
-				executeRefreshWeather(flags);
-			}
-		} else if (action.equals(IntentContract.ACTION_REFRESH_WEATHER_MANUAL)) {
-			if (checkConnection()) {
-				int[] flags = { 
-						Contract.FLAG_CURRENT_WEATHER, 
-						Contract.FLAG_CURRENT_UV_INDEX, 
-						Contract.FLAG_FORECAST_DAILY };
-				
-				executeRefreshWeather(flags);
-			}
-		} else if (action.equals(IntentContract.ACTION_SEARCH_CITY)) {
-			Intent localIntent = new Intent(IntentContract.ACTION_SEARCH_EXECUTED);
-			if (checkConnection()) {
-				String cityName = intent.getStringExtra(IntentContract.EXTRA_CITY_NAME);
-				
-				String result = executeSearchCity(cityName);
-				if (result != null) {
-					localIntent.putExtra(IntentContract.EXTRA_SEARCH_EXECUTED, true);
-					localIntent.putExtra(IntentContract.EXTRA_SEARCH_RESULT, result);
-				} else {
-					localIntent.putExtra(IntentContract.EXTRA_SEARCH_EXECUTED, false);
-				}
-			} else {
-				localIntent.putExtra(IntentContract.EXTRA_SEARCH_EXECUTED, false);
-			}
-			
-			LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
-		} else if (action.equals(IntentContract.ACTION_INSERT_CITY)) {
-			City city = intent.getParcelableExtra(IntentContract.EXTRA_INSERT_CITY);
-			if (city != null) {
-				boolean flag = executeInsertCity(city);
-				
-				Intent localIntent = new Intent(IntentContract.ACTION_INSERT_EXECUTED);
-				localIntent.putExtra(IntentContract.EXTRA_INSERT_EXECUTED, flag);
-				
-				LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
-			}
-		} else if (action.equals(IntentContract.ACTION_DELETE_CITY)) {
-			long cityId = intent.getLongExtra(IntentContract.EXTRA_CITY_ID, -1);
-			if (cityId != -1) {
-				executeDeleteCity(cityId);
-			}
-		}
+
+        switch (action) {
+            case IntentContract.ACTION_REFRESH_WEATHER_AUTO:
+                boolean isAutoUpdate =
+                        intent.getBooleanExtra(IntentContract.EXTRA_REFRESH_WEATHER_AUTO, false);
+
+                scheduleAutoRefresh(isAutoUpdate);
+
+                if (isAutoUpdate && checkConnection()) {
+                    int[] flags = {
+                            Contract.FLAG_CURRENT_WEATHER,
+                            Contract.FLAG_CURRENT_UV_INDEX,
+                            Contract.FLAG_FORECAST_HOURLY};
+
+                    executeRefreshWeather(flags);
+                }
+                break;
+            case IntentContract.ACTION_REFRESH_WEATHER_MANUAL:
+                if (checkConnection()) {
+                    int[] flags = {
+                            Contract.FLAG_CURRENT_WEATHER,
+                            Contract.FLAG_CURRENT_UV_INDEX,
+                            Contract.FLAG_FORECAST_DAILY};
+
+                    executeRefreshWeather(flags);
+                }
+                break;
+            case IntentContract.ACTION_SEARCH_CITY:
+                Intent searchedIntent = new Intent(IntentContract.ACTION_SEARCH_EXECUTED);
+                if (checkConnection()) {
+                    String cityName = intent.getStringExtra(IntentContract.EXTRA_CITY_NAME);
+
+                    String result = executeSearchCity(cityName);
+                    if (result != null) {
+                        searchedIntent.putExtra(IntentContract.EXTRA_SEARCH_EXECUTED, true);
+                        searchedIntent.putExtra(IntentContract.EXTRA_SEARCH_RESULT, result);
+                    } else {
+                        searchedIntent.putExtra(IntentContract.EXTRA_SEARCH_EXECUTED, false);
+                    }
+                } else {
+                    searchedIntent.putExtra(IntentContract.EXTRA_SEARCH_EXECUTED, false);
+                }
+
+                LocalBroadcastManager.getInstance(this).sendBroadcast(searchedIntent);
+                break;
+            case IntentContract.ACTION_INSERT_CITY:
+                City city = intent.getParcelableExtra(IntentContract.EXTRA_INSERT_CITY);
+                if (city != null) {
+                    boolean flag = executeInsertCity(city);
+
+                    Intent insertedIntent = new Intent(IntentContract.ACTION_INSERT_EXECUTED);
+                    insertedIntent.putExtra(IntentContract.EXTRA_INSERT_EXECUTED, flag);
+
+                    LocalBroadcastManager.getInstance(this).sendBroadcast(insertedIntent);
+                }
+                break;
+            case IntentContract.ACTION_DELETE_CITY:
+                long cityId = intent.getLongExtra(IntentContract.EXTRA_CITY_ID, -1);
+                if (cityId != -1) {
+                    executeDeleteCity(cityId);
+                }
+                break;
+        }
 	}
 
 	/**
@@ -144,30 +149,26 @@ public class WeatherService extends IntentService {
 			return;
 		}
 		
-		ArrayList<ContentProviderOperation> operations = new ArrayList<ContentProviderOperation>();
-		for (int i = 0; i < cityIds.length; i++) {
-			long cityId = cityIds[i];
-			
-			String where = WeatherEntity.CITY_ID + " = " + cityId;
-			
-			ContentValues value = refreshInstance(cityId, flags);
-			
-			operations.add(
-					ContentProviderOperation
-					.newUpdate(WeatherEntity.CONTENT_URI)
-					.withSelection(where, null)
-					.withValues(value)
-					.build());
-		}
+		ArrayList<ContentProviderOperation> operations = new ArrayList<>();
+        for (long cityId : cityIds) {
+            String where = WeatherEntity.CITY_ID + " = " + cityId;
+
+            ContentValues value = refreshInstance(cityId, flags);
+
+            operations.add(
+                    ContentProviderOperation
+                            .newUpdate(WeatherEntity.CONTENT_URI)
+                            .withSelection(where, null)
+                            .withValues(value)
+                            .build());
+        }
 		
 		try {
 			getContentResolver().applyBatch(ProviderContract.AUTHORITY, operations);
-		} catch (RemoteException e) {
-			Log.e(TAG, "Error when batch update weathers: " + e.getMessage());
-		} catch (OperationApplicationException e) {
+		} catch (RemoteException | OperationApplicationException e) {
 			Log.e(TAG, "Error when batch update weathers: " + e.getMessage());
 		}
-	}
+    }
 
 	/**
 	 * Proceed the execution of searching city id with city name.
@@ -182,9 +183,8 @@ public class WeatherService extends IntentService {
 		}
 		
 		String request = assembleRequest(Contract.FLAG_SEARCH_CITY, 0, cityName);
-		String result = download(request);
-		
-		return result;
+
+        return download(request);
 	}
 	
 	/**
@@ -249,7 +249,7 @@ public class WeatherService extends IntentService {
 		int rows1 = getContentResolver().delete(CityEntity.CONTENT_URI, where, null);
 		int rows2 = getContentResolver().delete(WeatherEntity.CONTENT_URI, where, null);
 		
-		return (rows1 > 0 && rows2 > 0) ? true : false;
+		return (rows1 > 0 && rows2 > 0);
 	}
 
 	/**
@@ -263,8 +263,10 @@ public class WeatherService extends IntentService {
 		
 		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 
-		PendingIntent alarmIntent = PendingIntent.getBroadcast(this, requestCode,
-				new Intent(IntentContract.ACTION_REFRESH_ALARM), PendingIntent.FLAG_UPDATE_CURRENT);
+		PendingIntent alarmIntent = PendingIntent.getBroadcast(
+                this, requestCode,
+				new Intent(IntentContract.ACTION_REFRESH_ALARM),
+                PendingIntent.FLAG_UPDATE_CURRENT);
 		
 		if (flag) {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -301,43 +303,43 @@ public class WeatherService extends IntentService {
 		}
 		
 		ContentValues value = new ContentValues();
-		for (int i = 0; i < flags.length; i++) {
-			int flag = flags[i];
-			
-			String request = assembleRequest(flag, cityId, null);
-			String result = download(request);
-			
-			switch (flag) {
-			case Contract.FLAG_CURRENT_WEATHER:
-				String parsedCurrent = WeatherParser.parseRawToCurrent(result);
-				if (parsedCurrent != null) {
-					value.put(WeatherEntity.CURRENT, parsedCurrent);
-				}
-				break;
-			case Contract.FLAG_CURRENT_UV_INDEX:
-				double parsedUvIndex = WeatherParser.parseRawToUvIndex(result);
-				if (parsedUvIndex > 0) {
-					value.put(WeatherEntity.UV_INDEX, parsedUvIndex);
-				}
-				break;
-			case Contract.FLAG_FORECAST_HOURLY:
-				String[] parsedForecastHourly = WeatherParser.parseRawToForecastsHourly(result);
-				if (parsedForecastHourly != null) {
-					value.put(WeatherEntity.FORECAST1, parsedForecastHourly[0]);
-					value.put(WeatherEntity.FORECAST2, parsedForecastHourly[1]);
-					value.put(WeatherEntity.FORECAST3, parsedForecastHourly[2]);
-				}
-				break;
-			case Contract.FLAG_FORECAST_DAILY:
-				String[] parsedForecastDaily = WeatherParser.parseRawToForecastsDaily(result);
-				if (parsedForecastDaily != null) {
-					value.put(WeatherEntity.FORECAST1, parsedForecastDaily[0]);
-					value.put(WeatherEntity.FORECAST2, parsedForecastDaily[1]);
-					value.put(WeatherEntity.FORECAST3, parsedForecastDaily[2]);
-				}
-				break;
-			}
-		}
+        for (int flag : flags) {
+            String request = assembleRequest(flag, cityId, null);
+            String result = download(request);
+
+            switch (flag) {
+                case Contract.FLAG_CURRENT_WEATHER:
+                    String parsedCurrent = WeatherParser.parseRawToCurrent(result);
+                    if (parsedCurrent != null) {
+                        value.put(WeatherEntity.CURRENT, parsedCurrent);
+                    }
+                    break;
+                case Contract.FLAG_CURRENT_UV_INDEX:
+                    double parsedUvIndex = WeatherParser.parseRawToUvIndex(result);
+                    if (parsedUvIndex > 0) {
+                        value.put(WeatherEntity.UV_INDEX, parsedUvIndex);
+                    }
+                    break;
+                case Contract.FLAG_FORECAST_HOURLY:
+                    String[] parsedForecastHourly =
+                            WeatherParser.parseRawToForecastsHourly(result);
+                    if (parsedForecastHourly != null) {
+                        value.put(WeatherEntity.FORECAST1, parsedForecastHourly[0]);
+                        value.put(WeatherEntity.FORECAST2, parsedForecastHourly[1]);
+                        value.put(WeatherEntity.FORECAST3, parsedForecastHourly[2]);
+                    }
+                    break;
+                case Contract.FLAG_FORECAST_DAILY:
+                    String[] parsedForecastDaily =
+                            WeatherParser.parseRawToForecastsDaily(result);
+                    if (parsedForecastDaily != null) {
+                        value.put(WeatherEntity.FORECAST1, parsedForecastDaily[0]);
+                        value.put(WeatherEntity.FORECAST2, parsedForecastDaily[1]);
+                        value.put(WeatherEntity.FORECAST3, parsedForecastDaily[2]);
+                    }
+                    break;
+            }
+        }
 		
 		return value;
 	}
@@ -354,7 +356,7 @@ public class WeatherService extends IntentService {
 			return null;
 		}
 		
-		URL url = null;
+		URL url;
 		try {
 			url = new URL(request);
 		} catch (MalformedURLException e) {
@@ -363,7 +365,7 @@ public class WeatherService extends IntentService {
 			return null;
 		}
 		
-		HttpURLConnection httpConnection = null;
+		HttpURLConnection httpConnection;
 		try {
 			httpConnection = (HttpURLConnection) url.openConnection();
 		} catch (IOException e) {
@@ -474,14 +476,17 @@ public class WeatherService extends IntentService {
 		
 		Cursor cursor = null;
 		try {
-			String[] projection = { CityEntity.CITY_ID, CityEntity.LATITUDE,  CityEntity.LONGITUDE };
+			String[] projection = {
+                    CityEntity.CITY_ID, CityEntity.LATITUDE,  CityEntity.LONGITUDE };
 			String where =  CityEntity.CITY_ID + " = " + cityId;
 			
 			cursor = getContentResolver().query(
 					 CityEntity.CONTENT_URI, projection, where, null, null);
 			if (cursor != null && cursor.moveToFirst()) {
-				latitude = cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LATITUDE));
-				longitude = cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LONGITUDE));
+				latitude =
+                        cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LATITUDE));
+				longitude =
+                        cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LONGITUDE));
 			}
 		} catch (IllegalArgumentException e) {
 			Log.e(TAG, "The column does not exist. " + e.getMessage());
@@ -509,7 +514,7 @@ public class WeatherService extends IntentService {
 	 * @return The encoded URL-Encoding complied string.
 	 */
 	private String assembleRequestEncode(String cityName) {
-		String encodedCityName = null;
+		String encodedCityName;
 		try {
 			encodedCityName = URLEncoder.encode(cityName, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
@@ -531,7 +536,8 @@ public class WeatherService extends IntentService {
 			String[] projection = { WeatherEntity.CITY_ID };
 			String where = WeatherEntity.CITY_ID;
 			
-			cursor = getContentResolver().query(WeatherEntity.CONTENT_URI, projection, where, null, null);
+			cursor = getContentResolver().query(
+                    WeatherEntity.CONTENT_URI, projection, where, null, null);
 			if (cursor == null) {
 				return null;
 			}
@@ -539,7 +545,8 @@ public class WeatherService extends IntentService {
 			int i = 0;
 			long[] cityIds = new long[cursor.getCount()];
 			while (cursor.moveToNext()) {
-				long cityId = cursor.getLong(cursor.getColumnIndexOrThrow(WeatherEntity.CITY_ID));
+				long cityId =
+                        cursor.getLong(cursor.getColumnIndexOrThrow(WeatherEntity.CITY_ID));
 				
 				cityIds[i] = cityId;
 				i++;
@@ -566,11 +573,8 @@ public class WeatherService extends IntentService {
 		ConnectivityManager manager = 
 				(ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo info = manager.getActiveNetworkInfo();
-		if (info != null && info.isConnected()) {
-			return true;
-		} else {
-			return false;
-		}
+
+		return info != null && info.isConnected();
 	}
 
 	/**

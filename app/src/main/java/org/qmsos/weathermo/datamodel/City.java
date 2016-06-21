@@ -3,6 +3,9 @@ package org.qmsos.weathermo.datamodel;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+/**
+ * Description of city instance.
+ */
 public class City implements Parcelable {
 
 	private final long mCityId;
@@ -41,8 +44,11 @@ public class City implements Parcelable {
 
 	@Override
 	public String toString() {
-		return "id=" + mCityId + ",name=" + mCityName 
-				+ ",country=" + mCountry + ",Longitude:" + mLongitude + ",Latitude:" + mLatitude;
+		return "id=" + mCityId +
+				",name=" + mCityName +
+				",country=" + mCountry +
+				",Longitude:" + mLongitude +
+				",Latitude:" + mLatitude;
 	}
 
 	@Override

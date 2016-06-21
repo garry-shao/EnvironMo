@@ -1,7 +1,5 @@
 package org.qmsos.weathermo.preference;
 
-import org.qmsos.weathermo.R;
-
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -15,11 +13,11 @@ import android.support.v7.app.AppCompatDialog;
 import android.support.v7.preference.ListPreference;
 import android.util.AttributeSet;
 
+import org.qmsos.weathermo.R;
+
 /**
  * Customized ListPreference since ListPreferenceDialogFragmentCompat that 
  * in support library has bug when configuration changed.
- * 
- *
  */
 public class ListPreferenceCustom extends ListPreference {
 
@@ -37,11 +35,12 @@ public class ListPreferenceCustom extends ListPreference {
 		TypedArray a = context.obtainStyledAttributes(
 				attrs, R.styleable.ListPreferenceCustom, defStyleAttr, 0);
 		
-		String attributeNevativeButton = 
+		String attributeNegativeButton =
 				a.getString(R.styleable.ListPreferenceCustom_listPrefernceNegativeButton);
 		
-		mButtonNegative = 
-				(attributeNevativeButton != null) ? attributeNevativeButton : defaultNegativeButton;
+		mButtonNegative =
+                (attributeNegativeButton != null) ?
+                        attributeNegativeButton : defaultNegativeButton;
 		
 		a.recycle();
 	}
@@ -110,7 +109,7 @@ public class ListPreferenceCustom extends ListPreference {
 			return superState;
 		}
 
-		// Workaround, havn't found way to dismiss properly.
+		// Workaround, have not found way to dismiss properly.
 		mDialog.dismiss();
 
 		final SavedState myState = new SavedState(superState);
@@ -125,14 +124,6 @@ public class ListPreferenceCustom extends ListPreference {
 		String mValue;
 		boolean mIsDialogShowing;
 		Bundle mDialogBundle;
-
-		public SavedState(Parcel source) {
-			super(source);
-
-			mValue = source.readString();
-			mIsDialogShowing = source.readInt() == 1;
-			mDialogBundle = source.readBundle();
-		}
 
 		public SavedState(Parcelable superState) {
 			super(superState);
@@ -158,6 +149,14 @@ public class ListPreferenceCustom extends ListPreference {
 				return new SavedState[size];
 			}
 		};
+
+        private SavedState(Parcel source) {
+            super(source);
+
+            mValue = source.readString();
+            mIsDialogShowing = source.readInt() == 1;
+            mDialogBundle = source.readBundle(getClass().getClassLoader());
+        }
 	}
 
 }

@@ -1,7 +1,5 @@
 package org.qmsos.weathermo.preference;
 
-import org.qmsos.weathermo.R;
-
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -15,11 +13,11 @@ import android.support.v7.app.AppCompatDialog;
 import android.support.v7.preference.SwitchPreferenceCompat;
 import android.util.AttributeSet;
 
+import org.qmsos.weathermo.R;
+
 /**
  * Customized SwitchPreferenceCompat that adds a confirmation dialog letting 
  * user perform an additional check before change this preference's value.
- * 
- *
  */
 public class SwitchPreferenceCustom extends SwitchPreferenceCompat {
 
@@ -50,7 +48,7 @@ public class SwitchPreferenceCustom extends SwitchPreferenceCompat {
 				a.getString(R.styleable.SwitchPreferenceCustom_switchPreferenceDialogTitle);
 		String attributeMessage = 
 				a.getString(R.styleable.SwitchPreferenceCustom_switchPreferenceDialogMessage);
-		String attributeNevativeButton = 
+		String attributeNegativeButton =
 				a.getString(R.styleable.SwitchPreferenceCustom_switchPreferenceNegativeButton);
 		String attributePositiveButton = 
 				a.getString(R.styleable.SwitchPreferenceCustom_switchPreferencePositiveButton);
@@ -60,9 +58,11 @@ public class SwitchPreferenceCustom extends SwitchPreferenceCompat {
 		mMessage = 
 				(attributeMessage != null) ? attributeMessage : defaultMessage;
 		mButtonNegative = 
-				(attributeNevativeButton != null) ? attributeNevativeButton : defaultNegativeButton;
+				(attributeNegativeButton != null) ?
+                        attributeNegativeButton : defaultNegativeButton;
 		mButtonPositive = 
-				(attributePositiveButton != null) ? attributePositiveButton : defaultPositiveButton;
+				(attributePositiveButton != null) ?
+                        attributePositiveButton : defaultPositiveButton;
 		
 		a.recycle();
 	}
@@ -144,7 +144,8 @@ public class SwitchPreferenceCustom extends SwitchPreferenceCompat {
 			super.writeToParcel(dest, flags);
 		}
 		
-		public static final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>() {
+		public static final Parcelable.Creator<SavedState> CREATOR =
+				new Parcelable.Creator<SavedState>() {
 
 			@Override
 			public SavedState createFromParcel(Parcel source) {
@@ -161,7 +162,7 @@ public class SwitchPreferenceCustom extends SwitchPreferenceCompat {
 			super(source);
 			
 			mIsDialogShowing = source.readInt() == 1;
-			mDialogBundle = source.readBundle();
+			mDialogBundle = source.readBundle(getClass().getClassLoader());
 		}
 		
 	}

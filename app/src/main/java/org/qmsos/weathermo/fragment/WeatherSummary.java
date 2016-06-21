@@ -1,11 +1,5 @@
 package org.qmsos.weathermo.fragment;
 
-import org.qmsos.weathermo.R;
-import org.qmsos.weathermo.contract.LoaderContract;
-import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
-import org.qmsos.weathermo.res.IconFactory;
-import org.qmsos.weathermo.util.WeatherParser;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -19,9 +13,14 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.qmsos.weathermo.R;
+import org.qmsos.weathermo.contract.LoaderContract;
+import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
+import org.qmsos.weathermo.res.IconFactory;
+import org.qmsos.weathermo.util.WeatherParser;
+
 /**
  * Show summary of weather.
- *
  */
 public class WeatherSummary extends Fragment implements LoaderCallbacks<Cursor> {
 
@@ -41,10 +40,10 @@ public class WeatherSummary extends Fragment implements LoaderCallbacks<Cursor> 
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fragment_weather_summary, container, false);
+	public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container, Bundle savedInstanceState) {
 
-		return view;
+        return inflater.inflate(R.layout.fragment_weather_summary, container, false);
 	}
 
 	@Override
@@ -62,8 +61,8 @@ public class WeatherSummary extends Fragment implements LoaderCallbacks<Cursor> 
 
 		for (int i = 1; i <= WeatherParser.FORECAST_IN_DAYS; i++) {
 			final int j = i;
-			tv = (TextView) getView().findViewById(
-					getResources().getIdentifier("forecast_" + j, "id", getContext().getPackageName()));
+			tv = (TextView) getView().findViewById(getResources().getIdentifier(
+                    "forecast_" + j, "id", getContext().getPackageName()));
 			tv.setOnClickListener(new OnClickListener() {
 
 				@Override
@@ -96,7 +95,8 @@ public class WeatherSummary extends Fragment implements LoaderCallbacks<Cursor> 
 				WeatherEntity.FORECAST2, WeatherEntity.FORECAST3 };
 		String where = WeatherEntity.CITY_ID + " = " + cityId;
 		
-		return new CursorLoader(getContext(), WeatherEntity.CONTENT_URI, projection, where, null, null);
+		return new CursorLoader(getContext(),
+                WeatherEntity.CONTENT_URI, projection, where, null, null);
 	}
 
 	@Override
@@ -117,7 +117,8 @@ public class WeatherSummary extends Fragment implements LoaderCallbacks<Cursor> 
 		TextView tv = (TextView) getView().findViewById(R.id.current);
 		if (temperature != WeatherParser.INVALID_TEMPERATURE) {
 			String uiCurrent = getContext().getString(R.string.ui_current);
-			tv.setText(uiCurrent + "\n" + temperature + "\u00B0" + "C");
+			String currentInfo = uiCurrent + "\n" + temperature + "\u00B0" + "C";
+			tv.setText(currentInfo);
 		} else {
 			tv.setText(null);
 		}
@@ -129,14 +130,15 @@ public class WeatherSummary extends Fragment implements LoaderCallbacks<Cursor> 
 			int temperatureMin = WeatherParser.getTemperatureMin(forecasts[i - 1]);
 			int temperatureMax = WeatherParser.getTemperatureMax(forecasts[i - 1]);
 			
-			tv = (TextView) getView().findViewById(
-					getResources().getIdentifier("forecast_" + i, "id", getContext().getPackageName()));
+			tv = (TextView) getView().findViewById(getResources().getIdentifier(
+                    "forecast_" + i, "id", getContext().getPackageName()));
 			if (temperatureMin != WeatherParser.INVALID_TEMPERATURE
 					|| temperatureMax != WeatherParser.INVALID_TEMPERATURE) {
-				
-				String forecastTime = "+" + 24 * i + ":00H";
-				String forecastTemperature = temperatureMin + "~" + temperatureMax + "\u00B0" + "C";
-				tv.setText(forecastTime + "\n" + forecastTemperature);
+
+				String forecastInfo =
+						("+" + 24 * i + ":00") + "\n" +
+								(temperatureMin + "~" + temperatureMax + "\u00B0" + "C");
+				tv.setText(forecastInfo);
 			} else {
 				tv.setText(null);
 			}

@@ -1,7 +1,5 @@
 package org.qmsos.weathermo.fragment;
 
-import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.app.Fragment;
@@ -10,10 +8,11 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.util.SparseLongArray;
 import android.view.ViewGroup;
 
+import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
+
 /**
  * Customized PagerAdapter that contains 
  * {@linkplain WeatherDetails WeatherDetails}.
- *
  */
 public class WeatherDetailsPagerAdapter extends FragmentStatePagerAdapter {
 
@@ -30,8 +29,7 @@ public class WeatherDetailsPagerAdapter extends FragmentStatePagerAdapter {
 	}
 	
 	private void init(Context context, Cursor cursor) {
-		boolean cursorPresent = cursor != null;
-		mDataValid = cursorPresent;
+        mDataValid = cursor != null;
 		mCursor = cursor;
 		mContext = context;
 		
@@ -50,9 +48,8 @@ public class WeatherDetailsPagerAdapter extends FragmentStatePagerAdapter {
 	private Fragment getItem(Context context, Cursor cursor, int position) {
 		if (cursor.moveToPosition(position)) {
 			long cityId = cursor.getLong(cursor.getColumnIndexOrThrow(WeatherEntity.CITY_ID));
-			WeatherDetails fragment = WeatherDetails.newInstance(context, cityId);
-			
-			return fragment;
+
+            return WeatherDetails.newInstance(context, cityId);
 		} else {
 			return null;
 		}
@@ -104,11 +101,8 @@ public class WeatherDetailsPagerAdapter extends FragmentStatePagerAdapter {
 		
 		Cursor oldCursor = mCursor;
 		mCursor = newCursor;
-		if (newCursor != null) {
-			mDataValid = true;
-		} else {
-			mDataValid = false;
-		}
+		mDataValid = newCursor != null;
+
 		notifyDataSetChanged();
 		
 		return oldCursor;

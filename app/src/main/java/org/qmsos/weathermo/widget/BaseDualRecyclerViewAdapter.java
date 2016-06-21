@@ -30,12 +30,11 @@ public abstract class BaseDualRecyclerViewAdapter<VH extends ViewHolder> extends
 	 */
 	protected static final int VIEW_TYPE_SUB = 0x02;
 
-	protected Cursor mCursor;
-	protected Context mContext;
-	protected int mRowIDColumn;
-	protected boolean mDataValid;
-	protected ChangeObserver mChangeObserver;
-	protected DataSetObserver mDataSetObserver;
+	private Cursor mCursor;
+	private int mRowIDColumn;
+	private boolean mDataValid;
+	private ChangeObserver mChangeObserver;
+	private DataSetObserver mDataSetObserver;
 
 	public BaseDualRecyclerViewAdapter(Context context, Cursor c, int flags) {
 		init(context, c, flags);
@@ -49,7 +48,6 @@ public abstract class BaseDualRecyclerViewAdapter<VH extends ViewHolder> extends
 		boolean cursorPresent = c != null;
 		mCursor = c;
 		mDataValid = cursorPresent;
-		mContext = context;
 		mRowIDColumn = cursorPresent ? c.getColumnIndexOrThrow("_id") : -1;
 		if ((flags & FLAG_REGISTER_CONTENT_OBSERVER) == FLAG_REGISTER_CONTENT_OBSERVER) {
 			mChangeObserver = new ChangeObserver();
@@ -117,9 +115,9 @@ public abstract class BaseDualRecyclerViewAdapter<VH extends ViewHolder> extends
 		}
 	}
 
-	public abstract void onBindViewHolderMain(VH holder, Cursor cursor);
+	protected abstract void onBindViewHolderMain(VH holder, Cursor cursor);
 
-	public abstract void onBindViewHolderSub(VH holder);
+	protected abstract void onBindViewHolderSub(VH holder);
 
 	public void changeCursor(Cursor cursor) {
 		Cursor old = swapCursor(cursor);

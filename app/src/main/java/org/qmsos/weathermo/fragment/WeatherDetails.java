@@ -1,11 +1,5 @@
 package org.qmsos.weathermo.fragment;
 
-import org.qmsos.weathermo.R;
-import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
-import org.qmsos.weathermo.res.CalendarFactory;
-import org.qmsos.weathermo.res.TextFactory;
-import org.qmsos.weathermo.util.WeatherParser;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -21,9 +15,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.qmsos.weathermo.R;
+import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
+import org.qmsos.weathermo.res.CalendarFactory;
+import org.qmsos.weathermo.res.TextFactory;
+import org.qmsos.weathermo.util.WeatherParser;
+
 /**
  * Show details of weather. 
- *
  */
 public class WeatherDetails extends Fragment implements LoaderCallbacks<Cursor> {
 	
@@ -51,10 +50,10 @@ public class WeatherDetails extends Fragment implements LoaderCallbacks<Cursor> 
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view =  inflater.inflate(R.layout.fragment_weather_details, container, false);
-	
-		return view;
+	public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container, Bundle savedInstanceState) {
+
+        return inflater.inflate(R.layout.fragment_weather_details, container, false);
 	}
 
 	@Override
@@ -96,7 +95,8 @@ public class WeatherDetails extends Fragment implements LoaderCallbacks<Cursor> 
 		long cityId = getArguments().getLong(KEY_CITY_ID);
 		String where = WeatherEntity.CITY_ID + " = " + cityId;
 		
-		return new CursorLoader(getContext(), WeatherEntity.CONTENT_URI, projection, where, null, null);
+		return new CursorLoader(getContext(),
+                WeatherEntity.CONTENT_URI, projection, where, null, null);
 	}
 
 	@Override
@@ -120,8 +120,8 @@ public class WeatherDetails extends Fragment implements LoaderCallbacks<Cursor> 
 					
 					String raw = temperatureMin + "~" + temperatureMax + "\u00B0";
 					SpannableString spanned = new SpannableString(raw);
-					spanned.setSpan(
-							new RelativeSizeSpan(0.6f), 0, raw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+					spanned.setSpan(new RelativeSizeSpan(0.6f), 0, raw.length(),
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 					
 					fv.setText(spanned);
 				} else {
@@ -136,7 +136,8 @@ public class WeatherDetails extends Fragment implements LoaderCallbacks<Cursor> 
 				break;
 			case 2:
 				// Indicates current.
-				String currentRaw = data.getString(data.getColumnIndexOrThrow(WeatherEntity.CURRENT));
+				String currentRaw = data.getString(
+                        data.getColumnIndexOrThrow(WeatherEntity.CURRENT));
 				
 				double uvIndex;
 				int columnIndexUv = data.getColumnIndexOrThrow(WeatherEntity.UV_INDEX);
@@ -151,7 +152,8 @@ public class WeatherDetails extends Fragment implements LoaderCallbacks<Cursor> 
 				
 				TextView cv = (TextView) getView().findViewById(R.id.details_temperature);
 				if (temperature != WeatherParser.INVALID_TEMPERATURE) {
-					cv.setText(String.valueOf(temperature) + "\u00B0");
+					String temperatureInfo = String.valueOf(temperature) + "\u00B0";
+					cv.setText(temperatureInfo);
 				} else {
 					cv.setText(null);
 				}
@@ -161,8 +163,10 @@ public class WeatherDetails extends Fragment implements LoaderCallbacks<Cursor> 
 				
 				cv = (TextView) getView().findViewById(R.id.details_description);
 				if (Double.compare(uvIndex, WeatherParser.INVALID_UV_INDEX) != 0) {
-					String uvDescription = getString(TextFactory.getUvIndexDescription(uvIndex));
-					cv.setText("UV: " + uvIndex + " - " + uvDescription);
+					String UvIndexInfo = "UV: " + uvIndex + " - " +
+							getString(TextFactory.getUvIndexDescription(uvIndex));
+
+                    cv.setText(UvIndexInfo);
 				} else {
 					cv.setText(null);
 				}
@@ -179,7 +183,7 @@ public class WeatherDetails extends Fragment implements LoaderCallbacks<Cursor> 
 		case 1:
 		case 2:
 		case 3:
-			dateText = "+" + 24 * mDayOnDisplay + ":00H";
+			dateText = "+" + 24 * mDayOnDisplay + ":00";
 			break;
 		default:
 			dateText = null;

@@ -1,18 +1,5 @@
 package org.qmsos.weathermo;
 
-import org.qmsos.weathermo.contract.IntentContract;
-import org.qmsos.weathermo.contract.LoaderContract;
-import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
-import org.qmsos.weathermo.fragment.CityHeader;
-import org.qmsos.weathermo.fragment.CityHeader.OnCityHeaderClickedListener;
-import org.qmsos.weathermo.fragment.WeatherDetails;
-import org.qmsos.weathermo.fragment.WeatherDetailsPagerAdapter;
-import org.qmsos.weathermo.fragment.WeatherSummary;
-import org.qmsos.weathermo.fragment.WeatherSummary.OnSummaryClickedListener;
-import org.qmsos.weathermo.res.ImageFactory;
-import org.qmsos.weathermo.util.WeatherParser;
-import org.qmsos.weathermo.widget.DotViewPagerIndicator;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -34,14 +21,25 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import org.qmsos.weathermo.contract.IntentContract;
+import org.qmsos.weathermo.contract.LoaderContract;
+import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
+import org.qmsos.weathermo.fragment.CityHeader;
+import org.qmsos.weathermo.fragment.WeatherDetails;
+import org.qmsos.weathermo.fragment.WeatherDetailsPagerAdapter;
+import org.qmsos.weathermo.fragment.WeatherSummary;
+import org.qmsos.weathermo.res.ImageFactory;
+import org.qmsos.weathermo.util.WeatherParser;
+import org.qmsos.weathermo.widget.DotViewPagerIndicator;
+
 /**
  * Main activity of EnvironMo.
- * 
- * 
  */
-public class MainActivity extends AppCompatActivity 
-implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChangeListener, 
-		OnCityHeaderClickedListener, OnSummaryClickedListener {
+public class MainActivity extends AppCompatActivity
+		implements LoaderCallbacks<Cursor>,
+		OnPageChangeListener, OnSharedPreferenceChangeListener,
+		CityHeader.OnCityHeaderClickedListener,
+		WeatherSummary.OnSummaryClickedListener {
 	
 	private static final int LOADER_MAIN_INTERFACE = 0x01;
 	private static final int LOADER_ASYNC_BACKGROUND = 0x02;
@@ -53,7 +51,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		SwipeRefreshLayout refreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
+		SwipeRefreshLayout refreshLayout = (SwipeRefreshLayout)
+                findViewById(R.id.swipe_refresh);
 		refreshLayout.setOnRefreshListener(new OnRefreshListener() {
 
 			@Override
@@ -75,7 +74,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
 		viewPager.setAdapter(mPagerAdapter);
 		
-		DotViewPagerIndicator pagerIndicator = (DotViewPagerIndicator) findViewById(R.id.pager_indicator);
+		DotViewPagerIndicator pagerIndicator = (DotViewPagerIndicator)
+                findViewById(R.id.pager_indicator);
 		pagerIndicator.setViewPager(viewPager);
 		pagerIndicator.setOnPageChangeListener(this);
 		
@@ -126,7 +126,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 		case LOADER_MAIN_INTERFACE:
 			projection = new String[] { WeatherEntity.CITY_ID };
 			
-			return new CursorLoader(this, WeatherEntity.CONTENT_URI, projection, null, null, null);
+			return new CursorLoader(this,
+                    WeatherEntity.CONTENT_URI, projection, null, null, null);
 		case LOADER_ASYNC_BACKGROUND:
 			long cityId;
 			int day;
@@ -156,7 +157,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 			
 			String where = WeatherEntity.CITY_ID + " = " + cityId;
 		
-			return new CursorLoader(this, WeatherEntity.CONTENT_URI, projection, where, null, null);
+			return new CursorLoader(this,
+                    WeatherEntity.CONTENT_URI, projection, where, null, null);
 		default:
 			return null;
 		}
@@ -168,7 +170,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 		case LOADER_MAIN_INTERFACE:
 			mPagerAdapter.swapCursor(data);
 			
-			DotViewPagerIndicator indicator = (DotViewPagerIndicator) findViewById(R.id.pager_indicator);
+			DotViewPagerIndicator indicator = (DotViewPagerIndicator)
+                    findViewById(R.id.pager_indicator);
 			if (indicator != null) {
 				indicator.dataChanged();
 			}
@@ -185,7 +188,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 			if (data != null && data.moveToFirst()) {
 				String[] columnNames = data.getColumnNames();
 				if (columnNames.length == 1) {
-					String weatherRaw = data.getString(data.getColumnIndexOrThrow(columnNames[0]));
+					String weatherRaw =
+                            data.getString(data.getColumnIndexOrThrow(columnNames[0]));
 					weatherId = WeatherParser.getWeatherId(weatherRaw);
 				} else {
 					weatherId = 0;
@@ -215,7 +219,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 
 	@Override
 	public void onPageSelected(int position) {
-		DotViewPagerIndicator indicator = (DotViewPagerIndicator) findViewById(R.id.pager_indicator);
+		DotViewPagerIndicator indicator = (DotViewPagerIndicator)
+                findViewById(R.id.pager_indicator);
 		if (indicator != null) {
 			indicator.dataChanged();
 		}
@@ -258,12 +263,14 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 	}
 
 	/**
-	 * Reload the weather details Fragment that shows in ViewPager with specified data, so this
-	 * fragment can show forecast info.<br><br> 
+	 * Reload the weather details Fragment that shows in ViewPager with specified data,
+     * so this fragment can show forecast info.
+     * <br>
+     * <br>
 	 * 
-	 * NOTICE: there is loophole here: FragmentStatePagerAdapter's instantiateItem() method 
-	 * will return the reference of fragment instead of calling getItem() method to create a new 
-	 * one if it exists already.
+	 * NOTICE: there is loophole here: FragmentStatePagerAdapter's instantiateItem()
+     * method will return the reference of fragment instead of calling getItem()
+     * method to create a new one if it exists already.
 	 * 
 	 * @param day
 	 *            Which day will be shown, 0 means current, 1 means tomorrow, etc.
@@ -361,7 +368,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 	private WeatherDetails getCurrentDetailsFragment() {
 		ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
 		if ((viewPager != null) && (mPagerAdapter.getCount() > 0)) {
-			return (WeatherDetails)	mPagerAdapter.instantiateItem(viewPager, viewPager.getCurrentItem());
+			return (WeatherDetails)
+                    mPagerAdapter.instantiateItem(viewPager, viewPager.getCurrentItem());
 		} else {
 			return null;
 		}
@@ -401,7 +409,8 @@ implements LoaderCallbacks<Cursor>, OnPageChangeListener, OnSharedPreferenceChan
 	 * Animate refreshing action.
 	 */
 	private void animateRefreshing() {
-		final SwipeRefreshLayout refreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
+		final SwipeRefreshLayout refreshLayout = (SwipeRefreshLayout)
+				findViewById(R.id.swipe_refresh);
 		if (refreshLayout == null) {
 			return;
 		}

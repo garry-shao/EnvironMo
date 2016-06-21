@@ -1,14 +1,14 @@
 package org.qmsos.weathermo.util;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import android.util.Log;
+import android.util.SparseIntArray;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.util.Log;
-import android.util.SparseIntArray;
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Utility class that used to parse weather string from the raw response of remote server.
@@ -56,12 +56,7 @@ public class WeatherParser {
 			int temperature = main.getInt("temp");
 			
 			// data sequence, important!
-			StringBuilder builder = new StringBuilder();
-			builder.append(weatherId);
-			builder.append('|');
-			builder.append(temperature);
-			
-			return builder.toString();
+            return String.valueOf(weatherId) + '|' + temperature;
 		} catch (JSONException e) {
 			Log.e(TAG, "Error parsing JSON string. " + e.getMessage());
 			
@@ -73,10 +68,9 @@ public class WeatherParser {
 	 * Parse the valid forecast weather values from the raw results.
 	 * <br>
 	 * <br>
-	 * Notice: because the remote server always change, forecast by day or hourly
-	 * sometimes invalid, here providing two methods(
-	 * {@link #parseRawToForecastsDaily(String)}, {@link #parseRawToForecastsHourly(String)})
-	 * who are exclusive, avoid using at the same time.
+	 * Notice: because the configuration of remote server always change, here providing two
+	 * methods of the forecast feature, these two methods are exclusive, avoid using at the
+	 * same time, see {@link #parseRawToForecastsHourly(String)}.
 	 * <br>
 	 * <br>
 	 * Notice: normally {@link #parseRawToForecastsHourly(String)} is <b>preferred</b>.
@@ -87,8 +81,8 @@ public class WeatherParser {
 	 *         (have multiple elements) or Null if the raw results are invalid.
 	 */
 	public static String[] parseRawToForecastsDaily(String raw) {
-		JSONArray list = null;
-		int length = 0;
+		JSONArray list;
+		int length;
 		try {
 			JSONObject reader = new JSONObject(raw);
 			list = reader.getJSONArray("list");
@@ -99,7 +93,7 @@ public class WeatherParser {
 			return null;
 		}
 		
-		if (list == null || length < FORECAST_IN_DAYS + 1) {
+		if (length < FORECAST_IN_DAYS + 1) {
 			Log.e(TAG, "raw data does not have enough information");
 			
 			return null;
@@ -107,7 +101,7 @@ public class WeatherParser {
 		
 		int i;
 		int count;
-		long firstMillis = 0;
+		long firstMillis;
 		try {
 			JSONObject forecastFirst = list.getJSONObject(0);
 			firstMillis = forecastFirst.getLong("dt");
@@ -140,14 +134,10 @@ public class WeatherParser {
 				int temperatureMax = (int) Math.ceil(temp.getDouble("max"));
 				
 				// data sequence, important!
-				StringBuilder builder = new StringBuilder();
-				builder.append(weatherId);
-				builder.append('|');
-				builder.append(temperatureMin);
-				builder.append('|');
-				builder.append(temperatureMax);
-				
-				parsed[j] = builder.toString();
+                String builder = String.valueOf(weatherId) + '|' +
+                        temperatureMin + '|' + temperatureMax;
+
+                parsed[j] = builder;
 				i++;
 				j++;
 			}
@@ -164,10 +154,9 @@ public class WeatherParser {
 	 * Parse the valid forecast weather values from the raw results.
 	 * <br>
 	 * <br>
-	 * Notice: because the remote server always change, forecast by day or hourly
-	 * sometimes invalid, here providing two methods(
-	 * {@link #parseRawToForecastsDaily(String)}, {@link #parseRawToForecastsHourly(String)})
-	 * who are exclusive, avoid using at the same time.
+     * Notice: because the configuration of remote server always change, here providing two
+     * methods of the forecast feature, these two methods are exclusive, avoid using at the
+     * same time, see {@link #parseRawToForecastsDaily(String)}.
 	 * <br>
 	 * <br>
 	 * Notice: this method is <b>preferred</b> due to accuracy and remote server policy.
@@ -178,8 +167,8 @@ public class WeatherParser {
 	 *         (have multiple elements) or Null if the raw results are invalid.
 	 */
 	public static String[] parseRawToForecastsHourly(String raw) {
-		JSONArray list = null;
-		int length = 0;
+		JSONArray list;
+		int length;
 		try {
 			JSONObject reader = new JSONObject(raw);
 			list = reader.getJSONArray("list");
@@ -190,7 +179,7 @@ public class WeatherParser {
 			return null;
 		}
 		
-		if (list == null || length < FORECAST_IN_DAYS * Contract.DATAPOINTS_IN_ONE_DAY) {
+		if (length < FORECAST_IN_DAYS * Contract.DATAPOINTS_IN_ONE_DAY) {
 			Log.e(TAG, "raw data does not have enough information");
 			
 			return null;
@@ -199,7 +188,7 @@ public class WeatherParser {
 		String[] parsed = new String[FORECAST_IN_DAYS];
 		for (int i = 0; i < FORECAST_IN_DAYS; i++) {
 			SparseIntArray tempWeatherIds = new SparseIntArray(); 
-			ArrayList<Double> tempTemperatures = new ArrayList<Double>();
+			ArrayList<Double> tempTemperatures = new ArrayList<>();
 			for (int j = 0; j < Contract.DATAPOINTS_IN_ONE_DAY; j++) {
 				int weatherId;
 				double temperature;
@@ -240,15 +229,11 @@ public class WeatherParser {
 			int weatherId = flagWeatherId;
 			int temperatureMin = (int) Math.floor(Collections.min(tempTemperatures));
 			int temperatureMax = (int) Math.ceil(Collections.max(tempTemperatures));
-			
-			StringBuilder builder = new StringBuilder();
-			builder.append(weatherId);
-			builder.append('|');
-			builder.append(temperatureMin);
-			builder.append('|');
-			builder.append(temperatureMax);
-			
-			parsed[i] = builder.toString();
+
+            String builder = String.valueOf(weatherId) + '|' +
+                    temperatureMin + '|' + temperatureMax;
+
+            parsed[i] = builder;
 		}
 		
 		return parsed;
@@ -264,9 +249,8 @@ public class WeatherParser {
 	public static double parseRawToUvIndex(String raw) {
 		try {
 			JSONObject reader = new JSONObject(raw);
-			double value = reader.getDouble("value");
-			
-			return value;
+
+			return reader.getDouble("value");
 		} catch (JSONException e) {
 			Log.e(TAG, "Error parsing JSON string. " + e.getMessage());
 			
@@ -292,11 +276,8 @@ public class WeatherParser {
 		}
 		
 		String[] elements = weatherRaw.split("\\|");
-		if (elements == null) {
-			return INVALID_WEATHER_ID;
-		}
-		
-		int length = elements.length;
+
+        int length = elements.length;
 		if ((length == Contract.SEGMENTS_CURRENT) || (length == Contract.SEGMENTS_FORECAST)) {
 			return Integer.parseInt(elements[0]);
 		} else {
@@ -321,11 +302,8 @@ public class WeatherParser {
 		}
 		
 		String[] elements = weatherRaw.split("\\|");
-		if (elements == null) {
-			return INVALID_TEMPERATURE;
-		}
-		
-		int length = elements.length;
+
+        int length = elements.length;
 		if (length == Contract.SEGMENTS_CURRENT) {
 			return Integer.parseInt(elements[1]);
 		} else {
@@ -350,11 +328,8 @@ public class WeatherParser {
 		}
 		
 		String[] elements = weatherRaw.split("\\|");
-		if (elements == null) {
-			return INVALID_TEMPERATURE;
-		}
-		
-		int length = elements.length;
+
+        int length = elements.length;
 		if (length == Contract.SEGMENTS_FORECAST) {
 			return Integer.parseInt(elements[1]);
 		} else {
@@ -379,11 +354,8 @@ public class WeatherParser {
 		}
 		
 		String[] elements = weatherRaw.split("\\|");
-		if (elements == null) {
-			return INVALID_TEMPERATURE;
-		}
-		
-		int length = elements.length;
+
+        int length = elements.length;
 		if (length == Contract.SEGMENTS_FORECAST) {
 			return Integer.parseInt(elements[2]);
 		} else {

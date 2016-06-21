@@ -4,37 +4,37 @@
 
     <item
         android:id="@+id/menu_layer_precipitation"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/ui_layer_precipitation">
     </item>
     <item
         android:id="@+id/menu_layer_rain"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/ui_layer_rain">
     </item>
     <item
         android:id="@+id/menu_layer_snow"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/ui_layer_snow">
     </item>
     <item
         android:id="@+id/menu_layer_clouds"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/ui_layer_clouds">
     </item>
     <item
         android:id="@+id/menu_layer_pressure"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/ui_layer_pressure">
     </item>
     <item
         android:id="@+id/menu_layer_temperature"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/ui_layer_temperature">
     </item>
     <item
         android:id="@+id/menu_layer_windspeed"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/ui_layer_windspeed">
     </item>
 

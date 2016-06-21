@@ -1,15 +1,13 @@
 package org.qmsos.weathermo;
 
-import org.qmsos.weathermo.contract.IntentContract;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import org.qmsos.weathermo.contract.IntentContract;
+
 /**
  * Execute update service whenever specified intent received.
- *
- *
  */
 public class WeatherAlarmReceiver extends BroadcastReceiver {
 

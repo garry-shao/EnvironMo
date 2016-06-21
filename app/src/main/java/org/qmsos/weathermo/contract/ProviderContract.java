@@ -5,7 +5,6 @@ import android.net.Uri;
 /**
  * The contract of the weather provider. Contains definition of the supported 
  * URIs and data columns.
- *
  */
 public final class ProviderContract {
 
@@ -28,7 +27,7 @@ public final class ProviderContract {
 	/**
 	 * Class that represents entity of the weather table.
 	 */
-	public static final class WeatherEntity implements BaseColumns, WeatherColunms {
+	public static final class WeatherEntity implements BaseColumns, WeatherColumns {
 		
 		/**
 		 * The URL for accessing weather(content://).
@@ -44,7 +43,7 @@ public final class ProviderContract {
 		/**
 		 * The id that representing the city. <p>TYPE: INTEGER</p>
 		 */
-		public static final String CITY_ID = "cityId";
+		String CITY_ID = "cityId";
 	}
 	
 	/**
@@ -55,63 +54,63 @@ public final class ProviderContract {
 		/**
 		 * Primary key that auto increments. <p>TYPE: INTEGER</p> 
 		 */
-		public static final String INDEX = "_id";
+		String INDEX = "_id";
 		
 		/**
 		 * The name of the city. <p>TYPE: TEXT</p>
 		 */
-		public static final String CITY_NAME = "cityName";
+		String CITY_NAME = "cityName";
 		
 		/**
 		 * The abbreviation code of the city's country. <p>TYPE: TEXT</p>
 		 */
-		public static final String COUNTRY = "country";
+		String COUNTRY = "country";
 		
 		/**
 		 * The longitude of the city, negative for southern latitude. <p>TYPE: REAL</p>
 		 */
-		public static final String LONGITUDE = "longitude";
+		String LONGITUDE = "longitude";
 		
 		/**
 		 * The latitude of the city, negative for southern latitude. <p>TYPE: REAL</p>
 		 */
-		public static final String LATITUDE = "latitude";
+		String LATITUDE = "latitude";
 		
 	}
 	
 	/**
 	 * Columns of the weather table.
 	 */
-	protected interface WeatherColunms {
+	protected interface WeatherColumns {
 		
 		/**
 		 * The parsed string of the current weather, this contains multiple 
 		 * values aggregated as single instance of string. <p>TYPE: TEXT</p>
 		 */
-		public static final String CURRENT = "current";
+		String CURRENT = "current";
 		
 		/**
 		 * Current ultra-violet radiation index. <p>TYPE: REAL</p>
 		 */
-		public static final String UV_INDEX = "uvIndex";
+		String UV_INDEX = "uvIndex";
 		
 		/**
 		 * The parsed string of the forecast weather <b>day 1</b>, this contains multiple 
 		 * values aggregated as single instance of string. <p>TYPE: TEXT</p>
 		 */
-		public static final String FORECAST1 = "forecast1";
+		String FORECAST1 = "forecast1";
 		
 		/**
 		 * The parsed string of the forecast weather <b>day 2</b>, this contains multiple 
 		 * values aggregated as single instance of string. <p>TYPE: TEXT</p>
 		 */
-		public static final String FORECAST2 = "forecast2";
+		String FORECAST2 = "forecast2";
 		
 		/**
 		 * The parsed string of the forecast weather <b>day 3</b>, this contains multiple 
 		 * values aggregated as single instance of string. <p>TYPE: TEXT</p>
 		 */
-		public static final String FORECAST3 = "forecast3";
+		String FORECAST3 = "forecast3";
 	
 	}
 

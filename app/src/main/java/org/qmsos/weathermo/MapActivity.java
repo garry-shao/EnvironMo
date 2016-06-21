@@ -1,8 +1,5 @@
 package org.qmsos.weathermo;
 
-import org.qmsos.weathermo.contract.IntentContract;
-import org.qmsos.weathermo.fragment.WeatherMap;
-
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -13,9 +10,11 @@ import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 
+import org.qmsos.weathermo.contract.IntentContract;
+import org.qmsos.weathermo.fragment.WeatherMap;
+
 /**
  * Activity that showing map of current weather. 
- *
  */
 public class MapActivity extends AppCompatActivity implements OnMenuItemClickListener {
 
@@ -91,7 +90,7 @@ public class MapActivity extends AppCompatActivity implements OnMenuItemClickLis
 			newLayer = null;
 		}
 		
-		if (!(newLayer.equals(mCurrentLayer))) {
+		if (newLayer != null && !(newLayer.equals(mCurrentLayer))) {
 			mCurrentLayer = newLayer;
 			
 			loadMap(mCurrentLayer);

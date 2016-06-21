@@ -1,10 +1,5 @@
 package org.qmsos.weathermo;
 
-import java.util.ArrayList;
-
-import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
-import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
-
 import android.content.ContentProvider;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
@@ -20,9 +15,18 @@ import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
+import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
+
+import java.util.ArrayList;
+
+/**
+ * Content provider that stores information of cities and weathers.
+ */
 public class WeatherProvider extends ContentProvider {
 
 	private static final int CITIES = 1;
@@ -47,8 +51,8 @@ public class WeatherProvider extends ContentProvider {
 	}
 
 	@Override
-	public Cursor query(Uri uri, String[] projection, String selection, 
-			String[] selectionArgs, String sortOrder) {
+	public Cursor query(@NonNull Uri uri, String[] projection, String selection,
+						String[] selectionArgs, String sortOrder) {
 		
 		SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
 		
@@ -82,7 +86,7 @@ public class WeatherProvider extends ContentProvider {
 	}
 
 	@Override
-	public String getType(Uri uri) {
+	public String getType(@NonNull Uri uri) {
 		switch (URI_MATCHER.match(uri)) {
 		case CITIES:
 		case WEATHER:
@@ -93,7 +97,7 @@ public class WeatherProvider extends ContentProvider {
 	}
 
 	@Override
-	public Uri insert(Uri uri, ContentValues values) {
+	public Uri insert(@NonNull Uri uri, ContentValues values) {
 		SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
 		
 		switch (URI_MATCHER.match(uri)) {
@@ -121,7 +125,7 @@ public class WeatherProvider extends ContentProvider {
 	}
 
 	@Override
-	public int delete(Uri uri, String selection, String[] selectionArgs) {
+	public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
 		SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
 		
 		int count;
@@ -144,17 +148,20 @@ public class WeatherProvider extends ContentProvider {
 	}
 
 	@Override
-	public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+	public int update(@NonNull Uri uri,
+                      ContentValues values, String selection, String[] selectionArgs) {
 		SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
 		
 		int count;
 		switch (URI_MATCHER.match(uri)) {
 		case CITIES:
-			count = database.update(DatabaseHelper.TABLE_CITIES, values, selection, selectionArgs);
+			count = database.update(
+                    DatabaseHelper.TABLE_CITIES, values, selection, selectionArgs);
 			
 			break;
 		case WEATHER:
-			count = database.update(DatabaseHelper.TABLE_WEATHER, values, selection, selectionArgs);
+			count = database.update(
+                    DatabaseHelper.TABLE_WEATHER, values, selection, selectionArgs);
 			
 			break;
 		default:
@@ -166,8 +173,10 @@ public class WeatherProvider extends ContentProvider {
 		return count;
 	}
 
+	@NonNull
 	@Override
-	public ContentProviderResult[] applyBatch(ArrayList<ContentProviderOperation> operations)
+	public ContentProviderResult[] applyBatch(
+			@NonNull ArrayList<ContentProviderOperation> operations)
 			throws OperationApplicationException {
 		
 		SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
@@ -184,7 +193,7 @@ public class WeatherProvider extends ContentProvider {
 	}
 
 	@Override
-	public int bulkInsert(Uri uri, ContentValues[] values) {
+	public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
 		SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
 		
 		switch (URI_MATCHER.match(uri)) {

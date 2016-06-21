@@ -1,13 +1,5 @@
 package org.qmsos.weathermo;
 
-import org.qmsos.weathermo.contract.IntentContract;
-import org.qmsos.weathermo.datamodel.City;
-import org.qmsos.weathermo.fragment.CitySearch;
-import org.qmsos.weathermo.fragment.CitySearch.OnStartSearchListener;
-import org.qmsos.weathermo.fragment.CityList;
-import org.qmsos.weathermo.widget.CitySearchRecyclerViewAdapter.OnInsertCityClickedListener;
-import org.qmsos.weathermo.widget.CityListRecyclerViewAdapter.OnDeleteCityClickedListener;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,12 +15,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
+import org.qmsos.weathermo.contract.IntentContract;
+import org.qmsos.weathermo.datamodel.City;
+import org.qmsos.weathermo.fragment.CityList;
+import org.qmsos.weathermo.fragment.CitySearch;
+import org.qmsos.weathermo.widget.CityListRecyclerViewAdapter;
+import org.qmsos.weathermo.widget.CitySearchRecyclerViewAdapter;
+
 /**
  * Manage cities currently monitoring.
- *
  */
-public class CityActivity extends AppCompatActivity 
-implements OnDeleteCityClickedListener, OnInsertCityClickedListener, OnStartSearchListener {
+public class CityActivity extends AppCompatActivity
+        implements CityListRecyclerViewAdapter.OnDeleteCityClickedListener,
+        CitySearchRecyclerViewAdapter.OnInsertCityClickedListener,
+        CitySearch.OnStartSearchListener {
 
 	private static final String FRAGMENT_TAG_CITY_LIST = "FRAGMENT_TAG_CITY_LIST";
 	private static final String FRAGMENT_TAG_CITY_SEARCH = "FRAGMENT_TAG_CITY_SEARCH";
@@ -121,7 +121,7 @@ implements OnDeleteCityClickedListener, OnInsertCityClickedListener, OnStartSear
 		if (view != null) {
 			int snackbarActionTextColor = 
 					ContextCompat.getColor(this, R.color.snackbar_action_text_color);
-			int snakbarBackgroundColor = 
+			int snackbarBackgroundColor =
 					ContextCompat.getColor(this, R.color.snackbar_background_color);
 			
 			int resId;
@@ -133,7 +133,7 @@ implements OnDeleteCityClickedListener, OnInsertCityClickedListener, OnStartSear
 			
 			Snackbar snackbar = Snackbar.make(view, resId, Snackbar.LENGTH_LONG);
 			snackbar.setActionTextColor(snackbarActionTextColor);
-			snackbar.getView().setBackgroundColor(snakbarBackgroundColor);
+			snackbar.getView().setBackgroundColor(snackbarBackgroundColor);
 			snackbar.show();
 		}
 	}
@@ -148,17 +148,21 @@ implements OnDeleteCityClickedListener, OnInsertCityClickedListener, OnStartSear
 			String action = intent.getAction();
 			if (action == null) {
 				return;
-			} else if (action.equals(IntentContract.ACTION_SEARCH_EXECUTED)) {
-				boolean flag = intent.getBooleanExtra(IntentContract.EXTRA_SEARCH_EXECUTED, false);
-				if (flag) {
+			}
+
+            if (action.equals(IntentContract.ACTION_SEARCH_EXECUTED)) {
+				boolean isSearchExecuted =
+                        intent.getBooleanExtra(IntentContract.EXTRA_SEARCH_EXECUTED, false);
+				if (isSearchExecuted) {
 					String result = intent.getStringExtra(IntentContract.EXTRA_SEARCH_RESULT);
 					
 					onSearchResultReceived(result);
 				}
 			} else if (action.equals(IntentContract.ACTION_INSERT_EXECUTED)) {
-				boolean flag = intent.getBooleanExtra(IntentContract.EXTRA_INSERT_EXECUTED, false);
+				boolean isInsertExecuted =
+                        intent.getBooleanExtra(IntentContract.EXTRA_INSERT_EXECUTED, false);
 				
-				onInsertExecuted(flag);
+				onInsertExecuted(isInsertExecuted);
 			}
 		}
 	}
