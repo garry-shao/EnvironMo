@@ -179,7 +179,7 @@ public class WeatherParser {
 			return null;
 		}
 		
-		if (length < FORECAST_IN_DAYS * Contract.DATAPOINTS_IN_ONE_DAY) {
+		if (length < FORECAST_IN_DAYS * Contract.DATA_IN_ONE_DAY) {
 			Log.e(TAG, "raw data does not have enough information");
 			
 			return null;
@@ -189,11 +189,11 @@ public class WeatherParser {
 		for (int i = 0; i < FORECAST_IN_DAYS; i++) {
 			SparseIntArray tempWeatherIds = new SparseIntArray(); 
 			ArrayList<Double> tempTemperatures = new ArrayList<>();
-			for (int j = 0; j < Contract.DATAPOINTS_IN_ONE_DAY; j++) {
+			for (int j = 0; j < Contract.DATA_IN_ONE_DAY; j++) {
 				int weatherId;
 				double temperature;
 				try {
-					JSONObject forecast = list.getJSONObject(j + Contract.DATAPOINTS_IN_ONE_DAY * i);
+					JSONObject forecast = list.getJSONObject(j + Contract.DATA_IN_ONE_DAY * i);
 					JSONArray weather = forecast.getJSONArray("weather");
 					weatherId = weather.getJSONObject(0).getInt("id");
 					
@@ -381,7 +381,7 @@ public class WeatherParser {
 		/**
 		 * How many data points in a whole day(24H) when performing forecast by hours.
 		 */
-		static final int DATAPOINTS_IN_ONE_DAY = 8;
+		static final int DATA_IN_ONE_DAY = 8;
 	}
 
 }

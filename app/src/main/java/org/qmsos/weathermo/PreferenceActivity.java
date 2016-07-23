@@ -95,7 +95,7 @@ public class PreferenceActivity extends AppCompatActivity
 	}
 
 	/**
-	 * Load fragment to backstack.
+	 * Load fragment to back stack.
 	 * 
 	 * @param fragment
 	 *            The fragment to be loaded.

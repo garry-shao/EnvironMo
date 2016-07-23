@@ -126,9 +126,10 @@ public class WeatherMap extends BaseCordovaFragment implements LoaderCallbacks<C
 		urlBuilder.append(latitude);
 		urlBuilder.append("&lon=");
 		urlBuilder.append(longitude);
+//        Internally, set the zoom level to fixed value, may change later.
 		urlBuilder.append("&zoom=");
-		urlBuilder.append(5);
-		
+		urlBuilder.append(7);
+
 		String layer = getArguments().getString(KEY_LAYER);
 		if (layer != null) {
 			urlBuilder.append("&l=");
