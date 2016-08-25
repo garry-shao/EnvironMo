@@ -1,32 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_gravity="start"
-    app:columnCount="2"
-    app:rowCount="5" >
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:orientation="vertical" >
 
     <TextView
         android:id="@+id/details_temperature"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        app:layout_column="0"
-        app:layout_columnSpan="2"
-        app:layout_row="0"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:gravity="center"
         android:ellipsize="end"
         android:singleLine="true"
         android:textSize="120sp" />
 
     <TextView
-        android:id="@+id/details_category"
-        android:layout_width="0dp"
+        android:id="@+id/details_uv_index"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        app:layout_column="1"
-        app:layout_columnWeight="1"
-        app:layout_row="1"
         android:ellipsize="end"
         android:singleLine="true"
         android:textSize="24sp" />
@@ -35,22 +28,16 @@
         android:id="@+id/details_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        app:layout_column="0"
-        app:layout_columnSpan="2"
-        app:layout_row="2"
         android:ellipsize="end"
         android:singleLine="true"
         android:textSize="24sp" />
 
     <TextView
         android:id="@+id/details_timestamp"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        app:layout_column="0"
-        app:layout_columnWeight="1"
-        app:layout_row="3"
+        android:ellipsize="end"
+        android:singleLine="true"
         android:textSize="24sp" />
 
-</android.support.v7.widget.GridLayout>
+</LinearLayout>

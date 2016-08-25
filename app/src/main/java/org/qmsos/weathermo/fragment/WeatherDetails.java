@@ -128,7 +128,7 @@ public class WeatherDetails extends Fragment implements LoaderCallbacks<Cursor> 
 					fv.setText(null);
 				}
 				
-				fv = (TextView) getView().findViewById(R.id.details_category);
+				fv = (TextView) getView().findViewById(R.id.details_uv_index);
 				fv.setText(null);
 				
 				fv = (TextView) getView().findViewById(R.id.details_description);
@@ -158,10 +158,7 @@ public class WeatherDetails extends Fragment implements LoaderCallbacks<Cursor> 
 					cv.setText(null);
 				}
 				
-				cv = (TextView) getView().findViewById(R.id.details_category);
-				cv.setText(TextFactory.getWeatherCategory(currentWeatherId));
-				
-				cv = (TextView) getView().findViewById(R.id.details_description);
+				cv = (TextView) getView().findViewById(R.id.details_uv_index);
 				if (Double.compare(uvIndex, WeatherParser.INVALID_UV_INDEX) != 0) {
 					String UvIndexInfo = "UV: " + uvIndex + " - " +
 							getString(TextFactory.getUvIndexDescription(uvIndex));
@@ -170,6 +167,9 @@ public class WeatherDetails extends Fragment implements LoaderCallbacks<Cursor> 
 				} else {
 					cv.setText(null);
 				}
+
+				cv = (TextView) getView().findViewById(R.id.details_description);
+				cv.setText(TextFactory.getWeatherDescription(currentWeatherId));
 			}
 		}
 		
