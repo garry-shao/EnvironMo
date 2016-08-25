@@ -250,7 +250,7 @@ public class WeatherParser {
 		try {
 			JSONObject reader = new JSONObject(raw);
 
-			return reader.getDouble("value");
+			return reader.getDouble("data");
 		} catch (JSONException e) {
 			Log.e(TAG, "Error parsing JSON string. " + e.getMessage());
 			

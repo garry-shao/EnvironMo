@@ -182,7 +182,8 @@ public class WeatherService extends IntentService {
 			return null;
 		}
 		
-		String request = assembleRequest(Contract.FLAG_SEARCH_CITY, 0, cityName);
+		String request =
+                RequestFactory.assembleRequest(this, Contract.FLAG_SEARCH_CITY, 0, cityName);
 
         return download(request);
 	}
@@ -253,7 +254,8 @@ public class WeatherService extends IntentService {
 	}
 
 	/**
-	 * Schedule the behavior of the alarm that invoked repeatedly to execute automatic refresh.
+	 * Schedule the behavior of the alarm that invoked repeatedly to execute
+     * automatic refresh.
 	 * 
 	 * @param flag
 	 *            TRUE when setting up the alarm, FALSE when canceling the alarm.
@@ -304,7 +306,7 @@ public class WeatherService extends IntentService {
 		
 		ContentValues value = new ContentValues();
         for (int flag : flags) {
-            String request = assembleRequest(flag, cityId, null);
+            String request = RequestFactory.assembleRequest(this, flag, cityId, null);
             String result = download(request);
 
             switch (flag) {
@@ -344,6 +346,45 @@ public class WeatherService extends IntentService {
 		return value;
 	}
 
+    /**
+     * Get the available city ids that currently monitoring.
+     *
+     * @return The array that containing ids of the cities monitoring.
+     */
+    private long[] getMonitoringCities() {
+        Cursor cursor = null;
+        try {
+            String[] projection = { WeatherEntity.CITY_ID };
+            String where = WeatherEntity.CITY_ID;
+
+            cursor = getContentResolver().query(
+                    WeatherEntity.CONTENT_URI, projection, where, null, null);
+            if (cursor == null) {
+                return null;
+            }
+
+            int i = 0;
+            long[] cityIds = new long[cursor.getCount()];
+            while (cursor.moveToNext()) {
+                long cityId =
+                        cursor.getLong(cursor.getColumnIndexOrThrow(WeatherEntity.CITY_ID));
+
+                cityIds[i] = cityId;
+                i++;
+            }
+
+            return cityIds;
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "The column does not exist. " + e.getMessage());
+
+            return null;
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+        }
+    }
+
 	/**
 	 * Download from remote server for results.
 	 * 
@@ -361,7 +402,7 @@ public class WeatherService extends IntentService {
 			url = new URL(request);
 		} catch (MalformedURLException e) {
 			Log.e(TAG, "The provided URL is Malformed. " + e.getMessage());
-			
+
 			return null;
 		}
 		
@@ -400,171 +441,6 @@ public class WeatherService extends IntentService {
 	}
 
 	/**
-	 * Assemble the request string that would be sent to remote server. 
-	 * 
-	 * @param flag
-	 *            The flag of the refresh behavior, the valid flags
-	 *            are in class {@link Contract}.
-	 * @param cityId
-	 *            The id of city.
-	 * @param cityName
-	 *            The name of city, only used when search city by name.
-	 * @return The assembled string.
-	 */
-	private String assembleRequest(int flag, long cityId, String cityName) {
-		switch (flag) {
-		case Contract.FLAG_CURRENT_WEATHER:
-			return "http://api.openweathermap.org/data/2.5/" 
-					+ "weather?" + "id=" + String.valueOf(cityId)
-					+ "&units=" + "metric"
-					+ "&appid=" + Contract.API_KEY;
-		case Contract.FLAG_CURRENT_UV_INDEX:
-			String geo = assembleRequestExtraUv(cityId);
-			if (geo != null) {
-				return "http://api.owm.io/air/1.0/uvi/"
-						+ "current?" + geo
-						+ "&appid=" + Contract.API_KEY;
-			} else {
-				return null;
-			}
-		case Contract.FLAG_FORECAST_DAILY:
-			int days = WeatherParser.FORECAST_IN_DAYS + 1;
-			
-			return "http://api.openweathermap.org/data/2.5/" 
-					+ "forecast/daily?" + "id=" + String.valueOf(cityId) 
-					+ "&cnt=" + days
-					+ "&units=" + "metric"
-					+ "&appid=" + Contract.API_KEY;
-		case Contract.FLAG_FORECAST_HOURLY:
-			int count = WeatherParser.FORECAST_IN_DAYS * Contract.DATAPOINTS_IN_ONE_DAY;
-			
-			return "http://api.openweathermap.org/data/2.5/" 
-					+ "forecast?" + "id=" + String.valueOf(cityId) 
-					+ "&cnt=" + count
-					+ "&units=" + "metric"
-					+ "&appid=" + Contract.API_KEY;
-		case Contract.FLAG_SEARCH_CITY:
-			String encodedCityName = assembleRequestEncode(cityName);
-			if (encodedCityName != null) {
-				return "http://api.openweathermap.org/data/2.5/"
-						+ "find?" + "q=" + encodedCityName
-						+ "&type=" + "like"
-						+ "&units=" + "metric"
-						+ "&appid=" + Contract.API_KEY;
-			} else {
-				return null;
-			}
-		default:
-			return null;
-		}
-	}
-	
-	/**
-	 * Assemble the extra section of request string that would be sent to remote 
-	 * server. Only used when refresh ultra violet radiation value.
-	 * <br>
-	 * <br>
-	 * <b>This method should only be used in assembling request.</b>
-	 * 
-	 * @param cityId
-	 *            The id of city.
-	 * @return The assembled extra section.
-	 */
-	private String assembleRequestExtraUv(long cityId) {
-		double latitude = 200.0f;
-		double longitude = 200.0f;
-		
-		Cursor cursor = null;
-		try {
-			String[] projection = {
-                    CityEntity.CITY_ID, CityEntity.LATITUDE,  CityEntity.LONGITUDE };
-			String where =  CityEntity.CITY_ID + " = " + cityId;
-			
-			cursor = getContentResolver().query(
-					 CityEntity.CONTENT_URI, projection, where, null, null);
-			if (cursor != null && cursor.moveToFirst()) {
-				latitude =
-                        cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LATITUDE));
-				longitude =
-                        cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LONGITUDE));
-			}
-		} catch (IllegalArgumentException e) {
-			Log.e(TAG, "The column does not exist. " + e.getMessage());
-		} finally {
-			if (cursor != null && !cursor.isClosed()) {
-				cursor.close();
-			}
-		}
-		
-		if (latitude > 90.0f || latitude < -90.0f || longitude > 180.0f || longitude < -180.0f) {
-			return null;
-		} else {
-			return "lat=" + latitude + "&lon=" + longitude;
-		}
-	}
-
-	/**
-	 * Encode the city name that would be used as search parameter with <b>URL-Encoding</b>.
-	 * <br>
-	 * <br>
-	 * <b>This method should only be used in assembling request.</b>
-	 * 
-	 * @param cityName
-	 *            The city name that to be encoded.
-	 * @return The encoded URL-Encoding complied string.
-	 */
-	private String assembleRequestEncode(String cityName) {
-		String encodedCityName;
-		try {
-			encodedCityName = URLEncoder.encode(cityName, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			Log.e(TAG, "The encoding is not supported. " + e.getMessage());
-			
-			return null;
-		}
-		return encodedCityName;
-	}
-
-	/**
-	 * Get the available city ids that currently monitoring.
-	 * 
-	 * @return The array that containing ids of the cities monitoring. 
-	 */
-	private long[] getMonitoringCities() {
-		Cursor cursor = null;
-		try {
-			String[] projection = { WeatherEntity.CITY_ID };
-			String where = WeatherEntity.CITY_ID;
-			
-			cursor = getContentResolver().query(
-                    WeatherEntity.CONTENT_URI, projection, where, null, null);
-			if (cursor == null) {
-				return null;
-			}
-			
-			int i = 0;
-			long[] cityIds = new long[cursor.getCount()];
-			while (cursor.moveToNext()) {
-				long cityId =
-                        cursor.getLong(cursor.getColumnIndexOrThrow(WeatherEntity.CITY_ID));
-				
-				cityIds[i] = cityId;
-				i++;
-			}
-			
-			return cityIds;
-		} catch (IllegalArgumentException e) {
-			Log.e(TAG, "The column does not exist. " + e.getMessage());
-			
-			return null;
-		} finally {
-			if (cursor != null && !cursor.isClosed()) {
-				cursor.close();
-			}
-		}
-	}
-
-	/**
 	 * Check if there is a valid connection to Internet.
 	 * 
 	 * @return TRUE if a valid connection exists, FALSE otherwise.
@@ -576,6 +452,142 @@ public class WeatherService extends IntentService {
 
 		return info != null && info.isConnected();
 	}
+
+    /**
+     * Factory class that will be used to generate requesting url.
+     */
+    private static class RequestFactory {
+        /**
+         * Assemble the request string that would be sent to remote server.
+         *
+         * @param context
+         *            The context that the request is running in.
+         * @param flag
+         *            The flag of the refresh behavior, the valid flags
+         *            are in class {@link Contract}.
+         * @param cityId
+         *            The id of city.
+         * @param cityName
+         *            The name of city, only used when search city by name.
+         * @return The assembled string.
+         */
+        static String assembleRequest(Context context, int flag, long cityId, String cityName) {
+            switch (flag) {
+                case Contract.FLAG_CURRENT_WEATHER:
+                    return "http://api.openweathermap.org/data/2.5/"
+                            + "weather?" + "id=" + String.valueOf(cityId)
+                            + "&units=" + "metric"
+                            + "&appid=" + Contract.API_KEY;
+                case Contract.FLAG_CURRENT_UV_INDEX:
+                    String geo = assembleRequestExtraUv(context, cityId);
+                    if (geo != null) {
+                        return "http://api.openweathermap.org/v3/uvi/"
+                                + geo + "/current.json"
+                                + "?appid=" + Contract.API_KEY;
+                    } else {
+                        return null;
+                    }
+                case Contract.FLAG_FORECAST_DAILY:
+                    int days = WeatherParser.FORECAST_IN_DAYS + 1;
+
+                    return "http://api.openweathermap.org/data/2.5/"
+                            + "forecast/daily?" + "id=" + String.valueOf(cityId)
+                            + "&cnt=" + days
+                            + "&units=" + "metric"
+                            + "&appid=" + Contract.API_KEY;
+                case Contract.FLAG_FORECAST_HOURLY:
+                    int count = WeatherParser.FORECAST_IN_DAYS * Contract.DATAPOINTS_IN_ONE_DAY;
+
+                    return "http://api.openweathermap.org/data/2.5/"
+                            + "forecast?" + "id=" + String.valueOf(cityId)
+                            + "&cnt=" + count
+                            + "&units=" + "metric"
+                            + "&appid=" + Contract.API_KEY;
+                case Contract.FLAG_SEARCH_CITY:
+                    String encodedCityName = assembleRequestEncode(cityName);
+                    if (encodedCityName != null) {
+                        return "http://api.openweathermap.org/data/2.5/"
+                                + "find?" + "q=" + encodedCityName
+                                + "&type=" + "like"
+                                + "&units=" + "metric"
+                                + "&appid=" + Contract.API_KEY;
+                    } else {
+                        return null;
+                    }
+                default:
+                    return null;
+            }
+        }
+
+        /**
+         * Assemble the extra section of request string that would be sent to remote
+         * server. Only used when refresh ultra violet radiation value.
+         * <br>
+         * <br>
+         * <b>This method should only be used in assembling request.</b>
+         *
+         * @param cityId
+         *            The id of city.
+         * @return The assembled extra section.
+         */
+        static String assembleRequestExtraUv(Context context, long cityId) {
+            double latitude = 200.0f;
+            double longitude = 200.0f;
+
+            Cursor cursor = null;
+            try {
+                String[] projection = {
+                        CityEntity.CITY_ID, CityEntity.LATITUDE,  CityEntity.LONGITUDE };
+                String where =  CityEntity.CITY_ID + " = " + cityId;
+
+                cursor = context.getContentResolver().query(
+                        CityEntity.CONTENT_URI, projection, where, null, null);
+                if (cursor != null && cursor.moveToFirst()) {
+                    latitude =
+                            cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LATITUDE));
+                    longitude =
+                            cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LONGITUDE));
+                }
+            } catch (IllegalArgumentException e) {
+                Log.e(TAG, "The column does not exist. " + e.getMessage());
+            } finally {
+                if (cursor != null && !cursor.isClosed()) {
+                    cursor.close();
+                }
+            }
+
+            if (latitude > 90.0f || latitude < -90.0f
+                    || longitude > 180.0f || longitude < -180.0f) {
+
+                return null;
+            } else {
+                return Math.round(latitude) + "," + Math.round(longitude);
+            }
+        }
+
+        /**
+         * Encode the city name that would be used as search parameter with <b>URL-Encoding</b>.
+         * <br>
+         * <br>
+         * <b>This method should only be used in assembling request.</b>
+         *
+         * @param cityName
+         *            The city name that to be encoded.
+         * @return The encoded URL-Encoding complied string.
+         */
+        static String assembleRequestEncode(String cityName) {
+            String encodedCityName;
+            try {
+                encodedCityName = URLEncoder.encode(cityName, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                Log.e(TAG, "The encoding is not supported. " + e.getMessage());
+
+                return null;
+            }
+            return encodedCityName;
+        }
+
+    }
 
 	/**
 	 * Containing contract of service behavior that out class scope should not see.
