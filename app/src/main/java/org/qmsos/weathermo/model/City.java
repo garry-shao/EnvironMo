@@ -1,4 +1,4 @@
-package org.qmsos.weathermo.datamodel;
+package org.qmsos.weathermo.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;

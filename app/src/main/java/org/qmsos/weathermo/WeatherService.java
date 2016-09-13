@@ -23,7 +23,7 @@ import org.qmsos.weathermo.contract.IntentContract;
 import org.qmsos.weathermo.contract.ProviderContract;
 import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
 import org.qmsos.weathermo.contract.ProviderContract.WeatherEntity;
-import org.qmsos.weathermo.datamodel.City;
+import org.qmsos.weathermo.model.City;
 import org.qmsos.weathermo.util.WeatherParser;
 
 import java.io.BufferedReader;

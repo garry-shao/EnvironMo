@@ -16,7 +16,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import org.qmsos.weathermo.R;
-import org.qmsos.weathermo.datamodel.City;
+import org.qmsos.weathermo.model.City;
 import org.qmsos.weathermo.util.CityParser;
 import org.qmsos.weathermo.widget.CitySearchRecyclerViewAdapter;
 

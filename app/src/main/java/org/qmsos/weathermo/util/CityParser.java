@@ -3,7 +3,7 @@ package org.qmsos.weathermo.util;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.qmsos.weathermo.datamodel.City;
+import org.qmsos.weathermo.model.City;
 
 /**
  * Utility class that used to parse response from the search that by city name.

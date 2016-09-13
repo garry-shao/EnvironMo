@@ -16,9 +16,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import org.qmsos.weathermo.contract.IntentContract;
-import org.qmsos.weathermo.datamodel.City;
 import org.qmsos.weathermo.fragment.CityList;
 import org.qmsos.weathermo.fragment.CitySearch;
+import org.qmsos.weathermo.model.City;
 import org.qmsos.weathermo.widget.CityListRecyclerViewAdapter;
 import org.qmsos.weathermo.widget.CitySearchRecyclerViewAdapter;
 

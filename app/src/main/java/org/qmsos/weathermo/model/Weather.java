@@ -1,4 +1,4 @@
-package org.qmsos.weathermo.datamodel;
+package org.qmsos.weathermo.model;
 
 /**
  * Description of weather instance.

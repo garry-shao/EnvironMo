@@ -1,8 +1,5 @@
 package org.qmsos.weathermo.widget;
 
-import org.qmsos.weathermo.R;
-import org.qmsos.weathermo.datamodel.City;
-
 import android.content.Context;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.SpannableString;
@@ -13,6 +10,9 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import org.qmsos.weathermo.R;
+import org.qmsos.weathermo.model.City;
 
 /**
  * Implementation that shows a list of candidate cities from data that passed.
