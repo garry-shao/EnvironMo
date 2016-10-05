@@ -13,31 +13,31 @@
         android:layout_weight="3"
         android:gravity="center"
         android:ellipsize="end"
-        android:singleLine="true"
-        android:textSize="120sp" />
+        android:textSize="120sp"
+        android:maxLines="1" />
 
     <TextView
         android:id="@+id/details_uv_index"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ellipsize="end"
-        android:singleLine="true"
-        android:textSize="24sp" />
+        android:textSize="24sp"
+        android:maxLines="1" />
 
     <TextView
         android:id="@+id/details_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ellipsize="end"
-        android:singleLine="true"
-        android:textSize="24sp" />
+        android:textSize="24sp"
+        android:maxLines="1" />
 
     <TextView
         android:id="@+id/details_timestamp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ellipsize="end"
-        android:singleLine="true"
-        android:textSize="24sp" />
+        android:textSize="24sp"
+        android:maxLines="1" />
 
 </LinearLayout>
