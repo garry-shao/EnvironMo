@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.qmsos.weathermo"
-    android:versionCode="16"
+    android:versionCode="17"
     android:versionName="@string/app_version_name" >
 
     <uses-permission android:name="android.permission.INTERNET" />
