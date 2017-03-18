@@ -42,42 +42,41 @@ import java.util.ArrayList;
  */
 public class WeatherService extends IntentService {
 
-	private static final String TAG = WeatherService.class.getSimpleName();
-	
-	/**
-	 * Implementation of the superclass constructor.
-	 * 
-	 * @param name
-	 *            Used to name the worker thread, important only for debugging.
-	 */
-	public WeatherService(String name) {
-		super(name);
-	}
+    private static final String TAG = WeatherService.class.getSimpleName();
 
-	/**
-	 * Default empty constructor.
-	 */
-	public WeatherService() {
-		super(TAG);
-	}
+    /**
+     * Implementation of the superclass constructor.
+     *
+     * @param name
+     *            Used to name the worker thread, important only for debugging.
+     */
+    public WeatherService(String name) {
+        super(name);
+    }
 
-	@Override
-	protected void onHandleIntent(Intent intent) {
-		String action = intent.getAction();
-		if (action == null) {
-			return;
-		}
+    /**
+     * Default empty constructor.
+     */
+    public WeatherService() {
+        super(TAG);
+    }
+
+    @Override
+    protected void onHandleIntent(Intent intent) {
+        String action = intent.getAction();
+        if (action == null) {
+            return;
+        }
 
         switch (action) {
             case IntentContract.ACTION_REFRESH_WEATHER_AUTO:
-                boolean isAutoUpdate =
-                        intent.getBooleanExtra(IntentContract.EXTRA_REFRESH_WEATHER_AUTO, false);
+                boolean isAutoUpdate = intent.getBooleanExtra(
+                        IntentContract.EXTRA_REFRESH_WEATHER_AUTO, false);
 
                 scheduleAutoRefresh(isAutoUpdate);
 
                 if (isAutoUpdate && checkConnection()) {
-                    int[] flags = {
-                            Contract.FLAG_CURRENT_WEATHER,
+                    int[] flags = {Contract.FLAG_CURRENT_WEATHER,
                             Contract.FLAG_CURRENT_UV_INDEX,
                             Contract.FLAG_FORECAST_HOURLY};
 
@@ -86,8 +85,7 @@ public class WeatherService extends IntentService {
                 break;
             case IntentContract.ACTION_REFRESH_WEATHER_MANUAL:
                 if (checkConnection()) {
-                    int[] flags = {
-                            Contract.FLAG_CURRENT_WEATHER,
+                    int[] flags = {Contract.FLAG_CURRENT_WEATHER,
                             Contract.FLAG_CURRENT_UV_INDEX,
                             Contract.FLAG_FORECAST_DAILY};
 
@@ -130,181 +128,183 @@ public class WeatherService extends IntentService {
                 }
                 break;
         }
-	}
+    }
 
-	/**
-	 * Proceed the execution of refreshing weather from remote server.
-	 * 
-	 * @param flags
-	 *            Parameters used to control the refresh behavior, the valid flags
-	 *            are in class {@link Contract}.
-	 */
-	private void executeRefreshWeather(int[] flags) {
-		if (flags == null) {
-			return;
-		}
-		
-		long[] cityIds = getMonitoringCities();
-		if (cityIds == null) {
-			return;
-		}
-		
-		ArrayList<ContentProviderOperation> operations = new ArrayList<>();
+    /**
+     * Proceed the execution of refreshing weather from remote server.
+     *
+     * @param flags
+     *            Parameters used to control the refresh behavior, the valid flags
+     *            are in class {@link Contract}.
+     */
+    private void executeRefreshWeather(int[] flags) {
+        if (flags == null) {
+            return;
+        }
+
+        long[] cityIds = getMonitoringCities();
+        if (cityIds == null) {
+            return;
+        }
+
+        ArrayList<ContentProviderOperation> operations = new ArrayList<>();
         for (long cityId : cityIds) {
             String where = WeatherEntity.CITY_ID + " = " + cityId;
 
             ContentValues value = refreshInstance(cityId, flags);
 
-            operations.add(
-                    ContentProviderOperation
-                            .newUpdate(WeatherEntity.CONTENT_URI)
-                            .withSelection(where, null)
-                            .withValues(value)
-                            .build());
+            operations.add(ContentProviderOperation
+                    .newUpdate(WeatherEntity.CONTENT_URI)
+                    .withSelection(where, null)
+                    .withValues(value)
+                    .build());
         }
-		
-		try {
-			getContentResolver().applyBatch(ProviderContract.AUTHORITY, operations);
-		} catch (RemoteException | OperationApplicationException e) {
-			Log.e(TAG, "Error when batch update weathers: " + e.getMessage());
-		}
+
+        try {
+            getContentResolver().applyBatch(ProviderContract.AUTHORITY, operations);
+        } catch (RemoteException | OperationApplicationException e) {
+            Log.e(TAG, "Error when batch update weathers: " + e.getMessage());
+        }
     }
 
-	/**
-	 * Proceed the execution of searching city id with city name.
-	 * 
-	 * @param cityName
-	 *            The phrase of city name which would be used to search for.
-	 * @return The raw, unparsed results from remote server.
-	 */
-	private String executeSearchCity(String cityName) {
-		if (cityName == null) {
-			return null;
-		}
-		
-		String request =
-                RequestFactory.assembleRequest(this, Contract.FLAG_SEARCH_CITY, 0, cityName);
+    /**
+     * Proceed the execution of searching city id with city name.
+     *
+     * @param cityName
+     *            The phrase of city name which would be used to search for.
+     * @return The raw, unparsed results from remote server.
+     */
+    private String executeSearchCity(String cityName) {
+        if (cityName == null) {
+            return null;
+        }
+
+        String request = RequestFactory.assembleRequest(this,
+                Contract.FLAG_SEARCH_CITY, 0, cityName);
 
         return download(request);
-	}
-	
-	/**
-	 * Proceed the execution of inserting new city to provider.
-	 * 
-	 * @param city
-	 *            The instance of city that will be inserted.
-	 * @return Whether the operation succeed, TRUE means succeed.
-	 */
-	private boolean executeInsertCity(City city) {
-		if (city == null) {
-			return false;
-		}
-		
-		ContentResolver resolver = getContentResolver();
-		
-		boolean cityExisting = false;
-		Cursor cursor = null;
-		try {
-			String where = CityEntity.CITY_ID + " = " + city.getCityId();
-			
-			cursor = resolver.query(CityEntity.CONTENT_URI, null, where, null, null);
-			if (cursor != null && cursor.moveToNext()) {
-				cityExisting = true;
-			}
-		} finally {
-			if (cursor != null && !cursor.isClosed()) {
-				cursor.close();
-			}
-		}
-		
-		if (!cityExisting) {
-			ContentValues cityValues = new ContentValues();
-			cityValues.put(CityEntity.CITY_ID, city.getCityId());
-			cityValues.put(CityEntity.CITY_NAME, city.getCityName());
-			cityValues.put(CityEntity.COUNTRY, city.getCountry());
-			cityValues.put(CityEntity.LONGITUDE, city.getLongitude());
-			cityValues.put(CityEntity.LATITUDE, city.getLatitude());
-			
-			ContentValues weatherValues = new ContentValues();
-			weatherValues.put(CityEntity.CITY_ID, city.getCityId());
-			
-			resolver.insert(CityEntity.CONTENT_URI, cityValues);
-			resolver.insert(WeatherEntity.CONTENT_URI, weatherValues);
-			
-			return true;
-		} else {
-			return false;
-		}
-	}
+    }
 
-	/**
-	 * Proceed the execution of deleting specified city from provider.
-	 * 
-	 * @param cityId
-	 *            The id of city that would be deleted.
-	 * @return Whether the operation succeed, TRUE means succeed.
-	 */
-	private boolean executeDeleteCity(long cityId) {
-		String where = CityEntity.CITY_ID + " = " + cityId;
-		
-		int rows1 = getContentResolver().delete(CityEntity.CONTENT_URI, where, null);
-		int rows2 = getContentResolver().delete(WeatherEntity.CONTENT_URI, where, null);
-		
-		return (rows1 > 0 && rows2 > 0);
-	}
+    /**
+     * Proceed the execution of inserting new city to provider.
+     *
+     * @param city
+     *            The instance of city that will be inserted.
+     * @return Whether the operation succeed, TRUE means succeed.
+     */
+    private boolean executeInsertCity(City city) {
+        if (city == null) {
+            return false;
+        }
 
-	/**
-	 * Schedule the behavior of the alarm that invoked repeatedly to execute
+        ContentResolver resolver = getContentResolver();
+
+        boolean cityExisting = false;
+        Cursor cursor = null;
+        try {
+            String where = CityEntity.CITY_ID + " = " + city.getCityId();
+
+            cursor = resolver.query(CityEntity.CONTENT_URI, null, where, null, null);
+            if (cursor != null && cursor.moveToNext()) {
+                cityExisting = true;
+            }
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+        }
+
+        if (!cityExisting) {
+            ContentValues cityValues = new ContentValues();
+            cityValues.put(CityEntity.CITY_ID, city.getCityId());
+            cityValues.put(CityEntity.CITY_NAME, city.getCityName());
+            cityValues.put(CityEntity.COUNTRY, city.getCountry());
+            cityValues.put(CityEntity.LONGITUDE, city.getLongitude());
+            cityValues.put(CityEntity.LATITUDE, city.getLatitude());
+
+            ContentValues weatherValues = new ContentValues();
+            weatherValues.put(CityEntity.CITY_ID, city.getCityId());
+
+            resolver.insert(CityEntity.CONTENT_URI, cityValues);
+            resolver.insert(WeatherEntity.CONTENT_URI, weatherValues);
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Proceed the execution of deleting specified city from provider.
+     *
+     * @param cityId
+     *            The id of city that would be deleted.
+     * @return Whether the operation succeed, TRUE means succeed.
+     */
+    private boolean executeDeleteCity(long cityId) {
+        String where = CityEntity.CITY_ID + " = " + cityId;
+
+        int rows1 = getContentResolver().delete(CityEntity.CONTENT_URI, where, null);
+        int rows2 = getContentResolver().delete(WeatherEntity.CONTENT_URI, where, null);
+
+        return (rows1 > 0 && rows2 > 0);
+    }
+
+    /**
+     * Schedule the behavior of the alarm that invoked repeatedly to execute
      * automatic refresh.
-	 * 
-	 * @param flag
-	 *            TRUE when setting up the alarm, FALSE when canceling the alarm.
-	 */
-	private void scheduleAutoRefresh(boolean flag) {
-		int requestCode = 1;
-		
-		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+     *
+     * @param flag
+     *            TRUE when setting up the alarm, FALSE when canceling the alarm.
+     */
+    private void scheduleAutoRefresh(boolean flag) {
+        int requestCode = 1;
 
-		PendingIntent alarmIntent = PendingIntent.getBroadcast(
-                this, requestCode,
-				new Intent(IntentContract.ACTION_REFRESH_ALARM),
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(this,
+                requestCode,
+                new Intent(IntentContract.ACTION_REFRESH_ALARM),
                 PendingIntent.FLAG_UPDATE_CURRENT);
-		
-		if (flag) {
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-			int frequency = Integer.parseInt(prefs.getString(
-					getString(R.string.PREF_REFRESH_AUTO_FREQUENCY), 
-					getString(R.string.frequency_values_default)));
-			
-			long intervalMillis = frequency * AlarmManager.INTERVAL_HOUR;
-			long timeToRefresh = SystemClock.elapsedRealtime() + intervalMillis;
-			
-			alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 
-					timeToRefresh, intervalMillis, alarmIntent);
-		} else {
-			alarmManager.cancel(alarmIntent);
-		}
-	}
 
-	/**
-	 * This is the single instance of refreshing weather from remote server. should
-	 * be considered is a component of operation, should not be used alone.
-	 * 
-	 * @param cityId
-	 *            The city id of which would be executed upon.
-	 * @param flags
-	 *            Parameters used to control the refresh behavior, the valid flags
-	 *            are in class {@link Contract}. PS: these flags should
-	 *            be passed from the calling method.
-	 * @return The parsed value that containing the refreshed data for further 
-	 *         execution, as the refreshing should be a transaction operation.
-	 */
-	private ContentValues refreshInstance(long cityId, int[] flags) {
-		if (cityId == 0L || flags == null) {
-			return null;
-		}
-		
-		ContentValues value = new ContentValues();
+        if (flag) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+            int frequency = Integer.parseInt(
+                    prefs.getString(
+                    getString(R.string.PREF_REFRESH_AUTO_FREQUENCY),
+                    getString(R.string.frequency_values_default)));
+
+            long intervalMillis = frequency * AlarmManager.INTERVAL_HOUR;
+            long timeToRefresh = SystemClock.elapsedRealtime() + intervalMillis;
+
+            alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    timeToRefresh,
+                    intervalMillis,
+                    alarmIntent);
+        } else {
+            alarmManager.cancel(alarmIntent);
+        }
+    }
+
+    /**
+     * This is the single instance of refreshing weather from remote server. should
+     * be considered is a component of operation, should not be used alone.
+     *
+     * @param cityId
+     *            The city id of which would be executed upon.
+     * @param flags
+     *            Parameters used to control the refresh behavior, the valid flags
+     *            are in class {@link Contract}. PS: these flags should
+     *            be passed from the calling method.
+     * @return The parsed value that containing the refreshed data for further
+     *         execution, as the refreshing should be a transaction operation.
+     */
+    private ContentValues refreshInstance(long cityId, int[] flags) {
+        if (cityId == 0L || flags == null) {
+            return null;
+        }
+
+        ContentValues value = new ContentValues();
         for (int flag : flags) {
             String request = RequestFactory.assembleRequest(this, flag, cityId, null);
             String result = download(request);
@@ -342,9 +342,9 @@ public class WeatherService extends IntentService {
                     break;
             }
         }
-		
-		return value;
-	}
+
+        return value;
+    }
 
     /**
      * Get the available city ids that currently monitoring.
@@ -357,8 +357,8 @@ public class WeatherService extends IntentService {
             String[] projection = { WeatherEntity.CITY_ID };
             String where = WeatherEntity.CITY_ID;
 
-            cursor = getContentResolver().query(
-                    WeatherEntity.CONTENT_URI, projection, where, null, null);
+            cursor = getContentResolver().query(WeatherEntity.CONTENT_URI,
+                    projection, where, null, null);
             if (cursor == null) {
                 return null;
             }
@@ -366,8 +366,8 @@ public class WeatherService extends IntentService {
             int i = 0;
             long[] cityIds = new long[cursor.getCount()];
             while (cursor.moveToNext()) {
-                long cityId =
-                        cursor.getLong(cursor.getColumnIndexOrThrow(WeatherEntity.CITY_ID));
+                long cityId = cursor.getLong(
+                        cursor.getColumnIndexOrThrow(WeatherEntity.CITY_ID));
 
                 cityIds[i] = cityId;
                 i++;
@@ -385,73 +385,73 @@ public class WeatherService extends IntentService {
         }
     }
 
-	/**
-	 * Download from remote server for results.
-	 * 
-	 * @param request
-	 *            The URL string of request, <b>should comply with URL-Encoding</b>.
-	 * @return Results of this request, NULL otherwise.
-	 */
-	private String download(String request) {
-		if (request == null) {
-			return null;
-		}
-		
-		URL url;
-		try {
-			url = new URL(request);
-		} catch (MalformedURLException e) {
-			Log.e(TAG, "The provided URL is Malformed. " + e.getMessage());
+    /**
+     * Download from remote server for results.
+     *
+     * @param request
+     *            The URL string of request, <b>should comply with URL-Encoding</b>.
+     * @return Results of this request, NULL otherwise.
+     */
+    private String download(String request) {
+        if (request == null) {
+            return null;
+        }
 
-			return null;
-		}
-		
-		HttpURLConnection httpConnection;
-		try {
-			httpConnection = (HttpURLConnection) url.openConnection();
-		} catch (IOException e) {
-			Log.e(TAG, "Error opening connection. " + e.getMessage());
-			
-			return null;
-		}
-		
-		StringBuilder builder = new StringBuilder();
-		try {
-			int responseCode = httpConnection.getResponseCode();
-			if (responseCode == HttpURLConnection.HTTP_OK) {
-				InputStream inStream = httpConnection.getInputStream();
-				BufferedReader reader = new BufferedReader(new InputStreamReader(inStream));
-				
-				String line;
-				while ((line = reader.readLine()) != null) {
-					builder.append(line);
-				}
-			}
-		} catch (IOException e) {
-			Log.e(TAG, "Error reading from the connection. " + e.getMessage());
-			
-			return null;
-		} finally {
-			if (httpConnection != null) {
-				httpConnection.disconnect();
-			}
-		}
-		
-		return builder.toString();
-	}
+        URL url;
+        try {
+            url = new URL(request);
+        } catch (MalformedURLException e) {
+            Log.e(TAG, "The provided URL is Malformed. " + e.getMessage());
 
-	/**
-	 * Check if there is a valid connection to Internet.
-	 * 
-	 * @return TRUE if a valid connection exists, FALSE otherwise.
-	 */
-	private boolean checkConnection() {
-		ConnectivityManager manager = 
-				(ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo info = manager.getActiveNetworkInfo();
+            return null;
+        }
 
-		return info != null && info.isConnected();
-	}
+        HttpURLConnection httpConnection;
+        try {
+            httpConnection = (HttpURLConnection) url.openConnection();
+        } catch (IOException e) {
+            Log.e(TAG, "Error opening connection. " + e.getMessage());
+
+            return null;
+        }
+
+        StringBuilder builder = new StringBuilder();
+        try {
+            int responseCode = httpConnection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                InputStream inStream = httpConnection.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inStream));
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    builder.append(line);
+                }
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Error reading from the connection. " + e.getMessage());
+
+            return null;
+        } finally {
+            if (httpConnection != null) {
+                httpConnection.disconnect();
+            }
+        }
+
+        return builder.toString();
+    }
+
+    /**
+     * Check if there is a valid connection to Internet.
+     *
+     * @return TRUE if a valid connection exists, FALSE otherwise.
+     */
+    private boolean checkConnection() {
+        ConnectivityManager manager =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo info = manager.getActiveNetworkInfo();
+
+        return info != null && info.isConnected();
+    }
 
     /**
      * Factory class that will be used to generate requesting url.
@@ -471,19 +471,28 @@ public class WeatherService extends IntentService {
          *            The name of city, only used when search city by name.
          * @return The assembled string.
          */
-        static String assembleRequest(Context context, int flag, long cityId, String cityName) {
+        static String assembleRequest(Context context,
+                                      int flag,
+                                      long cityId,
+                                      String cityName) {
             switch (flag) {
                 case Contract.FLAG_CURRENT_WEATHER:
                     return "http://api.openweathermap.org/data/2.5/"
-                            + "weather?" + "id=" + String.valueOf(cityId)
-                            + "&units=" + "metric"
-                            + "&appid=" + Contract.API_KEY;
+                            + "weather?"
+                            + "id="
+                            + String.valueOf(cityId)
+                            + "&units="
+                            + "metric"
+                            + "&appid="
+                            + Contract.API_KEY;
                 case Contract.FLAG_CURRENT_UV_INDEX:
                     String geo = assembleRequestExtraUv(context, cityId);
                     if (geo != null) {
                         return "http://api.openweathermap.org/v3/uvi/"
-                                + geo + "/current.json"
-                                + "?appid=" + Contract.API_KEY;
+                                + geo
+                                + "/current.json"
+                                + "?appid="
+                                + Contract.API_KEY;
                     } else {
                         return null;
                     }
@@ -491,26 +500,42 @@ public class WeatherService extends IntentService {
                     int days = WeatherParser.FORECAST_IN_DAYS + 1;
 
                     return "http://api.openweathermap.org/data/2.5/"
-                            + "forecast/daily?" + "id=" + String.valueOf(cityId)
-                            + "&cnt=" + days
-                            + "&units=" + "metric"
-                            + "&appid=" + Contract.API_KEY;
+                            + "forecast/daily?"
+                            + "id="
+                            + String.valueOf(cityId)
+                            + "&cnt="
+                            + days
+                            + "&units="
+                            + "metric"
+                            + "&appid="
+                            + Contract.API_KEY;
                 case Contract.FLAG_FORECAST_HOURLY:
-                    int count = WeatherParser.FORECAST_IN_DAYS * Contract.DATAPOINTS_IN_ONE_DAY;
+                    int count =
+                            WeatherParser.FORECAST_IN_DAYS * Contract.DATAPOINTS_IN_ONE_DAY;
 
                     return "http://api.openweathermap.org/data/2.5/"
-                            + "forecast?" + "id=" + String.valueOf(cityId)
-                            + "&cnt=" + count
-                            + "&units=" + "metric"
-                            + "&appid=" + Contract.API_KEY;
+                            + "forecast?"
+                            + "id="
+                            + String.valueOf(cityId)
+                            + "&cnt="
+                            + count
+                            + "&units="
+                            + "metric"
+                            + "&appid="
+                            + Contract.API_KEY;
                 case Contract.FLAG_SEARCH_CITY:
                     String encodedCityName = assembleRequestEncode(cityName);
                     if (encodedCityName != null) {
                         return "http://api.openweathermap.org/data/2.5/"
-                                + "find?" + "q=" + encodedCityName
-                                + "&type=" + "like"
-                                + "&units=" + "metric"
-                                + "&appid=" + Contract.API_KEY;
+                                + "find?"
+                                + "q="
+                                + encodedCityName
+                                + "&type="
+                                + "like"
+                                + "&units="
+                                + "metric"
+                                + "&appid="
+                                + Contract.API_KEY;
                     } else {
                         return null;
                     }
@@ -536,17 +561,22 @@ public class WeatherService extends IntentService {
 
             Cursor cursor = null;
             try {
-                String[] projection = {
-                        CityEntity.CITY_ID, CityEntity.LATITUDE,  CityEntity.LONGITUDE };
+                String[] projection = {CityEntity.CITY_ID,
+                        CityEntity.LATITUDE,
+                        CityEntity.LONGITUDE};
                 String where =  CityEntity.CITY_ID + " = " + cityId;
 
-                cursor = context.getContentResolver().query(
-                        CityEntity.CONTENT_URI, projection, where, null, null);
+                cursor = context.getContentResolver()
+                        .query(CityEntity.CONTENT_URI,
+                                projection,
+                                where,
+                                null,
+                                null);
                 if (cursor != null && cursor.moveToFirst()) {
-                    latitude =
-                            cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LATITUDE));
-                    longitude =
-                            cursor.getDouble(cursor.getColumnIndexOrThrow(CityEntity.LONGITUDE));
+                    latitude = cursor.getDouble(
+                            cursor.getColumnIndexOrThrow(CityEntity.LATITUDE));
+                    longitude = cursor.getDouble(
+                            cursor.getColumnIndexOrThrow(CityEntity.LONGITUDE));
                 }
             } catch (IllegalArgumentException e) {
                 Log.e(TAG, "The column does not exist. " + e.getMessage());
@@ -556,8 +586,10 @@ public class WeatherService extends IntentService {
                 }
             }
 
-            if (latitude > 90.0f || latitude < -90.0f
-                    || longitude > 180.0f || longitude < -180.0f) {
+            if (latitude > 90.0f
+                    || latitude < -90.0f
+                    || longitude > 180.0f
+                    || longitude < -180.0f) {
 
                 return null;
             } else {
@@ -586,57 +618,54 @@ public class WeatherService extends IntentService {
             }
             return encodedCityName;
         }
-
     }
 
-	/**
-	 * Containing contract of service behavior that out class scope should not see.
-	 */
-	private static class Contract {
-		
-		/**
-		 * API key used to contact remote server.
-		 */
-		static final String API_KEY = "054dcbb7bea48220bc5d30d5fc53932e";
-		
-		/**
-		 * How many data points in a whole day(24H) when performing forecast by hours.
-		 */
-		static final int DATAPOINTS_IN_ONE_DAY = 8;
-		
-		/**
-		 * Used to refresh current weather section from remote server.
-		 */
-		static final int FLAG_CURRENT_WEATHER = 0x01;
-		
-		/**
-		 * Used to refresh current uv index section from remote server.
-		 */
-		static final int FLAG_CURRENT_UV_INDEX = 0x02;
-		
-		/**
-		 * Used to refresh forecast weather section from remote server.
-		 * <br>
-		 * <br>
-		 * This should never be used along by {@link #FLAG_FORECAST_HOURLY}, 
-		 * these two are exclusive event defined by remote server.
-		 * 
-		 */
-		static final int FLAG_FORECAST_DAILY = 0x10;
-		
-		/**
-		 * Used to refresh forecast weather section from remote server.
-		 * <br>
-		 * <br>
-		 * This should never be used along by {@link #FLAG_FORECAST_DAILY}, 
-		 * these two are exclusive event defined by remote server.
-		 */
-		static final int FLAG_FORECAST_HOURLY = 0x11;
-		
-		/**
-		 * Used to search city id by name from remote server.
-		 */
-		static final int FLAG_SEARCH_CITY = 0x20;
-	}
+    /**
+     * Containing contract of service behavior that out class scope should not see.
+     */
+    private static class Contract {
+        /**
+         * API key used to contact remote server.
+         */
+        static final String API_KEY = "054dcbb7bea48220bc5d30d5fc53932e";
 
+        /**
+         * How many data points in a whole day(24H) when performing forecast by hours.
+         */
+        static final int DATAPOINTS_IN_ONE_DAY = 8;
+
+        /**
+         * Used to refresh current weather section from remote server.
+         */
+        static final int FLAG_CURRENT_WEATHER = 0x01;
+
+        /**
+         * Used to refresh current uv index section from remote server.
+         */
+        static final int FLAG_CURRENT_UV_INDEX = 0x02;
+
+        /**
+         * Used to refresh forecast weather section from remote server.
+         * <br>
+         * <br>
+         * This should never be used along by {@link #FLAG_FORECAST_HOURLY},
+         * these two are exclusive event defined by remote server.
+         *
+         */
+        static final int FLAG_FORECAST_DAILY = 0x10;
+
+        /**
+         * Used to refresh forecast weather section from remote server.
+         * <br>
+         * <br>
+         * This should never be used along by {@link #FLAG_FORECAST_DAILY},
+         * these two are exclusive event defined by remote server.
+         */
+        static final int FLAG_FORECAST_HOURLY = 0x11;
+
+        /**
+         * Used to search city id by name from remote server.
+         */
+        static final int FLAG_SEARCH_CITY = 0x20;
+    }
 }

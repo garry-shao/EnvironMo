@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="frequency_entries">
+
+    <string-array name="frequency_entries">
         <item>Every hour</item>
         <item>Two hours</item>
         <item>Three hours</item>

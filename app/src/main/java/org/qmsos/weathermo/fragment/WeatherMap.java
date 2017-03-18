@@ -22,125 +22,134 @@ import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
  */
 public class WeatherMap extends BaseCordovaFragment implements LoaderCallbacks<Cursor> {
 
-	private static final String KEY_CITY_ID = "KEY_CITY_ID";
-	private static final String KEY_LAYER = "KEY_LAYER";
+    private static final String KEY_CITY_ID = "KEY_CITY_ID";
+    private static final String KEY_LAYER = "KEY_LAYER";
 
-	private SystemWebView mSystemWebView;
-	private CordovaWebView mCordovaWebView;
+    private SystemWebView mSystemWebView;
+    private CordovaWebView mCordovaWebView;
 
-	/**
-	 * Create a new instance that shows weather map.
-	 * 
-	 * @param cityId
-	 *            The city id of the map that currently showing.
-	 * @param layer
-	 *            The layer of the map that currently showing.
-	 * @return The created fragment instance.
-	 */
-	public static WeatherMap newInstance(long cityId, String layer) {
-		Bundle args = new Bundle();
-		args.putLong(KEY_CITY_ID, cityId);
-		args.putString(KEY_LAYER, layer);
-		
-		WeatherMap fragment = new WeatherMap();
-		fragment.setArguments(args);
-		
-		return fragment;
-	}
+    /**
+     * Create a new instance that shows weather map.
+     *
+     * @param cityId
+     *            The city id of the map that currently showing.
+     * @param layer
+     *            The layer of the map that currently showing.
+     * @return The created fragment instance.
+     */
+    public static WeatherMap newInstance(long cityId, String layer) {
+        Bundle args = new Bundle();
+        args.putLong(KEY_CITY_ID, cityId);
+        args.putString(KEY_LAYER, layer);
 
-	@Override
-	public View onCreateView(LayoutInflater inflater,
-							 ViewGroup container, Bundle savedInstanceState) {
+        WeatherMap fragment = new WeatherMap();
+        fragment.setArguments(args);
 
-		return inflater.inflate(R.layout.fragment_weather_map, container, false);
-	}
+        return fragment;
+    }
 
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
-		
-		mSystemWebView = (SystemWebView) view.findViewById(R.id.weather_map);
-	}
+    @Override
+    public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container,
+                             Bundle savedInstanceState) {
 
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-		
-		ConfigXmlParser parser = new ConfigXmlParser();
-		parser.parse(getContext());
+        return inflater.inflate(R.layout.fragment_weather_map, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        mSystemWebView = (SystemWebView) view.findViewById(R.id.weather_map);
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        ConfigXmlParser parser = new ConfigXmlParser();
+        parser.parse(getContext());
         
-		SystemWebViewEngine systemWebViewEngine = new SystemWebViewEngine(mSystemWebView);
-		mCordovaWebView = new CordovaWebViewImpl(systemWebViewEngine);
-		mCordovaWebView.init(this, parser.getPluginEntries(), parser.getPreferences());
-		
-		getLoaderManager().initLoader(0, null, this);
-	}
+        SystemWebViewEngine systemWebViewEngine = new SystemWebViewEngine(mSystemWebView);
+        mCordovaWebView = new CordovaWebViewImpl(systemWebViewEngine);
+        mCordovaWebView.init(this,
+                parser.getPluginEntries(),
+                parser.getPreferences());
 
-	@Override
-	public void onDestroyView() {
-		getLoaderManager().destroyLoader(0);
-		
-		if (mSystemWebView != null && mSystemWebView.getCordovaWebView() != null) {
-			mSystemWebView.getCordovaWebView().handleDestroy();
-		}
-		
-		super.onDestroyView();
-	}
+        getLoaderManager().initLoader(0, null, this);
+    }
 
-	@Override
-	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		long cityId = getArguments().getLong(KEY_CITY_ID, -1L);
-		
-		String[] projection = { CityEntity.LONGITUDE, CityEntity.LATITUDE };
-		String where = CityEntity.CITY_ID + " = " + cityId;
-		
-		return new CursorLoader(getContext(), CityEntity.CONTENT_URI, projection, where, null, null);
-	}
+    @Override
+    public void onDestroyView() {
+        getLoaderManager().destroyLoader(0);
 
-	@Override
-	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-		if (data != null && data.moveToFirst()) {
-			double latitude = data.getDouble(data.getColumnIndexOrThrow(CityEntity.LATITUDE));
-			double longitude = data.getDouble(data.getColumnIndexOrThrow(CityEntity.LONGITUDE));
-			
-			loadView(latitude, longitude);
-		}
-	}
+        if (mSystemWebView != null && mSystemWebView.getCordovaWebView() != null) {
+            mSystemWebView.getCordovaWebView().handleDestroy();
+        }
 
-	@Override
-	public void onLoaderReset(Loader<Cursor> loader) {
-	}
+        super.onDestroyView();
+    }
 
-	/**
-	 * Load specified map area from remote server to WebView.
-	 * 
-	 * @param latitude
-	 *            The latitude of the center of map area.
-	 * @param longitude
-	 *            The longitude of the center of map area.
-	 */
-	private void loadView(double latitude, double longitude) {
-		StringBuilder urlBuilder = new StringBuilder("file:///android_asset/www/index.html");
-		urlBuilder.append("?");
-		urlBuilder.append("&lat=");
-		urlBuilder.append(latitude);
-		urlBuilder.append("&lon=");
-		urlBuilder.append(longitude);
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        long cityId = getArguments().getLong(KEY_CITY_ID, -1L);
+
+        String[] projection = { CityEntity.LONGITUDE, CityEntity.LATITUDE };
+        String where = CityEntity.CITY_ID + " = " + cityId;
+
+        return new CursorLoader(getContext(),
+                CityEntity.CONTENT_URI,
+                projection,
+                where,
+                null,
+                null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (data != null && data.moveToFirst()) {
+            double latitude = data.getDouble(
+                    data.getColumnIndexOrThrow(CityEntity.LATITUDE));
+            double longitude = data.getDouble(
+                    data.getColumnIndexOrThrow(CityEntity.LONGITUDE));
+
+            loadView(latitude, longitude);
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+    }
+
+    /**
+     * Load specified map area from remote server to WebView.
+     *
+     * @param latitude
+     *            The latitude of the center of map area.
+     * @param longitude
+     *            The longitude of the center of map area.
+     */
+    private void loadView(double latitude, double longitude) {
+        StringBuilder urlBuilder = new StringBuilder("file:///android_asset/www/index.html");
+        urlBuilder.append("?");
+        urlBuilder.append("&lat=");
+        urlBuilder.append(latitude);
+        urlBuilder.append("&lon=");
+        urlBuilder.append(longitude);
 //        Internally, set the zoom level to fixed value, may change later.
-		urlBuilder.append("&zoom=");
-		urlBuilder.append(7);
+        urlBuilder.append("&zoom=");
+        urlBuilder.append(7);
 
-		String layer = getArguments().getString(KEY_LAYER);
-		if (layer != null) {
-			urlBuilder.append("&l=");
-			urlBuilder.append(layer);
-		}
-		
-		String url = urlBuilder.toString();
-		
-		if (mCordovaWebView != null) {
-			mCordovaWebView.loadUrlIntoView(url, false);
-		}
-	}
+        String layer = getArguments().getString(KEY_LAYER);
+        if (layer != null) {
+            urlBuilder.append("&l=");
+            urlBuilder.append(layer);
+        }
 
+        String url = urlBuilder.toString();
+
+        if (mCordovaWebView != null) {
+            mCordovaWebView.loadUrlIntoView(url, false);
+        }
+    }
 }

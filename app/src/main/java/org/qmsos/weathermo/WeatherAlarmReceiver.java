@@ -11,17 +11,15 @@ import org.qmsos.weathermo.contract.IntentContract;
  */
 public class WeatherAlarmReceiver extends BroadcastReceiver {
 
-	@Override
-	public void onReceive(Context context, Intent intent) {
-		String action = intent.getAction();
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        String action = intent.getAction();
+        if (action != null && action.equals(IntentContract.ACTION_REFRESH_ALARM)) {
+            Intent refreshIntent = new Intent(context, WeatherService.class);
+            refreshIntent.setAction(IntentContract.ACTION_REFRESH_WEATHER_AUTO);
+            refreshIntent.putExtra(IntentContract.EXTRA_REFRESH_WEATHER_AUTO, true);
 
-		if (action != null && action.equals(IntentContract.ACTION_REFRESH_ALARM)) {
-			Intent refreshIntent = new Intent(context, WeatherService.class);
-			refreshIntent.setAction(IntentContract.ACTION_REFRESH_WEATHER_AUTO);
-			refreshIntent.putExtra(IntentContract.EXTRA_REFRESH_WEATHER_AUTO, true);
-			
-			context.startService(refreshIntent);
-		}
-	}
-
+            context.startService(refreshIntent);
+        }
+    }
 }
