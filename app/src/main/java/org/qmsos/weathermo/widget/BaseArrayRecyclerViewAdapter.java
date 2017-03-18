@@ -12,34 +12,34 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
  * @param <VH>
  *            Subclass of ViewHolder.
  */
-public abstract class BaseArrayRecyclerViewAdapter<T, VH extends ViewHolder> extends Adapter<VH> {
-	
-	private T[] mDataArray;
+public abstract class BaseArrayRecyclerViewAdapter<T, VH extends ViewHolder>
+        extends Adapter<VH> {
 
-	public BaseArrayRecyclerViewAdapter(Context context, T[] dataArray) {
-		this.mDataArray = dataArray;
-	}
+    private T[] mDataArray;
 
-	@Override
-	public int getItemCount() {
-		return mDataArray == null ? 0 : mDataArray.length;
-	}
+    public BaseArrayRecyclerViewAdapter(Context context, T[] dataArray) {
+        this.mDataArray = dataArray;
+    }
 
-	@Override
-	public void onBindViewHolder(VH holder, int position) {
-		if (mDataArray == null || position >= mDataArray.length) {
-			return;
-		}
-		
-		onBindViewHolder(holder, mDataArray);
-	}
+    @Override
+    public int getItemCount() {
+        return mDataArray == null ? 0 : mDataArray.length;
+    }
 
-	protected abstract void onBindViewHolder(VH holder, T[] dataArray);
+    @Override
+    public void onBindViewHolder(VH holder, int position) {
+        if (mDataArray == null || position >= mDataArray.length) {
+            return;
+        }
 
-	public void swapData(T[] dataArray) {
-		mDataArray = dataArray;
-		
-		notifyDataSetChanged();
-	}
+        onBindViewHolder(holder, mDataArray);
+    }
 
+    protected abstract void onBindViewHolder(VH holder, T[] dataArray);
+
+    public void swapData(T[] dataArray) {
+        mDataArray = dataArray;
+
+        notifyDataSetChanged();
+    }
 }

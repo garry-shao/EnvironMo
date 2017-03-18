@@ -25,103 +25,112 @@ import org.qmsos.weathermo.contract.ProviderContract.CityEntity;
  */
 public class CityHeader extends Fragment implements LoaderCallbacks<Cursor> {
 
-	private OnCityHeaderClickedListener mListener;
-	
-	@Override
-	public void onAttach(Context context) {
-		super.onAttach(context);
-		
-		try {
-			mListener = (OnCityHeaderClickedListener) context;
-		} catch (ClassCastException e) {
-			String listenerName = OnCityHeaderClickedListener.class.getSimpleName();
-			
-			throw new ClassCastException(context.toString() + " must implements " + listenerName);
-		}
-	}
+    private OnCityHeaderClickedListener mListener;
 
-	@Override
-	public View onCreateView(LayoutInflater inflater,
-							 ViewGroup container, Bundle savedInstanceState) {
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
 
-		return inflater.inflate(R.layout.fragment_city_header, container, false);
-	}
+        try {
+            mListener = (OnCityHeaderClickedListener) context;
+        } catch (ClassCastException e) {
+            String listenerName = OnCityHeaderClickedListener.class.getSimpleName();
 
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-		
-		TextView cityHeader = (TextView) getView().findViewById(R.id.current_city);
-		cityHeader.setOnClickListener(new OnClickListener() {
+            throw new ClassCastException(context.toString()
+                    + " must implements "
+                    + listenerName);
+        }
+    }
 
-			@Override
-			public void onClick(View v) {
-				mListener.onCityHeaderClicked();
-			}
-		});
-		
-		getLoaderManager().initLoader(0, null, this);
-	}
+    @Override
+    public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container,
+                             Bundle savedInstanceState) {
 
-	@Override
-	public void onDestroyView() {
-		getLoaderManager().destroyLoader(0);
-		
-		super.onDestroyView();
-	}
+        return inflater.inflate(R.layout.fragment_city_header, container, false);
+    }
 
-	@Override
-	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		long cityId;
-		if (args != null) {
-			cityId = args.getLong(LoaderContract.KEY_CITY_ID);
-		} else {
-			cityId = 0L;
-		}
-		
-		String[] projection = { CityEntity.CITY_ID, CityEntity.CITY_NAME, CityEntity.COUNTRY };
-		String where = CityEntity.CITY_ID + " = " + cityId;
-		
-		return new CursorLoader(getContext(),
-                CityEntity.CONTENT_URI, projection, where, null, null);
-	}
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
-	@Override
-	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-		String city = null;
-		String country = null;
-		if (data != null & data.moveToFirst()) {
-			city = data.getString(data.getColumnIndexOrThrow(CityEntity.CITY_NAME));
-			country = data.getString(data.getColumnIndexOrThrow(CityEntity.COUNTRY));
-		}
-		
-		TextView tv = (TextView) getView().findViewById(R.id.current_city);
-		if (city != null && country != null) {
-			String raw = city + " " + country;
-			
-			SpannableString spanned = new SpannableString(raw);
-			spanned.setSpan(new RelativeSizeSpan(0.5f), 
-					city.length() + 1, raw.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-			
-			tv.setText(spanned);
-		} else {
-			tv.setText(R.string.ui_placeholder);
-		}
-	}
+        TextView cityHeader = (TextView) getView().findViewById(R.id.current_city);
+        cityHeader.setOnClickListener(new OnClickListener() {
 
-	@Override
-	public void onLoaderReset(Loader<Cursor> loader) {
-	}
+            @Override
+            public void onClick(View v) {
+                mListener.onCityHeaderClicked();
+            }
+        });
 
-	/**
-	 * Callback that will be invoked when user click view of city header.
-	 */
-	public interface OnCityHeaderClickedListener {
-		
-		/**
-		 * Called when view of city header is clicked.
-		 */
-		void onCityHeaderClicked();
-	}
+        getLoaderManager().initLoader(0, null, this);
+    }
 
+    @Override
+    public void onDestroyView() {
+        getLoaderManager().destroyLoader(0);
+
+        super.onDestroyView();
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        long cityId;
+        if (args != null) {
+            cityId = args.getLong(LoaderContract.KEY_CITY_ID);
+        } else {
+            cityId = 0L;
+        }
+
+        String[] projection = { CityEntity.CITY_ID,
+                CityEntity.CITY_NAME,
+                CityEntity.COUNTRY };
+        String where = CityEntity.CITY_ID + " = " + cityId;
+
+        return new CursorLoader(getContext(),
+                CityEntity.CONTENT_URI,
+                projection,
+                where,
+                null,
+                null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        String city = null;
+        String country = null;
+        if (data != null & data.moveToFirst()) {
+            city = data.getString(data.getColumnIndexOrThrow(CityEntity.CITY_NAME));
+            country = data.getString(data.getColumnIndexOrThrow(CityEntity.COUNTRY));
+        }
+
+        TextView tv = (TextView) getView().findViewById(R.id.current_city);
+        if (city != null && country != null) {
+            String raw = city + " " + country;
+
+            SpannableString spanned = new SpannableString(raw);
+            spanned.setSpan(new RelativeSizeSpan(0.5f),
+                    city.length() + 1,
+                    raw.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            tv.setText(spanned);
+        } else {
+            tv.setText(R.string.ui_placeholder);
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+    }
+
+    /**
+     * Callback that will be invoked when user click view of city header.
+     */
+    public interface OnCityHeaderClickedListener {
+        /**
+         * Called when view of city header is clicked.
+         */
+        void onCityHeaderClicked();
+    }
 }

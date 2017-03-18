@@ -16,177 +16,185 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
  * @param <VH>
  *            subclass of ViewHolder.
  */
-public abstract class BaseDualRecyclerViewAdapter<VH extends ViewHolder> extends Adapter<VH> {
+public abstract class BaseDualRecyclerViewAdapter<VH extends ViewHolder>
+        extends Adapter<VH> {
 
-	public static final int FLAG_REGISTER_CONTENT_OBSERVER = 0x02;
-	
-	/**
-	 * Main type of ViewHolder.
-	 */
-	protected static final int VIEW_TYPE_MAIN = 0x00;
-	
-	/**
-	 * Sub type of ViewHolder.
-	 */
-	protected static final int VIEW_TYPE_SUB = 0x02;
+    public static final int FLAG_REGISTER_CONTENT_OBSERVER = 0x02;
 
-	private Cursor mCursor;
-	private int mRowIDColumn;
-	private boolean mDataValid;
-	private ChangeObserver mChangeObserver;
-	private DataSetObserver mDataSetObserver;
+    /**
+     * Main type of ViewHolder.
+     */
+    protected static final int VIEW_TYPE_MAIN = 0x00;
 
-	public BaseDualRecyclerViewAdapter(Context context, Cursor c, int flags) {
-		init(context, c, flags);
-	}
+    /**
+     * Sub type of ViewHolder.
+     */
+    protected static final int VIEW_TYPE_SUB = 0x02;
 
-	public BaseDualRecyclerViewAdapter(Context context, Cursor c) {
-		this(context, c, FLAG_REGISTER_CONTENT_OBSERVER);
-	}
+    private Cursor mCursor;
+    private int mRowIDColumn;
+    private boolean mDataValid;
+    private ChangeObserver mChangeObserver;
+    private DataSetObserver mDataSetObserver;
 
-	private void init(Context context, Cursor c, int flags) {
-		boolean cursorPresent = c != null;
-		mCursor = c;
-		mDataValid = cursorPresent;
-		mRowIDColumn = cursorPresent ? c.getColumnIndexOrThrow("_id") : -1;
-		if ((flags & FLAG_REGISTER_CONTENT_OBSERVER) == FLAG_REGISTER_CONTENT_OBSERVER) {
-			mChangeObserver = new ChangeObserver();
-			mDataSetObserver = new MyDataSetObserver();
-		} else {
-			mChangeObserver = null;
-			mDataSetObserver = null;
-		}
+    public BaseDualRecyclerViewAdapter(Context context, Cursor c, int flags) {
+        init(context, c, flags);
+    }
 
-		if (cursorPresent) {
-			if (mChangeObserver != null)
-				c.registerContentObserver(mChangeObserver);
-			if (mDataSetObserver != null)
-				c.registerDataSetObserver(mDataSetObserver);
-		}
+    public BaseDualRecyclerViewAdapter(Context context, Cursor c) {
+        this(context, c, FLAG_REGISTER_CONTENT_OBSERVER);
+    }
 
-		setHasStableIds(true);
-	}
+    private void init(Context context, Cursor c, int flags) {
+        boolean cursorPresent = c != null;
+        mCursor = c;
+        mDataValid = cursorPresent;
+        mRowIDColumn = cursorPresent
+                ? c.getColumnIndexOrThrow("_id")
+                : -1;
 
-	@Override
-	public int getItemCount() {
-		if (mDataValid && mCursor != null) {
-			return mCursor.getCount() + 1;
-		} else {
-			return 0;
-		}
-	}
+        if ((flags & FLAG_REGISTER_CONTENT_OBSERVER) == FLAG_REGISTER_CONTENT_OBSERVER) {
+            mChangeObserver = new ChangeObserver();
+            mDataSetObserver = new MyDataSetObserver();
+        } else {
+            mChangeObserver = null;
+            mDataSetObserver = null;
+        }
 
-	@Override
-	public long getItemId(int position) {
-		if (mDataValid && mCursor != null && (position < mCursor.getCount())) {
-			if (mCursor.moveToPosition(position)) {
-				return mCursor.getLong(mRowIDColumn);
-			} else {
-				return 0;
-			}
-		} else {
-			return 0;
-		}
-	}
+        if (cursorPresent) {
+            if (mChangeObserver != null)
+                c.registerContentObserver(mChangeObserver);
+            if (mDataSetObserver != null)
+                c.registerDataSetObserver(mDataSetObserver);
+        }
 
-	@Override
-	public int getItemViewType(int position) {
-		if (mDataValid && mCursor != null && (position < mCursor.getCount())) {
-			return VIEW_TYPE_MAIN;
-		} else {
-			return VIEW_TYPE_SUB;
-		}
-	}
+        setHasStableIds(true);
+    }
 
-	@Override
-	public void onBindViewHolder(VH holder, int position) {
-		if (!mDataValid) {
-			throw new IllegalStateException("cursor data is invalid!");
-		}
+    @Override
+    public int getItemCount() {
+        if (mDataValid && mCursor != null) {
+            return mCursor.getCount() + 1;
+        } else {
+            return 0;
+        }
+    }
 
-		if (position < mCursor.getCount()) {
-			if (mCursor.moveToPosition(position)) {
-				onBindViewHolderMain(holder, mCursor);
-			} else {
-				throw new IllegalStateException("moving cursor to position " + position + " failed.");
-			}
-		} else {
-			onBindViewHolderSub(holder);
-		}
-	}
+    @Override
+    public long getItemId(int position) {
+        if (mDataValid && mCursor != null
+                && (position < mCursor.getCount())) {
+            if (mCursor.moveToPosition(position)) {
+                return mCursor.getLong(mRowIDColumn);
+            } else {
+                return 0;
+            }
+        } else {
+            return 0;
+        }
+    }
 
-	protected abstract void onBindViewHolderMain(VH holder, Cursor cursor);
+    @Override
+    public int getItemViewType(int position) {
+        if (mDataValid && mCursor != null
+                && (position < mCursor.getCount())) {
 
-	protected abstract void onBindViewHolderSub(VH holder);
+            return VIEW_TYPE_MAIN;
+        } else {
+            return VIEW_TYPE_SUB;
+        }
+    }
 
-	public void changeCursor(Cursor cursor) {
-		Cursor old = swapCursor(cursor);
-		if (old != null) {
-			old.close();
-		}
-	}
+    @Override
+    public void onBindViewHolder(VH holder, int position) {
+        if (!mDataValid) {
+            throw new IllegalStateException("cursor data is invalid!");
+        }
 
-	public Cursor swapCursor(Cursor newCursor) {
-		if (newCursor == mCursor) {
-			return null;
-		}
-		Cursor oldCursor = mCursor;
-		if (oldCursor != null) {
-			if (mChangeObserver != null)
-				oldCursor.unregisterContentObserver(mChangeObserver);
-			if (mDataSetObserver != null)
-				oldCursor.unregisterDataSetObserver(mDataSetObserver);
-		}
-		mCursor = newCursor;
-		if (newCursor != null) {
-			if (mChangeObserver != null)
-				newCursor.registerContentObserver(mChangeObserver);
-			if (mDataSetObserver != null)
-				newCursor.registerDataSetObserver(mDataSetObserver);
-			mRowIDColumn = newCursor.getColumnIndexOrThrow("_id");
-			mDataValid = true;
+        if (position < mCursor.getCount()) {
+            if (mCursor.moveToPosition(position)) {
+                onBindViewHolderMain(holder, mCursor);
+            } else {
+                throw new IllegalStateException("moving cursor to position "
+                        + position
+                        + " failed.");
+            }
+        } else {
+            onBindViewHolderSub(holder);
+        }
+    }
 
-			notifyDataSetChanged();
-		} else {
-			mRowIDColumn = -1;
-			mDataValid = false;
+    protected abstract void onBindViewHolderMain(VH holder, Cursor cursor);
 
-			notifyDataSetChanged();
-		}
-		return oldCursor;
-	}
+    protected abstract void onBindViewHolderSub(VH holder);
 
-	protected void onContentChanged() {
-	}
+    public void changeCursor(Cursor cursor) {
+        Cursor old = swapCursor(cursor);
+        if (old != null) {
+            old.close();
+        }
+    }
 
-	private class ChangeObserver extends ContentObserver {
-		public ChangeObserver() {
-			super(new Handler());
-		}
+    public Cursor swapCursor(Cursor newCursor) {
+        if (newCursor == mCursor) {
+            return null;
+        }
+        Cursor oldCursor = mCursor;
+        if (oldCursor != null) {
+            if (mChangeObserver != null)
+                oldCursor.unregisterContentObserver(mChangeObserver);
+            if (mDataSetObserver != null)
+                oldCursor.unregisterDataSetObserver(mDataSetObserver);
+        }
+        mCursor = newCursor;
+        if (newCursor != null) {
+            if (mChangeObserver != null)
+                newCursor.registerContentObserver(mChangeObserver);
+            if (mDataSetObserver != null)
+                newCursor.registerDataSetObserver(mDataSetObserver);
+            mRowIDColumn = newCursor.getColumnIndexOrThrow("_id");
+            mDataValid = true;
 
-		@Override
-		public boolean deliverSelfNotifications() {
-			return true;
-		}
+            notifyDataSetChanged();
+        } else {
+            mRowIDColumn = -1;
+            mDataValid = false;
 
-		@Override
-		public void onChange(boolean selfChange) {
-			onContentChanged();
-		}
-	}
+            notifyDataSetChanged();
+        }
+        return oldCursor;
+    }
 
-	private class MyDataSetObserver extends DataSetObserver {
-		@Override
-		public void onChanged() {
-			mDataValid = true;
-			notifyDataSetChanged();
-		}
+    protected void onContentChanged() {
+    }
 
-		@Override
-		public void onInvalidated() {
-			mDataValid = false;
-			notifyDataSetChanged();
-		}
-	}
+    private class ChangeObserver extends ContentObserver {
+        public ChangeObserver() {
+            super(new Handler());
+        }
 
+        @Override
+        public boolean deliverSelfNotifications() {
+            return true;
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            onContentChanged();
+        }
+    }
+
+    private class MyDataSetObserver extends DataSetObserver {
+        @Override
+        public void onChanged() {
+            mDataValid = true;
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public void onInvalidated() {
+            mDataValid = false;
+            notifyDataSetChanged();
+        }
+    }
 }
